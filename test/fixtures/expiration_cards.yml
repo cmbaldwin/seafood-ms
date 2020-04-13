@@ -1,0 +1,19 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  product_name: MyString
+  manufacturer_address: MyString
+  manufacturer: MyString
+  ingredient_source: MyString
+  consumption_restrictions: MyString
+  manufactuered_date: MyString
+  expiration_date: MyString
+
+two:
+  product_name: MyString
+  manufacturer_address: MyString
+  manufacturer: MyString
+  ingredient_source: MyString
+  consumption_restrictions: MyString
+  manufactuered_date: MyString
+  expiration_date: MyString

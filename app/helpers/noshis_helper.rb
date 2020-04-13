@@ -1,0 +1,2 @@
+module NoshisHelper
+end

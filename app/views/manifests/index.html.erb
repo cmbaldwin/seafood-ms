@@ -1,0 +1,83 @@
+<% title "Funabiki Online - 出荷表" %>
+
+	<div class="container manifest_index">
+		<div class="row align-middle">
+			<div class="col">
+	<% if current_user.admin? %>
+				<div class="btn-group float-right" role="group" aria-label="Basic">
+					<%# link_to 'CSVアップロード', csv_path, :class => "btn btn-success" %>
+					<%= link_to '無印チェック表（生食用）', empty_manifest_path('生食用'), :class => "btn btn-info" %>
+					<%= link_to '無印チェック表（冷凍用）', empty_manifest_path('プロトン凍結冷凍用'), :class => "btn btn-info" %>
+					<%= link_to '追加', new_manifest_path, :class => "btn btn-success" %>
+				</div>
+	<% end %> 
+			<hr/>
+
+				<h1>出荷表</h1>
+				
+			</div>
+		</div>
+
+		<hr/>
+
+		<div class="row rowhead">
+				<div class="col-md-3 col-sm-12 right-border text-center">
+					<strong><h4>発送日</h4></strong>
+				</div>
+				<div class="col-md-2 col-sm-12 text-center right-border">
+					<span class="badge badge-pill badge-primary">インフォマート</span><br><strong>生牡蠣</strong> 　/ 　<strong>冷凍牡蠣</strong>
+				</div>
+				<div class="col-md-4 col-sm-12 text-center right-border">
+					<span class="badge badge-pill badge-info">自社サイト</span><br>
+					<strong>冷蔵便</strong>　 / 　<strong>冷凍便</strong> 　/ 　<strong>干しえび</strong>　 / 　<strong>焼きアナゴ</strong>
+				</div>
+				<div class="col-md-3 col-sm-12 text-center">
+					<strong><h4>操作</h4></strong>
+				</div>
+		</div>
+		
+		<% cache @manifests do %>
+		<% @manifests.order(sales_date: :desc).each do |manifest| %>
+		<% infomart_count(manifest) %>
+		<% tsuhan_count(manifest) %>
+		<div class="row small <%= cycle_table_rows %> <%= if today_warn(manifest) then 'bg-warning' end %>">
+				<div class="col-md-3 col-sm-12 clearfix right-border text-center">
+					<<%= if today_warn(manifest) then 'h4' else 'h5' end %>> 
+						<%= manifest.sales_date %>
+					</<%= if today_warn(manifest) then 'h4' else 'h5' end %>>
+				</div>
+				<div class="col-md-1 col-sm-12">
+					<%= non_zero_print(@infomart[:raw]) %>
+				</div>
+				<div class="col-md-1 col-sm-12 text-center right-border">
+					<%= non_zero_print(@infomart[:frozen]) %>
+				</div>
+				<div class="col-md-1 col-sm-12 text-center">
+					<%= non_zero_print(@tsuhan[:fridge]) %>
+				</div>
+				<div class="col-md-1 col-sm-12 text-center">
+					<%= non_zero_print(@tsuhan[:frozen]) %>
+				</div>
+				<div class="col-md-1 col-sm-12 text-center">
+					<%= non_zero_print(@tsuhan[:ebi]) %>
+				</div>
+				<div class="col-md-1 col-sm-12 right-border text-center">
+					<%= non_zero_print(@tsuhan[:anago]) %>
+				</div>
+				<div class="col-md-3 col-sm-12 text-center">
+					<div class="btn-group">
+						<%= link_to ('<i class="far fa-file-alt"></i>').html_safe, manifest, :alt => "個別ページ", class: 'btn btn-info' %>
+						<%= link_to ('<i class="far fa-file-pdf"></i>').html_safe, manifest_pdf_path(manifest), :method => :get, class: 'btn btn-info', target: "_blank" %>
+						<% if current_user.admin? or current_user.vip? %>
+							<%= link_to ('<i class="fas fa-sync-alt"></i>').html_safe, edit_manifest_path(manifest), :alt => "データを編集", class: 'btn btn-success' %>
+							<%= button_to manifest, method: :delete, data: { confirm: '削除しますか?' }, :disabled => !current_user.admin?, form_class: 'btn btn-danger', class: 'blank_button' do %>
+								<i class="fas fa-trash-alt"></i>
+							<% end %>
+						<% end %>
+					</div>
+				</div>
+		</div>
+		<% end %>
+		<% end %>
+		<%= will_paginate @manifests %>
+	</div>

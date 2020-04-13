@@ -1,0 +1,44 @@
+<div class="row">
+	<div class="col">
+	<%= simple_form_for @article do |form| %>
+		
+		<% if @article.errors.any? %>
+			<div class="container small">
+				<div class="alert alert-warning alert-dismissible">
+			    	<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+					<h5 class="text-danger">
+						<%= pluralize(@article.errors.count, "error") %> prohibited this article from being saved:
+					</h5>
+					<ul>
+						<% @article.errors.full_messages.each do |msg| %>
+						<li><%= msg %></li>
+						<% end %>
+					</ul>
+				</div>
+			</div>
+		<% end %>
+		<%= hidden_field :user_id, :value => current_user.id %>
+
+	<div class="col-sm-12 col-md-8 col-lg-6">
+		<p>
+			<%= form.label :id, 'カテゴリー' %>
+			<%= form.collection_select(:category_id, Category.all, :id, :name_with_depth, {:include_blank => true, :selected => "1"}, {class: "form-control form-control-sm"}) %>
+		</p>
+
+		<p>
+			<%= form.label :title, 'タイトル' %>
+			<%= form.input :title, class: "form-control form-control-sm", label: false %>
+		</p>
+	</div>
+	<div class="col-sm-12">
+		<p>
+			<%= form.label :text, '内容' %>
+			<%= form.input :text, label: false %>
+		</p>
+
+		<p class="text-center btn">
+			<%= form.submit '作成/反映', :class => 'btn btn-success' %>
+		</p>
+	<% end %>
+	</div>
+</div>

@@ -1,0 +1,79 @@
+<% title "Funabiki Online - 熨斗作成" %>
+
+<div class="container">
+	<div class="row align-middle">
+		<div class="col">
+
+			<div class="btn-group float-right" role="group" aria-label="Basic">
+				<%= link_to '修正', edit_frozen_oyster_path(@frozen_oyster), class: 'btn btn-success' %>
+				<%= link_to '冷凍データトップへ', frozen_oysters_path, class: 'btn btn-secondary' %>
+			</div>
+		<hr/>
+
+			<h1>冷凍データ</h1>
+			
+		</div>
+	</div>
+	<p id="notice"><%= notice %></p>
+
+	<hr/>
+
+	<p>
+		<strong>日付:</strong>
+		<br>
+		<%= @frozen_oyster.manufacture_date %>
+	</p>
+
+	<p>
+		<strong>時間枠:</strong>
+		<br>
+		<%= ampm_s(@frozen_oyster.ampm) %>
+	</p>
+
+	<p>
+		<strong>兵庫県産牡蠣原料キロ数:</strong>
+		<br>
+		<%= @frozen_oyster.hyogo_raw %>
+	</p>
+
+	<p>
+		<strong>岡山県産牡蠣原料キロ数:</strong>
+		<br>
+		<%= @frozen_oyster.okayama_raw %>
+	</p>
+
+	<p>
+		<strong>L　冷凍済原料:</strong>
+		<br>
+		<% @frozen_oyster.frozen_l.each do |k, v| %>
+			<%= k %>: <%= v %>
+		<% end %>
+	</p>
+
+	<p>
+		<strong>LL　冷凍済原料:</strong>
+		<br>
+		<% @frozen_oyster.frozen_ll.each do |k, v| %>
+			<%= k %>: <%= v.to_s %>
+		<% end %>
+	</p>
+
+	<p>
+		<strong>完成商品数:</strong>
+		<br>
+		<% @frozen_oyster.finished_packs.each do |k, v| %>
+			<%= k.to_i.zero? ? '冷凍殻付き牡蠣' : Product.find(k.to_i).namae %>: <%= v.to_s %><br>
+		<% end %>
+	</p>
+
+	<p>
+		<strong>小・ハネ(500g):</strong>
+		<br>
+		<% @frozen_oyster.losses.each do |k, v| %>
+			<%= k %>: <%= v.to_s %><br>
+		<% end %>
+	</p>
+
+
+	<hr/>
+</div>

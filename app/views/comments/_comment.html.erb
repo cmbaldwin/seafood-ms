@@ -1,0 +1,24 @@
+<div class="row">
+	<div class="col">
+		<p>
+			<strong>タイトル:</strong>
+			<%= comment.title %>
+		</p>
+	</div>
+	<div class="col">
+		<p>
+			<strong>一言:</strong>
+			<%= comment.body %>
+		</p>
+	</div>		<div class="col">
+		<p>
+			<strong>ユーザー:</strong>
+			<%= comment.user.email %>
+		</p>
+	</div>
+	<div class="col-1">
+		<p>
+			<%= link_to '削除', [comment.article, comment], method: :delete, data: { confirm: 'Are you sure?' } %>
+		</p>
+	</div>
+</div>

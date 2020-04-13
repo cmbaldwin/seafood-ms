@@ -1,0 +1,54 @@
+<% title "Funabiki Online - 商品マスター" %>
+
+<div class="modal mfade" id="productModal" tabindex="-1" role="dialog" aria-labelledby="productModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-xl" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="productModalLabel">材料</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+				<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div id="product_card" class="card h-100">
+				<div class="card-body text-center">
+					<div id="product_partial">
+						<%= render 'product', remote: true, locals: {product: @product} %>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">閉じる</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+	<div id="product_index" class="container">
+		<div class="row align-middle">
+			<div class="col">
+	<% if current_user.admin?%>
+				<div class="btn-group float-right" role="group" aria-label="Basic">
+					<%= link_to ('<i class="far fa-file-pdf"></i>').html_safe, product_pdf_path, :class => "btn btn-info" %>
+					<%= link_to '追加', insert_product_data_path, remote: true, class: 'product_link btn btn-success', 'data-toggle' => 'modal', 'data-target' => '#productModal' %>
+				</div>
+	<% end %> 
+			<hr/>
+
+				<h1>商品</h1>
+				
+			</div>
+		</div>
+
+		<hr/>
+
+		<nav>
+		<div class="nav nav-tabs mb-2" id="nav-tab" role="tablist">
+			<% types_hashes %>
+			<% @types_hash.each_with_index do |(type_number, type), i| %>
+				<%= link_to type, fetch_products_by_type_path(type_id: type_number), :remote => 'true', :id => 'nav' + type_number.to_s, :class => 'text-center nav-item nav-link' + ((i == 0) ? ' active' : ('')), "data-toggle" => "tab", "role" => "tab" %>
+			<% end %>
+		</div>
+		</nav>
+		<div class="tab-content" id="partial">
+			<%= render :partial => 'products', locals: { type: @type }, remote: true %>
+		</div>

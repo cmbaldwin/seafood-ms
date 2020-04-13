@@ -1,0 +1,26 @@
+<div class="accordion" id="accordion">
+	<% @categories.each do |a| %>
+			<% if a.root? %>
+				<div class="list-group" id="list-tab" role="tablist">
+					<div class="list-group-item list-group-item-action root mb-0" id="heading<%= a.id %>" data-toggle="collapse" data-target="#collapse<%= a.id %>" aria-expanded="false" aria-controls="collapse<%= a.id %>">
+						<strong>
+							<%= link_to a.name, fetch_articles_path(:cat_id => a.id), :remote=>'true', :id=>'navBtn' + a.id.to_s %>
+						</strong>
+						    <i class="fa fa-plus-circle float-right"></i>
+						    <i class="fa fa-minus-circle float-right"></i>
+					</div>
+					<div class="collapse small" id="collapse<%= a.id %>" aria-labelledby="heading<%= a.id %>" data-parent="#accordion">
+						<div class="accordian-content">
+							<% a.descendants.each do |s| %>
+								<% if s.has_children? %>
+									<%= link_to s.name, fetch_articles_path(:cat_id => s.id), :remote => 'true', :id => 'navBtn' + s.id.to_s, :class => 'list-group-item list-group-item-action' %>
+								<% else %>
+										<%= link_to s.name, fetch_articles_path(:cat_id => s.id), :remote => 'true', :id => 'navBtn' + s.id.to_s, :class => 'list-group-item list-group-item-action' %>
+								<% end %>
+							<% end %>
+						</div>
+					</div>
+				</div>
+			<% end %>
+	<% end %>
+</div>

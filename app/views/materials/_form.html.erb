@@ -1,0 +1,60 @@
+<div class="row">
+
+	<div class="col-sm-12 col-md-8 col-lg-6">
+	<%= simple_form_for @material do |f| %>
+		
+		<% if @material.errors.any? %>
+			<div class="container small">
+				<div class="alert alert-warning alert-dismissible">
+			    	<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+					<h5 class="text-danger">
+						<%= pluralize(@material.errors.count, "error") %> prohibited this material from being saved:
+					</h5>
+					<ul>
+						<% @material.errors.full_messages.each do |msg| %>
+						<li><%= msg %></li>
+						<% end %>
+					</ul>
+				</div>
+			</div>
+		<% end %>
+
+		<p>
+			<%= f.label :namae, '名前' %>
+			<%= f.text_field :namae, class: "form-control form-control-sm", label: false %>
+		</p>
+
+		<p>
+			<%= f.label :zairyou, '材料' %>
+			<%= f.text_field :zairyou, class: "form-control form-control-sm", label: false %>
+		</p>
+		<p>
+			<%= f.label :cost, '単価' %>
+			<%= f.text_field :cost, class: "form-control form-control-sm floatTextBox", label: false %>
+		</p>
+		<p>
+			<%= f.label :divisor, '割り・掛け' %>
+			<%= f.text_field :divisor, class: "form-control form-control-sm floatTextBox", label: false %>
+		</p>
+		<p>
+  			<%= f.input :per_product, class: "form-control form-control-sm", label: '単品製品で使う', :item_wrapper_class => 'inline' %>
+		</p>
+		<p class="text-center btn">
+			<%= f.submit '保存', :class => 'btn btn-success' %>
+		</p>
+	</div>
+	<% end %>
+
+	<div class="col-sm-12 col-md-8 col-lg-6">
+		<div class="card">
+			<div class="card-header">
+				編集歴史
+			</div>
+			<div class="card-body">
+				<p>
+					
+				</p>
+			</div>
+		</div>
+	</div>
+</div>

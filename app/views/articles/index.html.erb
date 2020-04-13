@@ -1,0 +1,38 @@
+<% title "Funabiki Online - 会社マニュアル" %>
+
+<%= render 'category_modal' %>
+
+<div class="container">
+	<div class="row align-middle">
+		<div class="col">
+<% if current_user.admin?%>
+			<div class="btn-group float-right" role="group" aria-label="Basic">
+				<%= link_to '追加', new_article_path, class: 'btn btn-secondary' %>
+				<button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#categoryEdit">
+					カテゴリー編集
+				</button>
+			</div>
+<% end %> 
+		<hr/>
+
+			<h1>マニュアル</h1>
+			
+		</div>
+	</div>
+	<p id="notice"><%= notice %></p>
+
+	<hr/>
+
+	<div class="row">
+
+		<div class="col-md-3 col-sm-12">
+			<%= render :partial=>'category_navigation' %>
+		</div>
+	
+		<div class="col-md-9 col-sm-12">
+			<%= render :partial=>'single_article', locals: { articles: @articles} %>
+		</div>
+
+	</div>
+
+</div>

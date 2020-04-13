@@ -1,0 +1,25 @@
+<%= simple_form_for @rakuten, url: reciept_path(@rakuten.id, expense_name: :expense_name, purchaser: :purchaser, order_id: :order_id, sales_date: :sales_date), method: :get, html: { class: "row", id: 'receipt_form'} do |f| %>
+	<div class="col-8">
+		オイシス領収証？
+		<%= f.check_box :oysis, checked_value: true, unchecked_value: false, checked: (@oysis == 'true' ? true : false) || false, label: false %>
+	</div>
+	<%= f.input :order_id, label: false, :input_html => {:readonly => 'readonly', class: 'readonly form-control-sm', value: @order_id || '注文番後'}, wrapper_html: { class: 'col-4' } %>
+	<div class="col-4">
+		<%= f.label :sales_date, '日付' %>
+	</div>
+	<div class="col-8">
+		<%= f.text_field :sales_date, 'data-behaviour' => 'datepicker', value: @sales_date, class: "form-control form-control-sm datepicker mb-2 p-2", label: false %>
+	</div>
+	<%= f.input :purchaser, :input_html => {value: @purchaser || '名前・会社名'}, label: false, wrapper_html: { class: 'col-8' }  %>
+	<%= f.input :title, collection: ['様', '御中'], selected: 0, label: false, wrapper_html: { class: 'col-4' } %>
+	<div class="input-group col-12 mb-3">
+		<div class="input-group-prepend">
+			<span class="input-group-text">￥</span>
+		</div>
+		<%= f.input_field :amount, value: @amount || '値段', label: false, class: 'form-control' %>
+	</div>
+	<%= f.input :expense_name, label: false, :input_html => {value: 'お品代として'}, wrapper_html: { class: 'col-12' } %>
+	<div class="col-12 text-center">
+		<%= link_to '作成', "#", :onclick => "$('#receipt_form').submit()", class: 'btn btn-lg btn-success', :target => "_blank" %>
+	</div>
+<% end %>

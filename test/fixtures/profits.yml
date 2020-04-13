@@ -1,0 +1,11 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  sales_date: MyString
+  figures: MyText
+  totals: MyText
+
+two:
+  sales_date: MyString
+  figures: MyText
+  totals: MyText

@@ -1,0 +1,67 @@
+<!-- Modal -->
+<div class="modal fade" id="categoryEdit" tabindex="-1" role="dialog" aria-labelledby="categoryEditModal" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header mb-2">
+				<h5 class="modal-title" id="exampleModalLongTitle">カテゴリー編集</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="container"> 
+					<ul class="nav nav-tabs mb-2" id="myTab" role="tablist">
+						<li class="nav-item">
+						<a class="nav-link active" id="delete-tab" data-toggle="tab" href="#delete" role="tab" aria-controls="delete" aria-selected="true">リスト・削除</a>
+						</li>
+						<li class="nav-item">
+						<a class="nav-link" id="edit-tab" data-toggle="tab" href="#edit" role="tab" aria-controls="edit" aria-selected="false">編集</a>
+						</li>
+						<li class="nav-item">
+						<a class="nav-link" id="new-tab" data-toggle="tab" href="#new" role="tab" aria-controls="new" aria-selected="false">追加</a>
+						</li>
+					</ul>
+					<div class="tab-content" id="myTabContent">
+						<div class="tab-pane fade show active" id="delete" role="tabpanel" aria-labelledby="delete-tab">
+							<%= form_tag destroy_multiple_categories_path, method: :delete do %> 
+									<% @categories.each do |c| %>
+										<div class="row">
+											<div class="col-1">
+											<%= check_box_tag '', c.id, false, class: 'delete_multiple_checkbox', name: "categories[]" %>
+											</div>
+											<div class="col-11">
+											<%= c.name %>
+											</div>
+										</div>
+									<% end %>
+								<%= submit_tag "Delete selected" %>
+							<% end %>
+						</div>
+						<div class="tab-pane fade" id="edit" role="tabpanel" aria-labelledby="edit-tab">
+							<%= simple_form_for @category, :url => categories_path, :method => :post do |f| %>
+								<%= f.label :id, '編集したいカテゴリー' %>
+								<%= f.collection_select(:category_id, Category.all, :id, :name_with_depth, {:include_blank => true, :selected => "1"}, {class: "form-control form-control-sm"}) %>
+								<%= f.label :name, '新しい名前' %>
+								<%= f.input :name, required: true %>
+								<%= f.button :submit %>
+							<% end %>
+						</div>
+						<div class="tab-pane fade" id="new" role="tabpanel" aria-labelledby="new-tab">
+							<%= simple_form_for @category, :url => categories_path, :method => :post do |f| %>
+								<%= f.label :id, '親のカテゴリー' %>
+								<%= f.collection_select(:category_id, Category.all, :id, :name_with_depth, {:include_blank => true, :selected => "1"}, {class: "form-control form-control-sm"}) %>
+								<%= f.label :name, '名前' %>
+								<%= f.input :name, required: true %>
+								<%= f.button :submit %>
+							<% end %>
+						</div>
+					</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">閉じる</button>
+				<button type="button" class="btn btn-primary">保存</button>
+			</div>
+		</div>
+	</div>
+</div>
+</div>

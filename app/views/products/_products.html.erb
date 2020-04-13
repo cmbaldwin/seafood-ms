@@ -1,0 +1,38 @@
+<ul class="list-group list-group-flush">
+	<div class="row">
+		<% products_by_type[@type].drop(1).each do |product_id| %>
+		<% product = get_product(product_id) %>
+			<div class="col-md-4 col-sm-12">
+				<li class="list-group-item product_container">
+					<div class="row text-center">
+						<div class="col-12 mb-2 h3">
+							<strong><%= product.namae %></strong>
+						</div>
+						<% if current_user.admin? %>
+							<div class="col-12 product_data small mb-2">
+								<button class="product_tooltip" data-toggle="tooltip" data-html="true" title="<b>グラム数見当</b>">
+									<%= product.grams %>
+								</button>
+								<button class="product_tooltip" data-toggle="tooltip" data-html="true" title="<b>箱入り数 × 箱合わせ数</b>">
+									<%= product.count %> × <%= product.multiplier %>
+								</button>
+								<button class="product_tooltip" data-toggle="tooltip" data-html="true" title="<b>商品の経費合</b>">
+									<%= product.cost %>
+								</button>
+							</div>
+						<% end %>
+						<div class="col-12">
+							<div class="btn-group mt-1" role="group">
+								<%= link_to ('<i class="fas fa-external-link-alt fa-xs"></i>').html_safe, product, class: 'btn btn-sm btn-info' %>
+								<% if current_user.admin? %>
+									<%= link_to '編集', insert_product_data_path(id: product.id), remote: true, class: 'product_link btn-sm  btn-success', 'data-toggle' => 'modal', 'data-target' => '#productModal' %>
+									<%= link_to '削除', product, method: :delete, data: { confirm: '削除確認' }, class: 'btn btn-sm btn-danger' %>
+								<% end %>
+							</div>
+						</div>
+					</div>
+				</li>
+			</div>
+		<% end %>
+	</div>	
+</ul>

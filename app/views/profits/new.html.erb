@@ -1,0 +1,87 @@
+<% title "Funabiki Online - 計算表作成" %>
+<div class="container-flex profit_container">
+	<div class="row align-middle m-3">
+		<div class="col">
+			<div class="btn-group float-right" role="group" aria-label="Basic">
+				<%= link_to '前へ', profits_path, class: 'btn btn-secondary' %>
+			</div>
+		<hr/>
+
+	<div id="profit_form" class="profit_form">
+	<%= simple_form_for @profit, :remote => true do |form| %>
+
+		<div class="row">
+
+			<div class="col-md-3 col-sm-12">
+
+				<% if @profit.errors.any? %>
+				<div class="container small">
+					<div class="alert alert-warning alert-dismissible">
+						<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+						<h5 class="text-danger">
+							<%= pluralize(@profit.errors.count, "error") %> prohibited this profit from being saved:
+						</h5>
+						<ul>
+							<% @profit.errors.full_messages.each do |msg| %>
+							<li><%= msg %></li>
+							<% end %>
+						</ul>
+					</div>
+				</div>
+				<% end %>
+
+				<div class="row mb-2">
+					<div class="col-sm-12">
+						<div class="card mb-2">
+							<span class="card-header">
+								<b><%= form.label :sales_date, '計算日' %></b>
+							</span>
+							<div class="card-body">
+								<div class="input-group sales_date">
+									<div class="input-group-prepend lg-prepend-fix">
+										<div class="input-group-text">
+											<i class="far fa-calendar-alt fa-sm"></i>
+										</div>
+									</div>
+									<%= form.text_field :sales_date, 'data-behaviour' => 'datepicker', class: "form-control form-control-lg datepicker mb-2" %>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-sm-12">
+						<div class="card mt-2 text-center">
+							<span class="card-header">
+								<%= form.submit '保存して続く', :action => :initital_save, :class => 'btn btn-lg btn-success' %>
+							</span>
+						</div>
+					</div>
+				</div>
+
+			</div>
+
+			<div class="col-md-9 col-sm-12">
+				<div class="disable_wall rounded">
+				</div>
+				<nav>
+					<div class="nav nav-pills d-flex m-3" id="market-pills" role="tablist">
+						<% @markets.each_with_index do |market, i| %>
+							<%= link_to market.nick, fetch_market_path(:market_id => market.id, profit: @profit), :remote=>'true', :id => 'navBtn' + market.id.to_s, :class => 'd-flex flex-grow-1 align-content-center text-center nav-item nav-link ' + active(i).to_s + profit_nav_font_color(market.color).to_s, "data-toggle" => "pill", "role" => "tab", "style" => "background-color: " + market.color.to_s + ";" %>
+						<% end %>
+					</div>
+				</nav>
+
+				<div class="tab-content" id="nav-tabContent">
+					<div class="tab-pane fade show active" id="nav-partial" role="tabpanel">
+							<%= render :partial => 'edit_partial_form', locals: { market: @market, profit: @profit } %>
+					</div>
+				</div>
+			</div>
+
+		</div>
+
+	<% end %>
+	</div>
+
+	<hr/>
+
+</div>

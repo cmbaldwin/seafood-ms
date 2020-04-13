@@ -1,0 +1,3 @@
+$("#receipt_partial").html("<%= escape_javascript(render partial: 'receipt', locals: { rakuten: @rakuten, order: @order_id } ) %>");
+$('#receipt_partial').focus();
+$('#receipt_card').addClass('border-success');

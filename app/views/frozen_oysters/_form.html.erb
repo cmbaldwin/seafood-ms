@@ -1,0 +1,85 @@
+<script type="text/javascript">
+//adds datapicker to a input box (for dates, duh)
+	$('.datepicker').datepicker({
+		maxViewMode: 2,
+		format: "yyyy年mm月dd日",
+		todayBtn: "linked",
+		language: "ja",
+		daysOfWeekHighlighted: "0,3",
+		todayHighlight: true,
+		orientation: "bottom auto",
+		toggleActive: true
+		});
+</script>
+
+<%= simple_form_for(@frozen_oyster) do |f| %>
+	<%= f.error_notification %>
+	<%= f.error_notification message: f.object.errors[:base].to_sentence if f.object.errors[:base].present? %>
+	<div class="frozen_data_input">
+		<div class="row align-middle text-center">
+			<div class="col-3 mb-3">
+				<span><b>製造年月日・時間</b></span>
+				<%= f.text_field :manufacture_date, 'data-behaviour' => 'datepicker', class: "form-control form-control-sm datepicker" %>
+			</div>
+			<div class="col-3">
+				<span><b>時間指定</b></span><br>
+				<%= f.collection_radio_buttons :ampm, [['am', '午前'] ,['pm', '午後']], :first, :last, :item_wrapper_class => 'inline ml-3' %>
+			</div>
+			<%= f.simple_fields_for :losses do |loss| %>
+				<div class="col-3">
+					<span><b>小</b></span><br>
+					<% @frozen_oyster.losses.nil? ? (losses = 0) : (losses = @frozen_oyster.losses.dig("小")) %>
+					<%= loss.input "小", label: false, class: "form-control form-control-sm mb-0", :input_html => { :class => 'floatTextBox', :value => losses } %>
+				</div>
+				<div class="col-3">
+					<span><b>ハネ(~500g単位)</b></span><br>
+					<% @frozen_oyster.losses.nil? ? (hane = 0) : (hane = @frozen_oyster.losses.dig("ハネ")) %>
+					<%= loss.input "ハネ", label: false, class: "form-control form-control-sm mb-0", :input_html => { :class => 'floatTextBox', :value => hane } %>
+				</div>
+			<% end %>
+			<div class="col-6 mb-3">
+				<span><b>兵庫県の生牡蠣キロ数</b></span>
+				<%= f.text_field :hyogo_raw, label: false, class: "form-control form-control-sm mb-0", :input_html => { :class => 'floatTextBox' } %>
+			</div>
+			<div class="col-6 mb-3">
+				<span><b>岡山県の生牡蠣キロ数</b></span>
+				<%= f.text_field :okayama_raw, label: false, class: "form-control form-control-sm mb-0", :input_html => { :class => 'floatTextBox' } %>
+			</div>
+
+			<%= f.simple_fields_for :frozen_l do |frozen_l| %>
+				<div class="col-4 mb-3">
+					<span><b>坂越　L</b></span>
+					<% @frozen_oyster.frozen_l.nil? ? (frozen_l_s_v = 0) : (frozen_l_s_v = @frozen_oyster.frozen_l.dig("坂越　L")) %>
+					<%= frozen_l.input "坂越　L", label: false, class: "form-control form-control-sm mb-0", :input_html => { :class => 'floatTextBox', :value => frozen_l_s_v } %>
+				</div>
+			<% end %>
+
+			<%= f.simple_fields_for :frozen_ll do |frozen_ll| %>
+				<div class="col-4 mb-3">
+					<span><b>坂越　LL</b></span>
+					<% @frozen_oyster.frozen_ll.nil? ? (frozen_ll_s_v = 0) : (frozen_ll_s_v = @frozen_oyster.frozen_ll.dig("坂越　LL")) %>
+					<%= frozen_ll.input "坂越　LL", label: false, class: "form-control form-control-sm mb-0", :input_html => { :class => 'floatTextBox', :value => frozen_ll_s_v } %>
+				</div>
+				<div class="col-4 mb-3">
+					<span><b>日生　LL</b></span>
+					<% @frozen_oyster.frozen_ll.nil? ? (frozen_ll_h_v = 0) : (frozen_ll_h_v = @frozen_oyster.frozen_ll.dig("日生　LL")) %>
+					<%= frozen_ll.input "日生　LL", label: false, class: "form-control form-control-sm mb-0", :input_html => { :class => 'floatTextBox', :value => frozen_ll_h_v } %>
+				</div>
+			<% end %>
+		
+			<%= f.simple_fields_for :finished_packs do |finished| %>
+				<% @frozen_products.each do |product| %>
+					<div class="col-3">
+						<span class="small"><b><%= product.namae %></b></span>
+						<%= finished.input product.id.to_s, 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { :class => 'floatTextBox', :value => @frozen_oyster.finished_packs[product.id.to_s] } %>
+					</div>
+				<% end %>
+			<% end %>
+
+		</div>
+
+		<div class="form-actions">
+			<%= f.submit '更新', :class => 'btn btn-success submit float-right mr-1' %>
+		</div>
+	</div>
+<% end %>

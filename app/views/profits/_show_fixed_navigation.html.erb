@@ -1,0 +1,25 @@
+<nav id="sidebar" class="fixed_nav_container navbar navbar-light bg-light">
+	<nav class="nav nav-pills flex-column">
+		<% @profit.figures.each do |type_id, product_hash| %>
+		<a class="nav-link type_link smoothscroll" data-turbolinks="false" href="#type_<%= type_id %>">
+			<%= subtotal_hash[type_id.to_s][:type_name] %>
+		</a>
+		<nav class="nav nav-pills flex-column">
+			<% product_hash.each do |product_id, market_hash| %>
+				<a class="nav-link product_link ml-3 my-1 smoothscroll" data-turbolinks="false" href="#product_<%= product_id %>">
+					<%= get_product_name(product_id) %>			
+				</a>
+			<% end %>
+		</nav>
+		<% end %>
+		<a class="nav-link type_link smoothscroll" data-turbolinks="false" href="#extra_costs">
+			他の経費
+		</a>
+		<a class="nav-link type_link smoothscroll" data-turbolinks="false" href="#totals">
+			総合計
+		</a>
+		<a class="nav-link to_top_link smoothscroll" data-turbolinks="false" href="#top_nav">
+			<i class="fas fa-chevron-up">トップ</i>
+		</a>
+	</nav>
+</nav>

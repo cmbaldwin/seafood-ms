@@ -1,0 +1,17 @@
+	<div class="col-3">
+		<div class="list-group" id="list-tab" role="tablist">
+			<% @article.comments.each do |c, i| %>
+				<a class="list-group-item list-group-item-action<%= if i == 0 then ' active' end %> small" id="list-com<%= c.id %>-list" data-toggle="list" href="#list-com<%= c.id %>" role="tab" aria-controls="com<%= c.id %>">
+					<%= c.title %>
+				</a>
+			<% end %>
+		</div>
+	</div>
+	<div class="col-5">
+		<div class="tab-content" id="nav-tabContent">
+			<% @article.comments.each do |c, i| %>
+				<div class="tab-pane fade<%= if i == 0 then ' show active' end %>" id="list-com<%= c.id %>" role="tabpanel" aria-labelledby="list-com<%= c.id %>-list">
+					<%= sanitize c.body %><br>
+				</div>
+			<% end %>
+	</div>

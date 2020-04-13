@@ -1,0 +1,65 @@
+<% title "Funabiki Online - 熨斗" %>
+	<div class="container">
+		<div class="row align-middle">
+			<div class="col clearfix">
+	<% if current_user.admin? or current_user.vip? %>
+				<div class="btn-group float-right" role="group" aria-label="Basic">
+					<%= link_to '追加', new_noshi_path, :class => "btn btn-success" %>
+				</div>
+	<% end %> 
+			<hr/>
+
+				<h1>熨斗</h1>
+
+				<div class="noshi_search form-inline clearfix">
+					<div class="form-group">
+					<%= form_tag(noshis_path, method: :get) do %>
+						<%= text_field_tag :term, params[:term], class: 'form-control form-control-sm' %>
+						<%= submit_tag '検索', name: nil, class: 'btn btn-secondary small' %>
+					<% end %>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<p id="notice"><%= notice %></p>
+
+		<hr/>
+
+	<%= form_tag destroy_multiple_noshis_path, method: :delete do %>
+		<div class="row justify-content-between">
+				<div class="col">
+					<input type="checkbox" id="select_all" class="select_all"/> 
+				</div>
+				<div class="col noshi_delete_col">
+					<%= submit_tag "選択した熨斗を消す", class: 'btn btn-danger noshi_delete_btn form-control-sm' %>
+				</div>
+		</div>
+
+		<hr/>
+		
+		<div id="freewall" class="noshis_container">
+			<% @noshis.each do |noshi| %>
+			<div class="brick">
+				<div class="card noshi_card">
+						<%= check_box_tag "noshi_ids[]", noshi.id, false, class: 'noshi_checkbox' %>
+					<br>
+						<%= link_to image_tag(noshi.image_url(:thumb).to_s, :alt => "#{noshi.namae.to_s + " " + noshi.omotegaki.to_s}", :class => "noshi_img"), noshi.image_url %>
+					<br>
+					<br>
+					<div class="btn-group" role="group" aria-label="Basic">
+						<%= link_to "ダウンロード", noshi.image_url, :class => "btn btn-secondary" %>
+						<%= link_to '個別ページ', noshi, class: 'btn btn-secondary' %>
+						<% if current_user.admin? or current_user.vip? %>
+							<!-- <%= link_to '編集', edit_noshi_path(noshi), class: 'btn btn-secondary' %> -->
+							<%= link_to '削除', noshi, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-secondary' %>
+						<% end %>
+					</div>
+				</div>
+			</div>
+			<% end %>
+		</div>
+		<hr/>
+		<%= will_paginate @noshis %>
+	<% end %>
+	</div>

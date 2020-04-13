@@ -1,0 +1,193 @@
+<% title "Funabiki Online - " + @profit.sales_date + " 計算表" %>
+
+<div class="container-fluid show_profit_container">
+	<div class="row">
+		<div class="col-12 align-middle d-print-none">
+			<div class="btn-group float-right" role="group" aria-label="Basic">
+				<%= link_to '前', @profit.profit_query.previous, class: 'btn btn-info' %>
+				<%= link_to '次', @profit.profit_query.next, class: 'btn btn-info' %>
+				<%= link_to '編集', edit_profit_path(@profit), class: 'btn btn-success' %>
+				<%= link_to '計算表トップ', profits_path, class: 'btn btn-secondary' %>
+			</div>
+		</div>
+
+<hr class="d-print-none" />
+
+<% if current_user.admin? %>
+			
+	<% subtotal_hash = @profit.subtotals %>
+	
+	<div class="col-2 d-none d-lg-block">
+		<%= render :partial=>'show_fixed_navigation', locals: { profit: @profit, subtotal_hash: subtotal_hash}, cached: true %>
+	</div>
+
+
+	<div class="col-md-12 col-lg-10 profit_page d-print-block">
+
+		<hr/>
+
+		<h1><%= @profit.sales_date %></h1>
+
+		<%= render :partial=>'product_sales_data', locals: { profit: @profit, subtotal_hash: subtotal_hash}, cached: true %>
+
+			<div id="extra_costs" class="text-center extra_costs">
+				<div class="row extra_costs_header">
+					<div class="col-2">
+						<strong>
+							市場
+						</strong>
+					</div>
+					<div class="col-2">
+						<strong data-toggle="tooltip" data-html="true" data-placement="bottom" title="(送料ベース ＋ ブロック送料)<br>　×　合わせ数">
+							合わせ
+						</strong>
+					</div>
+					<div class="col-2">
+						<strong>
+						一日のコスト
+						</strong>
+					</div>
+					<div class="col-2">
+						<strong data-toggle="tooltip" data-html="true" data-placement="bottom" title="特別コスト　×　特別コスト数">
+							特別コスト
+						</strong>
+					</div>
+					<div class="col-4">
+						<strong>
+							小計・合計
+						</strong>
+					</div>
+				</div>
+				<% gokei = 0 %>
+				<% @profit.markets.each do |market| %>
+					<div class="row clearfix extra_costs_market_row">
+						<div class="col-2">
+								<em><%= market.nick %></em>
+						</div>
+						<div class="col-2 clearfix">
+							<div class="float-left">
+								＋
+							</div>
+							<b><small>
+								<%= market.block_cost.to_f + market.cost.to_f * subtotal_hash[:extra_costs][market.id.to_s][:awase_count] %>
+							</small></b>
+						</div>
+						<div class="col-2 clearfix">
+							<div class="float-left">
+								－
+							</div>
+							<b><small>
+								<%= market.one_time_cost %>
+							</small></b>
+						</div>
+						<div class="col-2 clearfix">
+							<div class="float-left">
+								－
+							</div>
+							<b><small>
+								<%= (market.optional_cost * subtotal_hash[:extra_costs][market.id.to_s][:extra_costs_count]) %>
+							</small></b>
+						</div>
+						<div class="col-4 clearfix">
+							<div class="float-left">
+								＝
+							</div>
+							<b><small>
+								<% syokei = (market.block_cost.to_f + market.cost.to_f * subtotal_hash[:extra_costs][market.id.to_s][:awase_count]) - market.one_time_cost.to_f - (market.optional_cost.to_f * subtotal_hash[:extra_costs][market.id.to_s][:extra_costs_count]) %>
+								<%= syokei %>
+								<% gokei += syokei %>
+							</small></b>
+						</div>
+					</div>
+				<% end %>
+				<div class="row">
+					<div class="col-2">
+					</div>
+					<div class="col-2">
+					</div>
+					<div class="col-2">
+					</div>
+					<div class="col-2">
+					</div>
+					<div class="col-4">
+						<strong>
+							<%= gokei %>
+						</strong>
+					</div>
+				</div>
+			</div>
+
+			<div id="totals" class="text-center totals">
+				<div class="row small">
+					<div class="col-1">
+						箱数合計
+					</div>
+					<div class="col-1">
+						単品合計
+					</div>
+					<div class="col-2">
+						売上合計
+					</div>
+					<div class="col-2">
+						経費合計
+					</div>
+					<div class="col-2">
+						他のコスト
+					</div>
+					<div class="col-4">
+						<b>合計</b>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-1">
+						<%= subtotal_hash[:total_boxes_used].to_i %>
+					</div>
+					<div class="col-1">
+						<%= subtotal_hash[:total_products_sold].to_i %>
+					</div>
+					<div class="col-2">
+						<span class="float-left">
+							 ⇒
+						</span>
+						<%= yenify(@profit.totals[:sales]) %>
+					</div>
+					<div class="col-2">
+						<span class="float-left">
+							 －
+						</span>
+						<%= yenify(@profit.totals[:expenses]) %>
+					</div>
+					<div class="col-2">
+						<span class="float-left">
+							 －
+						</span>
+						<%= yenify(@profit.totals[:extras]) %>
+					</div>
+					<div class="col-4">
+						<span class="float-left">
+						 ＝
+						</span>
+						<strong><%= yenify(@profit.totals[:profits]) %></strong>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-12">
+				<div class="card mb-2">
+					<div class="card-body text-center">
+						<div class="card-title small">
+							<i>作成日: <%= @profit.created_at %></i>　‐　<i>最後の編集の日: <%= @profit.updated_at %></i>
+						</div>
+					</div>
+				</div>
+			</div>
+
+	</div>
+<% else %>
+	<div class="text-center">
+		<h1>
+			いつもありがとうございます
+		</h1>
+	</div>
+<% end %>
+</div>

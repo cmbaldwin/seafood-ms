@@ -1,0 +1,107 @@
+<div class="modal fade" id="formModal" tabindex="-1" role="dialog" aria-labelledby="formModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-xl" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="formModalLabel">冷凍データ追加・修正</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+				<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div id="receipt_card" class="card h-100">
+				<div class="card-body text-center">
+					<div id="frozen_data_partial">
+						<%= render 'frozen_oysters/form', remote: true, locals: {frozen_oyster: @frozen_oyster} %>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">閉じる</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<div class="card mb-2">
+	<div class="card-body">
+		<div class="row">
+			<div class="col-6">
+				<% if @frozen_oyster.id %>
+					<div class="container-flex clearfix border rounded mb-2 p-2">
+						<div class="row text-center">
+							<% @frozen_totals.each do |product_id, total| %>
+								<div class="col">
+									<b><%= print_frozen_product_name(product_id) %></b><br>
+									<%= frozen_packs_to_boxes(product_id, total) %>
+								</div>
+							<% end %>
+						</div>
+					</div>
+					<% if current_user.admin? %>
+						<% stats = @frozen_oyster.stats %>
+						<div class="container-flex clearfix border rounded p-2 mb-2">
+							<div class="row">
+								<div class="col-xl-5 d-none d-xl-block">
+									<span class="ml-3"><b><%= @frozen_oyster.manufacture_date %>(<%= ampm_s(@frozen_oyster.ampm) %>)</b>: <%= stats[:raw_total] %>㎏</span>
+									<%= pie_chart @frozen_oyster.chart_stats, width: "300px", height: "300px" %>
+								</div>
+								<div class="col-xl-7 col-lg-12">
+									<div class="btn-group float-right mt-1" role="group">
+										<%= link_to '追加', insert_frozen_data_path(frozen_oyster: 'new'), remote: true, class: 'btn btn-sm btn-success', 'data-toggle' => 'modal', 'data-target' => '#formModal' %>
+										<%= link_to ('<i class="far fa-file-alt"></i>').html_safe, @frozen_oyster, class: 'btn btn-sm btn-info' %>
+										<%= link_to '修正', insert_frozen_data_path(frozen_oyster: @frozen_oyster), remote: true, class: 'btn btn-sm btn-success', 'data-toggle' => 'modal', 'data-target' => '#formModal' %>
+									</div>
+									<p>
+										<strong>冷凍済原料:</strong>
+										<br>
+										<% @frozen_oyster.frozen_l.each do |k, v| %>
+											<% if v.to_i != 0 %>
+												<%= k %>: <%= v %><br>
+											<% end %>
+										<% end %>
+										<% @frozen_oyster.frozen_ll.each do |k, v| %>
+											<% if v.to_i != 0 %>
+												<%= k %>: <%= v.to_s %><br>
+											<% end %>
+										<% end %>
+										<br>
+										<strong>完成商品数:</strong>
+										<br>
+										<% @frozen_oyster.finished_packs.each do |k, v| %>
+											<% if v.to_i != 0 %>
+												<%= k.to_i.zero? ? '冷凍殻付き牡蠣' : Product.find(k.to_i).namae %>: <%= v.to_s %><br>
+											<% end %>
+										<% end %>
+										<% if stats[:grams_to_pack] > 0 %>
+											<i><%= (stats[:grams_to_pack] * 1000).round(0).to_s %>ｇで約1パックが出来た。</i><br>
+										<% end %>
+										<br>
+										<strong>小・ハネ(500g):</strong>
+										<br>
+										<% @frozen_oyster.losses.each do |k, v| %>
+											<% if v.to_i != 0 %>
+												<%= k %>: <%= v.to_s %><br>
+											<% end %>
+										<% end %>
+									</p>
+								</div>
+							</div>
+						</div>
+					<% end %>
+				<% else %>
+						<%= link_to '冷凍データ追加', insert_frozen_data_path(frozen_oyster: 'new'), remote: true, class: 'btn btn-success', 'data-toggle' => 'modal', 'data-target' => '#formModal' %>
+				<% end %>
+			</div>
+			<div class="col-6">
+				<div class="container-flex clearfix border rounded p-2">
+					<div class="w-100">
+						日ごとの加工(パック数)
+					</div>
+					<div class="float-left w-100">
+						<%= column_chart [{name: 'セル加工', data: @frozen_shelled_season}, {name: 'むき身加工', data: @frozen_shucked_season}], thousands: ",", suffix: "p・個", stacked: false %>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

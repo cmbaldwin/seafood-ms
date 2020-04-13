@@ -1,0 +1,114 @@
+<% title "Funabiki Online - 市場マスター" %>
+
+	<div class="container">
+		<div class="row align-middle">
+			<div class="col">
+	<% if current_user.admin?%>
+				<div class="btn-group float-right" role="group" aria-label="Basic">
+					<%= link_to '追加', new_market_path, :class => "btn btn-success" %>
+				</div>
+	<% end %> 
+			<hr/>
+
+				<h1>市場</h1>
+				
+			</div>
+		</div>
+		
+		<hr/>
+
+		<div class="row rowhead">
+				<div class="col-md-2 col-sm-12">
+					<strong><h4>市場</h4></strong>
+				</div>
+				<div class="col-md-2 col-sm-12">
+					<strong>送料ベースコスト</strong><br>
+					送料ブロックコスト
+				</div>
+				<div class="col-md-2 col-sm-12">
+					<strong>一日のコスト</strong><br>
+					特別コスト
+				</div>
+				<div class="col-md-6 col-sm-12 text-center">
+					<strong><h4>市場情報/アドミン</h4></strong>
+				</div>
+		</div>
+
+		<% @markets.each do |market| %>
+		<div class="row small <%= cycle("even", "odd") %>">
+				<div class="col-md-2 col-sm-12 clearfix" data-toggle="popover" data-trigger="focus" data-placement="left" data-content="<%= market.namae %>">
+					<h4 class="float-left" style="border-left: 10px solid <%= market.color %>;">
+						<%= market.nick %>
+					</h4>
+					<% if market.brokerage %>
+						<i class="fas fa-shopping-cart brokerage_icon"></i>
+					<% end %>
+					<% if current_user.admin? %>
+						<span class="float-right text-right">
+							手数料:<br><%= market.handling %>
+						</span>
+					<% end %>
+				</div>
+				<div class="col-md-2 col-sm-12">
+					<% if current_user.admin? %>
+						<strong><%= market.cost %></strong><br>
+						<%= market.block_cost %>
+					<% end %>
+				</div>
+				<div class="col-md-2 col-sm-12">
+					<% if current_user.admin? %>
+						<strong data-toggle="popover" data-trigger="focus" data-placement="top" data-content="<%= market.one_time_cost_description %>"><%= market.one_time_cost %></strong><br>
+						<em data-toggle="popover" data-trigger="focus" data-placement="top" data-content="<%= market.optional_cost_description %>"><%= market.optional_cost %></em>
+					<% end %>
+				</div>
+				<div class="col-md-6 col-sm-12 text-center">
+					<div class="btn-group" role="group" aria-label="Basic">
+						<a alt="MJS番後" tabindex="0" class="btn btn-secondary" role="button" data-toggle="popover" data-trigger="focus" data-placement="top" title="MJS番後" data-content="
+							<%= market.mjsnumber %>
+						">
+							<i class="fas fa-server"></i>
+						</a>
+						<a alt="市場住所" tabindex="0" class="btn btn-secondary" role="button" data-toggle="popover" data-trigger="focus" data-placement="top" title="市場住所" data-content="
+							<%= market.address %>
+							<a href='https://maps.google.com/?q=<%= market.address %>' target='_blank'>Google Maps</a>
+						">
+							<i class="fas fa-map-marked-alt"></i>
+						</a>
+						<a alt="市場電話番度" tabindex="0" class="btn btn-secondary" role="button" data-toggle="popover" data-trigger="focus" data-placement="top" title="市場電話番後" data-content="<%= market.phone %>">
+							<i class="fas fa-phone"></i>
+						</a>
+						<a alt="代表者電話番後" tabindex="0" class="btn btn-secondary" role="button" data-toggle="popover" data-trigger="focus" data-placement="top" title="代表者電話番後" data-content="<%= market.repphone %>">
+							<i class="far fa-address-card"></i>
+						</a>
+						<a alt="市場ファクス番後" tabindex="0" class="btn btn-secondary" role="button" data-toggle="popover" data-trigger="focus" data-placement="top" title="市場ファクス番後" data-content="<%= market.fax %>">
+							<i class="fas fa-fax"></i>
+						</a>
+						<a alt="関係商品" tabindex="0" class="btn btn-secondary" role="button" data-toggle="popover" data-trigger="focus" data-placement="top" title="関係商品" data-content="
+						<% market.products.each do |product| %>
+							<%= product.namae %><br>
+						<% end %>
+						">
+							<i class="fas fa-sitemap"></i>
+						</a>
+						<%= link_to ('<i class="far fa-file-alt"></i>').html_safe, market, :alt => "市場個別ページ", class: 'btn btn-info' %>
+						<a alt="編集歴史" tabindex="0" class="btn btn-primary" role="button" data-toggle="popover" data-trigger="focus" data-placement="top" title="編集歴史" data-content="
+						<% market.history.each do |key, val| %>
+							<strong><%= key %></strong><br>
+							<% val.each do |v| %>
+								<small><%= v %></small>
+							<% end %>
+						<% end %>
+						">
+							<i class="fas fa-history"></i>
+						</a>
+						<% if current_user.admin?%>
+							<%= link_to ('<i class="fas fa-edit"></i>').html_safe, edit_market_path(market), :alt => "市場のデータを編集", class: 'btn btn-success' %>
+							<% if current_user.admin? %>
+								<%= link_to ('<i class="fas fa-trash-alt"></i>').html_safe, market, :alt => "この市場を取り消す", method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-danger' %>
+							<% end %> 
+						<% end %>
+					</div>
+				</div>
+		</div>
+		<% end %>
+	</div>

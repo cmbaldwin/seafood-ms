@@ -1,0 +1,92 @@
+<div class="card mb-3">
+	<div class="card-header">
+		<h4 class="card-title float-left">通販状況（<%= @online_orders.sales_date %>）</h4>
+		<div class="float-right">
+			<div class="btn-group">
+				<%= link_to ('<i class="far fa-file-alt"></i>').html_safe, @online_orders, :alt => "個別ページ", class: 'btn btn-info' %>
+				<%= link_to ('<i class="fas fa-sync-alt"></i>').html_safe, edit_manifest_path(@online_orders), :alt => "データを編集", class: 'btn btn-success' %>
+				<%= link_to ('<i class="far fa-file-pdf"></i>').html_safe, manifest_pdf_path(@online_orders), :method => :get, class: 'btn btn-info', target: "_blank" %>
+			</div>
+		</div>
+	</div>
+		<% infomart_count(@online_orders) %>
+		<% tsuhan_count(@online_orders) %>
+		<% counts = @online_orders.display_totals %>
+		<div class="card-text text-center">
+			<div class="row h5 text-center mb-1">
+				<div class="col-md-4 col-sm-12 mb-2 pb-1">
+					<span class="d-block mb-1 strong border-bottom">むき身</span>
+					<%= counts[:gohyaku] %>
+				</div>
+				<div class="col-md-4 col-sm-12 mb-2 pb-1">
+					<span class="d-block mb-1 strong border-bottom">セル／セルカード</span>
+					<b><%= counts[:shells] %> ・ <%= counts[:cards] %></b>
+				</div>
+				<div class="col-md-4 col-sm-12 mb-2 pb-1">
+					<span class="d-block mb-1 strong border-bottom">バラ牡蠣</span>
+					<%= counts[:bara] %>
+				</div>
+			</div>
+			<div class="table-responsive">
+				<table class="table table-sm table-striped small">
+					<tr>
+						<th colspan="2" class="border-right">
+							インフォマート
+						</th>
+						<th colspan="4">
+							自社サイト
+						</th>
+					</tr>
+					<tr>
+						<th>
+							生牡蠣
+						</th>
+						<th class="border-right">
+							冷凍牡蠣
+						</th>
+						<th>
+							冷蔵便
+						</th>
+						<th>
+							冷凍便
+						</th>
+						<th>
+							干しエビ
+						</th>
+						<th>
+							焼きアナゴ
+						</th>
+					</tr>
+					<tr>
+						<td>
+							<%= non_zero_print(@infomart[:raw]) %>
+						</td>
+						<td class="border-right">
+							<%= non_zero_print(@infomart[:frozen]) %>
+						</td>
+						<td>
+							<%= non_zero_print(@tsuhan[:fridge]) %>
+						</td>
+						<td>
+							<%= non_zero_print(@tsuhan[:frozen]) %>
+						</td>
+						<td>
+							<%= non_zero_print(@tsuhan[:ebi]) %>
+						</td>
+						<td>
+							<%= non_zero_print(@tsuhan[:anago]) %>
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+	<div class="card-footer">
+		<small class="text-muted float-left">
+			(<%= @online_orders.updated_at.in_time_zone('Tokyo') %>)に更新された
+		</small>
+		<div class="btn-group float-right d-print-none" role="group" aria-label="Basic">
+			<%= link_to ('<i class="fas fa-chevron-circle-left"></i>').html_safe, load_online_order_path(@online_orders.manifest_query.previous.id), :alt => "前", class: 'btn btn-sm btn-secondary', remote: true %>
+			<%= link_to ('<i class="fas fa-chevron-circle-right"></i>').html_safe, load_online_order_path(@online_orders.manifest_query.next.id), :alt => "次", class: 'btn btn-sm btn-secondary', remote: true %>
+		</div>
+	</div>
+</div>

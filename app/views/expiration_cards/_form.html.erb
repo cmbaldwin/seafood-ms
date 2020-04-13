@@ -1,0 +1,32 @@
+<div class="container">
+
+	<%= simple_form_for(@expiration_card) do |f| %>
+		<%= f.error_notification %>
+		<%= f.error_notification message: f.object.errors[:base].to_sentence if f.object.errors[:base].present? %>
+
+		<div class="form-inputs form-control-group">
+			<span><b>名称</b></span>
+			<%= f.text_field :product_name, class: 'form-control'%><br>
+			<span><b>加工所所在地</b></span>
+			<%= f.text_field :manufacturer_address, class: 'form-control' %><br>
+			<span><b>加工者</b></span>
+			<%= f.text_field :manufacturer, class: 'form-control' %><br>
+			<span><b>採取海域</b></span>
+			<%= f.text_field :ingredient_source, class: 'form-control' %><br>
+			<span><b>用途</b></span>
+			<%= f.text_field :consumption_restrictions, class: 'form-control' %><br>
+			<span><b>保存温度</b></span>
+			<%= f.text_field :storage_recommendation, class: 'form-control' %><br>
+			<span><b>製造年月日</b></span>
+			<%= f.text_field :manufactuered_date, class: 'form-control' %>
+			<%= f.input :shomiorhi, label: '', as: :radio_buttons, collection: [['0', '賞味期限'], ['1', '消費期限']], label_method: :second, value_method: :first, :style =>"display:inline", item_wrapper_class: 'float-left d-block ml-4 mt-2' %>
+			<span><b>製造年月日・時間</b></span>
+			<%= f.text_field :expiration_date, label: '', class: 'form-control' %><br>
+			製造年月日印刷： <%= f.check_box :made_on %><br>
+		</div>
+
+		<div class="form-actions mt-4">
+			<%= f.button :submit, class: 'btn btn-success' %>
+		</div>
+	<% end %>
+</div>

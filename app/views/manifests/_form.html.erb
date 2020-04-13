@@ -1,0 +1,30 @@
+	
+	<%= simple_form_for(@manifest) do |f| %>
+	<%= f.error_notification %>
+	<%= f.error_notification message: f.object.errors[:base].to_sentence if f.object.errors[:base].present? %>
+<div class="row text-center">
+	<div class="col-6 offset-3 mb-2">
+		<div class="card">
+			<span class="card-header bg_bisque">
+				<h5><%= f.label :sales_date, '発送日' %></h5>
+			</span>
+			<div class="card-body">
+				<div class="input-group sales_date mb-4">
+					<div class="input-group-prepend lg-prepend-fix">
+						<div class="input-group-text">
+							<i class="far fa-calendar-alt fa-sm"></i>
+						</div>
+					</div>
+					<%= f.text_field :sales_date, 'data-behaviour' => 'datepicker', class: "form-control form-control-lg datepicker mb-2" %>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-12 mb-2 btn-lg">
+		<%= f.button :submit, '作成', class: 'btn btn-primary' %>
+	</div>
+
+</div>
+	<% end %>
+

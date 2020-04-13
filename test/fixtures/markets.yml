@@ -1,0 +1,21 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  namae: MyString
+  address: MyString
+  phone: MyString
+  repphone: MyString
+  fax: MyString
+  cost: 9.99
+  excost: 9.99
+  history: MyString
+
+two:
+  namae: MyString
+  address: MyString
+  phone: MyString
+  repphone: MyString
+  fax: MyString
+  cost: 9.99
+  excost: 9.99
+  history: MyString

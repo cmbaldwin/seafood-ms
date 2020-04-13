@@ -1,0 +1,23 @@
+<% title "Funabiki Online - 熨斗作成" %>
+
+<div class="container">
+	<div class="row align-middle">
+		<div class="col">
+
+			<div class="btn-group float-right" role="group" aria-label="Basic">
+				<%= link_to '前へ', noshis_path, class: 'btn btn-secondary' %>
+			</div>
+		<hr/>
+
+			<h1>熨斗追加</h1>
+			
+		</div>
+	</div>
+	<p id="notice"><%= notice %></p>
+
+	<hr/>
+
+	<%= render 'form', noshi: @noshi %>
+
+	<hr/>
+</div>

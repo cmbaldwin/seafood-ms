@@ -1,0 +1,15 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  hyogo_raw: 9.99
+  sakoshi_raw: 9.99
+  frozen_l: 9.99
+  frozen_ll: 9.99
+  finished_packs: MyText
+
+two:
+  hyogo_raw: 9.99
+  sakoshi_raw: 9.99
+  frozen_l: 9.99
+  frozen_ll: 9.99
+  finished_packs: MyText

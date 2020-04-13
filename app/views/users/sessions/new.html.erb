@@ -1,0 +1,63 @@
+	<%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+		<div class="container mt-5">
+		<div class="row justify-content-sm-center">
+
+		<div class="col-lg-2"></div>
+		<div class="col-lg-8">
+
+			<div class="form-group row justify-content-sm-center">
+				<div class="col-lg-4">
+					<%= f.label :login, :html => 'for="colFormLabelLg"', :class => "col-sm-12 col-form-label col-form-label-lg" %>
+				</div>
+				<div class="col-lg-8">
+					<div class="input-group mb-2">
+						<div class="input-group-prepend">
+							<div class="input-group-text">
+								<i class="fas fa-user"></i>
+							</div>
+						</div>
+						<%= f.text_field :login, :class => 'form-control form-control-lg', :id=> 'colFormLabelLg', :html => 'placeholder="col-form-label-lg"', autofocus: true %>
+					</div>
+				</div>
+			</div>
+
+			<div class="form-group row justify-content-sm-center">
+				<div class="col-lg-4">
+					<%= f.label :password, :html => 'for="colFormLabelLg"', :class => "col-sm-12 col-form-label col-form-label-lg" %>
+				</div>
+				<div class="col-lg-8">
+					<div class="input-group mb-2">
+						<div class="input-group-prepend">
+							<div class="input-group-text">
+								<i class="fas fa-lock"></i>
+							</div>
+						</div>
+						<%= f.password_field :password, :class => 'form-control form-control-lg', :id=> 'colFormLabelLg', :html => 'placeholder="col-form-label-lg"', autocomplete: "off" %>
+					</div>
+				</div>
+			</div>
+
+			<% if devise_mapping.rememberable? -%>
+				<div class="col-auto">
+					<div class="form-check mb-2 text-center">
+						<%= f.check_box :remember_me, :class => 'form-check-input', :id => 'autoSizingCheck', :html => 'type="checkbox"' %>
+						<%= f.label :remember_me, :class => 'form-check-label', :html => 'for="autoSizingCheck"' %>
+					</div>
+				</div>
+			<% end -%>
+
+			<div class="form-group row text-center">
+				<div class="col-sm-12">
+					<%= f.submit "ログイン", :class => 'btn btn-primary' %>
+				</div>
+				<div class="col-sm-12 mt-2">
+					<%= render "devise/shared/links" %>
+				</div>
+			</div>
+
+		</div>
+		<div class="col-sm-2"></div>
+
+		</div>
+		</div>
+	<% end %>

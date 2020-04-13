@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  namae: MyString
+  zairyou: 
+  cost: 9.99
+  history: MyString
+
+two:
+  namae: MyString
+  zairyou: 
+  cost: 9.99
+  history: MyString

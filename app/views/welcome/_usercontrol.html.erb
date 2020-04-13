@@ -1,0 +1,67 @@
+<% @users.order(id: :desc, role: :desc).each do |user| %>
+	<div class="card mb-1 
+		<% if user.admin? %>
+				border-info
+			<% elsif user.vip? %>
+				border-primary
+			<% elsif user.supplier? %>
+				border-success
+			<% elsif !user.approved? %>
+				border-warning
+			<% else %>
+				border-dark
+		<% end %>">
+		<button id="userheader<%= user.id %>" class="card-header btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapse<%= user.id %>" aria-expanded="false" aria-controls="collapse<%= user.id %>">
+			<div class="float-left font-weight-bold">
+				<%= user.username %>
+			</div>
+			<div class="float-right">
+				<% if user.admin? %>
+					<i class="fas fa-user-ninja text-info"></i>
+				<% elsif user.vip? %>
+					<i class="fas fa-user-tie"></i>
+				<% elsif user.supplier? %>
+					<i class="fas fa-ship"></i>
+				<% elsif !user.approved? %>
+					<%= link_to users_approveUser_path(id: user.id), class: "approval", :title => '許可' do %>
+						<i class="fas fa-user-slash text-warning"></i>
+						<i class="fas fa-user"></i>
+					<% end %>
+				<% else %>
+					<%= link_to users_unapproveUser_path(id: user.id), class: "unapproval", :title => '許可外す' do %>
+						<i class="fas fa-user-slash text-warning"></i>
+						<i class="fas fa-user"></i>
+					<% end %>
+				<% end %>
+			</div>
+		</button>
+		<div id="collapse<%= user.id %>" class="collapse" aria-labelledby="userheader<%= user.id %>" data-parent="#usercontrol">
+			<div class="card-body small">
+				<%= simple_form_for user do |f| %>
+					<div class="form-inputs card-text">
+						<div class="form-group row ml-1">
+							<div class="mr-3">メール:</div>
+							<b><%= user.email %></b>
+						</div>
+						<div class="form-group row ml-1">
+							<div class="mr-3">ユーザー名:</div>
+							<b><%= user.username %></b>
+						</div>
+						<div class="form-group row ml-1">
+							<div class="mr-3">役目:</div>
+							<%= f.select(:role, User.roles.keys.map {|role| [role.titleize,role]}) %>
+						</div>
+						<div class="form-group row ml-1">
+							<div class="mr-3">許可:</div>
+							<%= f.input_field :approved, as: :boolean, boolean_style: :inline %>
+						</div>
+						<%= f.submit '更新', :class => 'btn btn-sm btn-secondary' %>
+					</div>
+				<% end %>
+			</div>
+			<div class="card-footer small">
+				<small class="text-muted">ID: <span class="badge badge-secondary small" alt="ユーザーID"><%= user.id %></span> 最新ログイン: <%= user.last_sign_in_at %> @ <%= user.last_sign_in_ip %>（<%= user.sign_in_count %>回目）</small>
+			</div>
+		</div>
+	</div>
+<% end %>

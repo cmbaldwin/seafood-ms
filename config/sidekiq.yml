@@ -1,0 +1,4 @@
+#:concurrency: 1
+#:queues:
+#  - [tasks, 5]
+#  - [default, 5]

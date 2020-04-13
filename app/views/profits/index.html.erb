@@ -1,0 +1,58 @@
+<% title "Funabiki Online - 計算表" %>
+<div class="container">
+	<div class="row align-middle">
+		<div class="col">
+
+			<div class="btn-group float-right" role="group" aria-label="Basic">
+				<%= link_to '追加', new_profit_path, :class => "btn btn-success" %>
+				<%# link_to ('<small>旧追加</small>').html_safe, new_profit_path, :class => "btn btn-success" %>
+			</div>
+		<hr/>
+
+			<h1>計算表</h1>
+			
+		</div>
+	</div>
+	
+	<hr/>
+
+	<% @profits.each do |profit| %>
+	<% figs = profit.mizukiri_figures %>
+	<% unfinished = profit.check_completion %>
+	<div class="row small profit_index_row <%= if profit.ampm == nil then 'day_row' elsif profit.ampm == true then 'ampm_row am_row' elsif profit.ampm == false then 'ampm_row pm_row' end %> justify-content-around <%= cycle('even', 'odd') %>">
+		<div class="col-md-4 col-sm-12 sales_date">
+			<h5 class="float-left mt-2 mr-3 w-10">
+				<%= profit.sales_date.to_s %>
+				<%= (unfinished[0] == 0) ? '' : ('<small><span class="badge badge-warning cursor-help" data-toggle="tooltip" data-html="true" data-placement="top" title="単価無し注文数">' + unfinished[0].to_s + '</span></small>').html_safe %>
+			</h5>
+			<span class="float-left ml-3">
+				<%= yenify(profit.totals[:sales]) %>
+					－
+				<%= yenify(profit.totals[:expenses]) %><br>
+				<strong class="h5">￥<%= yenify(profit.totals[:profits]) %></strong>
+			</span>
+		</div>
+		<div class="col-md-4"col-sm-12 >
+			<span class="ml-3" data-toggle="tooltip" data-html="true" data-placement="top" title="@<b><%= figs[:gohyaku_tanka]%></b> /㎏">
+				<i>500g</i>: <b><%= figs[:gohyaku_total] %>p</b>
+			</span>
+			<span class="ml-3" data-toggle="tooltip" data-html="true" data-placement="top" title="@<b><%= figs[:kilo_tanka]%></b> /㎏">
+				<i>1k</i>: <b><%= figs[:kilo_total] %>枚</b>
+			</span>
+		</div>
+		<div class="col-md-4"col-sm-12 >
+			<div class="btn-group float-right mt-1" role="group">
+				<%= link_to ('<i class="far fa-file-alt"></i>').html_safe, profit, :alt => "利益表示の個別ページ", class: 'btn btn-info' %>
+				<% if current_user.admin? or current_user.vip? %>
+					<%= link_to ('<i class="fas fa-edit"></i>').html_safe, edit_profit_path(profit), :alt => "今日の利益計算を編集", class: 'btn btn-success' %>
+					<%# link_to ('<i class="fas fa-edit"></i>').html_safe, edit_profit_path(profit), :alt => "今日の利益計算を編集", class: 'btn btn-warning' %>
+					<% if current_user.admin? %>
+						<%= link_to ('<i class="fas fa-trash-alt"></i>').html_safe, profit, :alt => "この利益計算を取り消す", method: :delete, data: { confirm: '削除してもいい?' }, class: 'btn btn-danger' %>
+					<% end %> 
+				<% end %>
+			</div>
+		</div>
+	</div>
+	<% end %>
+	<%= will_paginate @profits %>
+</div>

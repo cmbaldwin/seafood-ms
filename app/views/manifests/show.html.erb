@@ -1,0 +1,340 @@
+<% title "Funabiki Online - 出荷表 " + @manifest.sales_date %>
+
+<div class="container">
+	<div class="row align-middle d-print-none">
+		<div class="col">
+<% if current_user.admin? or current_user.vip? %>
+			<div class="btn-group float-right d-print-none" role="group" aria-label="Basic">
+				<%= link_to '前', @manifest.manifest_query.previous, class: 'btn btn-info' %>
+				<%= link_to '次', @manifest.manifest_query.next, class: 'btn btn-info' %>
+				<%= link_to ('<i class="fas fa-sync-alt"></i>').html_safe, edit_manifest_path(@manifest), class: 'btn btn-success' %>
+				<%= link_to '通販発送表トップへ', manifests_path, class: 'btn btn-secondary' %>
+			</div>
+<% end %>
+		<hr/>
+
+			<h1><%= @manifest.sales_date %></h1>
+		</div>
+	</div>
+
+	<%= button_to 'PDF', manifest_pdf_path(@manifest), :method => :get, class: 'btn btn-success mb-2 float-right', form: {target: '_blank'} %>
+	<hr /><br>
+
+	<% counts = @manifest.display_totals %>
+
+	<div class="row h5 text-center mb-1">
+		<div class="col-4 border-bottom mb-2 border-secondary pb-1">
+			<span class="d-block mb-1 strong border-bottom">むき身</span>
+			<%= counts[:gohyaku] %>
+		</div>
+		<div class="col-4 border-bottom mb-2 border-secondary pb-1">
+			<span class="d-block mb-1 strong border-bottom">セル／セルカード</span>
+			<b><%= counts[:shells] %> ・ <%= counts[:cards] %></b>
+		</div>
+		<div class="col-4 border-bottom mb-2 border-secondary pb-1">
+			<span class="d-block mb-1 strong border-bottom">バラ牡蠣</span>
+			<%= counts[:bara] %>
+		</div>
+	</div>
+
+<% @manifest.infomart_orders.each do |type, orders_hash| %>
+	<div class="row small orders_list">
+		<div class="col-12 text-right">
+			<h3><%= type_name(type) %></h3>
+		</div>
+		<div class="col">
+			<table class="table orders_table table-striped table-sm table-bordered">
+				<thead class="thead-dark">
+					<tr>
+						<th scope="col">#</th>
+						<th scope="col">注文者</th>
+						<th scope="col">お届け先</th>
+						<th scope="col">
+							<% if type == :raw %>
+								500g
+							<% elsif type == :frozen %>
+								500g<br>Lサイズ
+							<% end %></th>
+						<th scope="col">
+							<% if type == :raw %>
+								1k
+							<% elsif type == :frozen %>
+								500gLLサイズ
+							<% end %>
+						</th>
+						<% if type == :frozen %>
+							<th scope="col">
+								500g 生食用<br>WDI Lサイズ
+							</th>
+						<% end %>
+						<th scope="col">セル</th>
+						<% if type == :frozen %>
+							<th scope="col">
+								JPセル
+							</th>
+						<% end %>
+						<th scope="col">お届け指定日</th>
+						<th scope="col">時間指定</th>						
+						<% if type == :raw %>
+							<th scope="col">ナイフ</th>
+							<th scope="col">のし</th>
+						<% end %>
+						<th scope="col">備考</th>
+					</tr>
+				</thead>
+				<tbody>
+					<% i = 0 %>
+					<% orders_hash.each do |order_number, order_details| %>
+					<% order_details[:items].sort_by { |k, v| k }.each do |item_count, details| %>
+					<% if same_day(order_details) || two_days(order_details) || fresh_order(order_details) %>
+						<tr class="<%= order_details[:fresh] ? ('table-warning') : ('') %>">
+							<th scope="row">
+								<% if details[:item_name].exclude?("坂越バラ牡蠣") || ( details[:item_name].include?("坂越バラ牡蠣") && (order_details[:items].length < 2) ) %>
+									<% i += 1 %>
+									<%= i %>
+									<span class="small float-right">( <a href="<%= get_backend_link(order_details[:backend_id]) %>" target="_blank"><%= order_number %></a> )</span>
+								<% end %>
+							</th>
+							<td scope="col">
+								<%= client_nicknames(order_details[:client]) %>
+							</td>
+							<td scope="col">
+								""
+							</td>
+							<td scope="col">						
+								<% if type == :raw %>
+									<% if details[:item_name].include?("500g") %>
+										500g × <%= details[:item_count] %>
+									<% end %>
+								<% elsif type == :frozen %>
+									<% if details[:item_name].include?("デカプリオイスター") && details[:item_name].exclude?("大粒") && details[:item_name].exclude?("岡山県産") && order_details[:client].exclude?("ブリーズオブ東京")  && order_details[:client].exclude?("オイスターバー品川店") %>
+										<%= if details[:item_name].include? "×20" then '20 ×' else '500g ×' end %> <%= details[:item_count] %><br>
+									<% end %>
+								<% end %>
+							</td>
+							<td scope="col">
+								<% if type == :raw %>
+									<% if details[:item_name].include? "1k" %>
+										1k × <%= details[:item_count] %>
+									<% end %>
+								<% elsif type == :frozen %>
+									<% if details[:item_name].include?("デカプリオイスター") && details[:item_name].include?("大粒") && details[:item_name].include?("大粒") && order_details[:client].exclude?("ブリーズオブ東京")  && order_details[:client].exclude?("オイスターバー品川店") or details[:item_name].include?("岡山県産") && details[:item_name].include?("デカプリオイスター") %>
+										<%= if details[:item_name].include? "×20" then '20 ×' + details[:item_count].to_s elsif details[:item_name].include? "×10" then '10 ×' + details[:item_count].to_s else '500g × ' + details[:item_count].to_s end %><%= if details[:item_name].include?("岡山") then " ㊐" end %><br>
+									<% end %>
+								<% end %>
+							</td>
+							<% if type == :frozen %>
+								<td scope="col">
+									<% if order_details[:client].include?("ブリーズオブ東京") || order_details[:client].include?("オイスターバー品川店") %>
+									<%= if details[:item_name].include? "×20" then '20 ×' else '500g ×' end %> <%= details[:item_count] %>
+									<% end %>
+								</td>
+							<% end %>
+							<td scope="col">
+								<% if type == :raw %>
+									<% if details[:item_name].include?("殻付き生牡蠣") %>
+										<%= details[:item_count] %>個
+									<% end %>
+									<% if details[:item_name].include?("坂越バラ牡蠣") %>
+										バラ牡蠣 <%= details[:item_count] %>㎏
+									<% end %>
+								<% elsif type == :frozen %>
+									<% if details[:item_name].include?("冷凍殻付き牡蠣サムライオイスター") %>
+										100 × <%= details[:item_count] %>
+									<% elsif details[:item_name].include?("冷凍　殻付き牡蠣サムライオイスター") %>
+										<%= details[:item_count] %> × 1
+									<% end %>
+								<% end %>
+							</td>
+							<% if type == :frozen %>
+								<td scope="col">
+									<% if details[:item_name].include?("生食用プロトンセル牡蠣120個") %>
+										120 × <%= details[:item_count] %>
+									<% end %>
+								</td>
+							<% end %>
+							<td scope="col" <%= if two_days(order_details) then ('class="table-warning"').html_safe end %>>
+								<% if two_days(order_details) %>
+									<%= two_day_arrival %>
+								<% else %>
+									<%= expected_arrival %>
+								<% end %>
+							</td>
+							<td scope="col">
+								<span class="small float-left">
+									午前着
+								</span>
+								<span class="small float-right">
+									14-16
+								</span>
+							</td>						
+							<% if type == :raw %>
+								<td scope="col">
+									
+								</td>
+								<td scope="col">
+									
+								</td>
+							<% end %>
+							<td class="notes" scope="col" width="250">
+								
+							</td>
+						</tr>
+					<% end %>
+					<% end %>
+					<% end %>
+
+					<% if type == :raw %>
+						<% @manifest.online_shop_orders[:raw].each do |order_id, wc_order| %>
+						<% i += 1 %>
+						<% ic = 0 %>
+						<% wc_order[:items].each do |item| %>
+						<% if check_raw(item) %>
+						<% count = wc_item_counts(item) %>
+							<tr>
+								<th scope="row">
+									<%= if ic == 0 then i else '' end %>
+									<% ic += 1 %>
+									<span class="small float-right">( <a href="<%= wc_order[:url] %>" target="_blank"><%= order_id %></a> ) <i class="fas fa-store"></i></span>
+								</th>
+								<td scope="col">
+									<%= wc_sender(wc_order) %>
+								</td>
+								<td scope="col">
+									<% if wc_sender(wc_order) == wc_recipent(wc_order) %>
+										""
+									<% else %>
+										<%= wc_recipent(wc_order) %>
+									<% end %>
+								</td>
+								<td scope="col">
+									<% mukimi500 = print_count(count) %>
+									<%= if !mukimi500.nil? then '500g × ' + mukimi500 end %>
+								</td>
+								<td scope="col">
+									<% mukimi1k = print_count(count) %>
+									<%= if !mukimi1k.nil? then '1k × ' + mukimi1k end %>
+								</td>
+								<td scope="col">
+									<% shells = print_count(count) %>
+									<%= if !shells.nil? then shells + '個' end %>
+								</td>
+								<td scope="col">
+									<%= slash_date(Moji.zen_to_han(wc_order[:arrival_date])) %>
+								</td>
+								<td scope="col">
+									<%= if wc_order[:arrival_time] then wc_order[:arrival_time].gsub(':00', '') end %>
+								</td>
+								<td scope="col">
+									<%= if item[:id] == 500 then item[:quantity] else '' end %>
+								</td>
+								<td scope="col">
+									<% if !wc_order[:noshi].nil? %>
+										<%= if wc_order[:noshi].exclude?('必要ない') then wc_order[:noshi] else '' end %>
+									<% end %>
+								</td>
+								<td scope="col">
+									<%= print_count(count) %>
+								</td>
+							</tr>
+						<% end %>
+						<% end %>
+						<% end %>
+
+					<% elsif type == :frozen %>
+						<% @manifest.online_shop_orders[:frozen].each do |order_id, wc_order| %>
+						<% i += 1 %>
+						<% ic = 0 %>
+						<% wc_order[:items].each do |item| %>
+						<% if check_frozen(item) %>
+						<% count = wc_item_counts(item) %>
+							<tr>
+								<th scope="row">
+									<%= if ic == 0 then i else '' end %>
+									<% ic += 1 %>
+									<span class="small float-right">( <a href="<%= wc_order[:url] %>" target="_blank"><%= order_id %></a> ) <i class="fas fa-store"></i></span>
+								</th>
+								<td scope="col">
+									<%= wc_sender(wc_order) %>
+								</td>
+								<td scope="col">
+									<% if wc_sender(wc_order) == wc_recipent(wc_order) %>
+										""
+									<% else %>
+										<%= wc_recipent(wc_order) %>
+									<% end %>
+								</td>
+								<td scope="col">
+									<% lsize = print_count(count) %>
+									<%= if !lsize.nil? then '500g × ' + lsize end %>
+								</td>
+								<td scope="col">
+									<% llsize = print_count(count) %>
+									<%= if !llsize.nil? then '500g × ' + llsize end %>
+								</td>
+								<td scope="col">
+									
+								</td>
+								<td scope="col">
+									<% rshells = print_count(count) %>
+									<%= if !rshells.nil? then rshells + '個' end %>
+								</td>
+								<td scope="col">
+									
+								</td>
+								<td scope="col">
+									<%= slash_date(wc_order[:arrival_date]) %>
+								</td>
+								<td scope="col">
+									<%= if wc_order[:arrival_time] then wc_order[:arrival_time].gsub(':00', '') end %>
+								</td>
+								<td scope="col">
+									<%= print_count(count) %>
+								</td>
+							</tr>
+						<% end %>
+						<% end %>
+						<% end %>
+					<% end %>
+
+				</tbody>
+			</table>
+		</div>
+	</div>
+<% end %>	
+
+<% if current_user.admin? %>
+<hr>
+<h3>InfoMart</h3>
+	<div class="card">
+		<% @manifest.infomart_orders.each do |k, v| %>
+		<div class="card-header">
+			<a class="btn btn-small btn-secondary" data-toggle="collapse" href="#infomart<%= k.upcase %>hash" role="button" aria-expanded="false" aria-controls="infomart<%= k.upcase %>hash">
+				<%= k.upcase %>  ハッシュ データ:
+			</a>
+		</div>
+		<div class="collapse" id="infomart<%= k.upcase %>hash">
+			<div class="card-body">
+				<%= ap(v, plain: true, indent: 1).html_safe %>
+			</div>
+		</div>
+		<% end %>
+	</div>
+<h3>Online Shop</h3>
+	<div class="card">
+		<% @manifest.online_shop_orders.each do |k, v| %>
+		<div class="card-header">
+			<a class="btn btn-small btn-secondary" data-toggle="collapse" href="#online_shop<%= k.upcase %>hash" role="button" aria-expanded="false" aria-controls="online_shop<%= k.upcase %>hash">
+				<%= k.upcase %> ハッシュ データ:
+			</a>
+		</div>
+		<div class="collapse" id="online_shop<%= k.upcase %>hash">
+			<div class="card-body">
+				<%= ap(v, plain: true, indent: 1).html_safe %>
+			</div>
+		</div>
+		<% end %>
+	</div>
+<% end %>
+
+</div>

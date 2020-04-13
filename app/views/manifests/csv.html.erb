@@ -1,0 +1,8 @@
+<% title "Funabiki Online - CSV データインポート" %>
+
+	<div class="container manifest_index">
+		<%= form_tag csv_upload_path, multipart: true do %>
+			<%= file_field_tag :csv %>
+			<%= submit_tag "更新" %>
+		<% end %>
+	</div>

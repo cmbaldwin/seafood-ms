@@ -1,0 +1,29 @@
+<div class="container">
+	<div class="row align-middle">
+		<div class="col">
+			<div class="btn-group float-right" role="group" aria-label="Basic">
+				<%= link_to '編集', edit_supplier_path(@supplier), class: 'btn btn-secondary' %>
+				<%= link_to '前へ', suppliers_path, class: 'btn btn-secondary' %>
+			</div>
+		<hr/>
+
+			<h1><%= @supplier.company_name %></h1>
+			<span class="float-right"><%= @supplier.supplier_number %></span>
+			
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col">
+			<p><%= @supplier.address %></p>
+			<p><%= @supplier.home_address %></p>
+			<p><%= @supplier.phone %></p>
+			<% @supplier.representatives.each do |rep| %>
+				<p>
+					<%= rep %>
+				</p> 
+			<% end %>
+		</div>
+	</div>
+
+	<hr/>

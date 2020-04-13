@@ -1,0 +1,22 @@
+<% title "Funabiki Online - 楽天市・出荷表　編集" %>
+
+<div class="container">
+  <div class="row align-middle">
+    <div class="col">
+<% if current_user.admin? or current_user.vip? %>
+      <div class="btn-group float-right" role="group" aria-label="Basic">
+      	<%= link_to '個別ページへ', @manifest, class: 'btn btn-secondary' %>
+        <%= link_to '前へ', manifests_path, class: 'btn btn-secondary' %>
+      </div>
+<% end %> 
+    <hr/>
+
+      <h1><%= @manifest.sales_date %> 出荷表　編集</h1>
+
+  <hr/>
+
+  <%= render 'form', manifest: @manifest %>
+
+  <hr/>
+
+</div>

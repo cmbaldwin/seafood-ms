@@ -1,0 +1,67 @@
+<% title "Funabiki Online - （消費・賞味）期限カード" %>
+
+<div id="product_index" class="container">
+	<div class="row align-middle">
+		<div class="col">
+<% if current_user.admin?%>
+			<div class="btn-group float-right" role="group" aria-label="Basic">
+				<%= link_to '追加（坂越）', new_expiration_card_path(product_name: '殻付き かき', manufacturer: '株式会社 船曳商店', manufacturer_address: '兵庫県赤穂市中広1576-11', ingredient_source: '兵庫県坂越海域', storage_recommendation: '要冷蔵　0℃～10℃', consumption_restrictions: '生食用' , manufactuered_date: nengapi_today, expiration_date: nengapi_today_plus(4), made_on: 1, shomiorhi: 1), :class => "btn btn-success" %>
+				<%= link_to '追加（相生）', new_expiration_card_path(product_name: '殻付き かき', manufacturer: '株式会社 船曳商店', manufacturer_address: '兵庫県赤穂市中広1576-11', ingredient_source: '兵庫県相生海域', storage_recommendation: '要冷蔵　0℃～10℃', consumption_restrictions: '生食用' , manufactuered_date: nengapi_today, expiration_date: nengapi_today_plus(4), made_on: 1, shomiorhi: 1), :class => "btn btn-success" %>
+			</div>
+<% end %> 
+		<hr/>
+
+			<h1>（賞味・消費）期限カード</h1>
+			
+		</div>
+	</div>
+
+	<hr/>
+
+	<div class="row">
+		<% @expiration_cards.each do |expiration_card| %>
+			<div class="col-md-6 col-sm-12">
+				<div class="float-right btn-group">
+					<%= link_to ('<i class="far fa-file-pdf"></i>').html_safe, expiration_card.download.url, class: 'btn btn-sm btn-info', target: "_blank" %>
+					<%= link_to '編集', edit_expiration_card_path(expiration_card), class: 'btn btn-sm btn-success' %>
+					<%= link_to '削除', expiration_card, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-sm btn-danger' %>
+				</div>
+				<table class="table table-sm table-bordered border rounded">
+					<tr>
+						<th>名称</th>
+						<td><%= expiration_card.product_name %></td>
+					</tr>
+					<tr>
+						<th>加工所所在地</th>
+						<td><%= expiration_card.manufacturer_address %></td>
+					</tr>
+					<tr>
+						<th>加工者</th>
+						<td><%= expiration_card.manufacturer %></td>
+					</tr>
+					<tr>
+						<th>採取海域</th>
+						<td><%= expiration_card.ingredient_source %></td>
+					</tr>
+					<tr>
+						<th>用途</th>
+						<td><%= expiration_card.consumption_restrictions %></td>
+					</tr>
+					<tr>
+						<th>保存温度</th>
+						<td><%= expiration_card.storage_recommendation %></td>
+					</tr>
+					<tr>
+						<th>製造年月日</th>
+						<td><%= expiration_card.manufactuered_date %></td>
+					</tr>
+					<tr>
+						<th><%= expiration_card.print_shomiorhi %></th>
+						<td><%= expiration_card.expiration_date %></td>
+					</tr>
+				</table>
+			</div>
+		<% end %>
+	</div>
+
+</div>

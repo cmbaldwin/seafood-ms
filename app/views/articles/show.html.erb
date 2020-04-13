@@ -1,0 +1,43 @@
+<div class="container">
+	<div class="row">
+		<div class="col-12">
+
+			<div class="btn-group float-right" role="group" aria-label="Basic">
+				<%= link_to '編集', edit_article_path(@article), class: 'btn btn-secondary' %>
+				<%= link_to '前へ', articles_path, class: 'btn btn-secondary' %>
+			</div>
+		<hr/>
+
+		<p>
+			<strong>タイトル</strong>
+			<%= @article.title %>
+		</p>
+		<p>
+			<strong>内容:</strong>
+			<%= sanitize @article.text %>
+		</p>
+		</div>
+	</div>
+
+
+	<hr/>
+
+	<div class="row">
+		<div class="col-4">
+			<h4>追加</h4>
+		</div>
+		<div class="col-3">
+			<h4>コメント</h4>
+		</div>
+		<div class="col-5">
+			<h4>内容</h4>
+		</div>
+		<div class="col-4">
+			<%= render 'comments/form' %>
+		</div>
+		<%= render 'comments/article_comments' %>
+	</div>
+	
+	<hr/>
+
+</div>

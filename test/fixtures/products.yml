@@ -1,0 +1,17 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  namae: MyString
+  grams: 9.99
+  excost: 9.99
+  count: 9.99
+  multipl: 9.99
+  history: MyString
+
+two:
+  namae: MyString
+  grams: 9.99
+  excost: 9.99
+  count: 9.99
+  multipl: 9.99
+  history: MyString

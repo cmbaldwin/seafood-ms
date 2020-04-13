@@ -1,0 +1,11 @@
+<div id="single_article">
+	<% articles.each do |article| %>
+		<div class="card card-body">
+			<p class="display-4 font-weight-light"><%= article.title %></p>
+			<p class="lead"><%= sanitize article.text %></p>
+			<p class="small">Created at: <%= article.created_at %> by <%= article.user.email %>
+			<br>
+			<%= link_to '個別ページ', article_path(article) %> | <%= link_to '編集', edit_article_path(article) %> | <%= link_to '削除', article_path(article), method: :delete, data: { confirm: 'Are you sure?'} %></p>
+		</div>
+	<% end %>
+</div>
