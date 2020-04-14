@@ -108,7 +108,7 @@ gem "chartkick"
 gem 'groupdate'
 
 #Add Devise for Authorization and Authentication
-gem 'devise', '~> 4.4.3'
+gem 'devise', '~> 4.7.1'
 
 #Add Font Awesome Icons
 gem 'font-awesome-sass', '~> 5.2.0'
