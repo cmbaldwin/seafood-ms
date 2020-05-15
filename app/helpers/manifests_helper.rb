@@ -5,7 +5,7 @@ module ManifestsHelper
 	def infomart_link(manifest)
 		sales_date = manifest.sales_date
 		scrape_date = DateTime.strptime(sales_date, '%Y年%m月%d日')
-		start_date = (scrape_date -1).strftime("%Y/%m/%d")
+		start_date = (scrape_date - 1).strftime("%Y/%m/%d")
 		end_date = (scrape_date + 2).strftime("%Y/%m/%d")
 		'https://www2.infomart.co.jp/employment/shipping_list_window.page?6&st=0&parent=1&selbuy=0&op=00&f_date=' + start_date + '&t_date=' + end_date + '&stmnm&stmtel&HTradeState&resend&membersel=0&mcd_child&membernm&pdate=2&Infl=TC&TCalTradeState=0&TCalTradeState_2=0&TCalTradeState_3=0&TCalTradeState_4=0&TCalTradeState_5=0&TCalTradeState_6=0&TCalTradeState_7=1&TransitionPage_Cal=1&LeaveCond=1&perusal=0&cwflg=1'
 	end

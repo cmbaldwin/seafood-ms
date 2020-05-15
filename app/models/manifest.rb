@@ -321,7 +321,7 @@ class Manifest < ApplicationRecord
 		agent = Mechanize.new
 		#today's date 
 		scrape_date = DateTime.strptime(self.sales_date, '%Y年%m月%d日')
-		start_date = (scrape_date -1).strftime("%Y/%m/%d")
+		start_date = (scrape_date - 1).strftime("%Y/%m/%d")
 		end_date = (scrape_date + 2).strftime("%Y/%m/%d")
 		#go to the page to scrape
 		page = agent.get('https://www2.infomart.co.jp/employment/shipping_list_window.page?6&st=0&parent=1&selbuy=0&op=00&f_date=' + start_date + '&t_date=' + end_date + '&stmnm&stmtel&HTradeState&resend&membersel=0&mcd_child&membernm&pdate=2&Infl=TC&TCalTradeState=0&TCalTradeState_2=0&TCalTradeState_3=0&TCalTradeState_4=0&TCalTradeState_5=0&TCalTradeState_6=0&TCalTradeState_7=1&TransitionPage_Cal=1&LeaveCond=1&perusal=0&cwflg=1')
@@ -755,6 +755,43 @@ class Manifest < ApplicationRecord
 			#render in the browser (takes server ram until closed)
 			return pdf
 		end
+	end
+
+	def get_new_associations
+		new_associations = Array.new
+		assocations = Product.all.pluck(:infomart_association, :id)
+		self.infomart_orders.each do |type, orders|
+			orders.each do |order_number, order_details|
+				order_details[:items].each do |item_number, item_details|
+					found = false
+					assocations.each do |assoc_wid|
+						assoc_hash = assoc_wid[0]
+						if assoc_hash
+							assoc_hash.each do |infomart_name, count|
+								infomart_name == item_details[:item_name] ? found = true : ()
+							end
+						end
+					end
+					unless found
+						new_associations << item_details[:item_name]
+					end
+				end
+			end
+		end
+		new_associations
+	end
+	
+	def check_for_links(product_name)
+		links = Array.new
+		self.infomart_orders.each do |type, orders|
+			orders.each do |order_number, order_details|
+				order_details[:items].each do |item_number, item_details|
+					product_name == item_details[:item_name] ? (links << order_details[:backend_id]) : ()
+				end
+			end
+			links.flatten
+		end
+		links
 	end
 
 end

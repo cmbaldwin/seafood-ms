@@ -7,7 +7,60 @@ class ProductsController < ApplicationController
 		flash[:notice] = 'そのページはアクセスできません。'
 		redirect_to root_path, error: 'そのページはアクセスできません。'
 	end
-	
+
+	def associations
+		params ? (puts params) : ()
+		@new_associations = Set.new
+		@assocation_links = Hash.new
+		manifests = Manifest.all
+		manifests.map{ |m| m.get_new_associations }.flatten.each{|n| @new_associations << n}
+		@associations = Hash.new
+		@new_associations.each do |newp|
+			@assocation_links[newp] = Array.new
+			@associations[newp] = Hash.new
+			newp.include?("×") ? (count = (newp[/(?<=×)\d*/]).to_i) : (count = 0)
+			@associations[newp]["count"] = count
+			@associations[newp]["product_id"] = 0
+		end
+		manifests.each do |manifest|
+			@new_associations.each do |newp|
+				links = manifest.check_for_links(newp)
+				!links.empty? ? @assocation_links[newp] << links : ()
+			end
+		end
+		@products = Product.where(associated: true).order(:namae)
+	end
+
+	def set_associations
+		params[:associations].each do |product_name, values|
+			if (values["count"] != 0) && !values["product_id"].empty?
+				product = Product.find(values["product_id"])
+				product.infomart_association.nil? ? (current_associations = Hash.new) : (current_associations = product.infomart_association)
+				current_associations[product_name] = values["count"]
+				product.infomart_association = current_associations
+				product.save
+			end
+		end
+		flash[:notice] = '商品の関連を設定された。'
+		redirect_to :associations
+	end
+
+	def reset_associations
+		if params[:reset]
+			params[:reset].each do |association|
+				id_name = association.split(',')
+				product = Product.find(id_name[0])
+				product.infomart_association.delete(id_name[1])
+				product.save
+			end
+			flash[:notice] = '商品の関連を削除された。'
+			redirect_to :associations
+		else
+			flash[:notice] = '選択した商品はなかった。'
+			redirect_to :associations
+		end
+	end
+
 	# GET /products
 	# GET /products.json
 	def index
@@ -106,6 +159,6 @@ class ProductsController < ApplicationController
 
 		# Never trust parameters from the scary internet, only allow the white list through.
 		def product_params
-			params.require(:product).permit(:namae, :profitable, :grams, :cost, :extra_expense, :product_type, :count, :multiplier, :history, material_ids: [], market_ids: [])
+			params.require(:product).permit(:namae, :profitable, :grams, :cost, :extra_expense, :product_type, :associated, :count, :multiplier, :history, material_ids: [], market_ids: [])
 		end
 end

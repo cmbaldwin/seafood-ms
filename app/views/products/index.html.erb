@@ -29,6 +29,7 @@
 	<% if current_user.admin?%>
 				<div class="btn-group float-right" role="group" aria-label="Basic">
 					<%= link_to ('<i class="far fa-file-pdf"></i>').html_safe, product_pdf_path, :class => "btn btn-info" %>
+					<%= link_to "InfoMart関連商品", associations_path, :class => "btn btn-info" %>
 					<%= link_to '追加', insert_product_data_path, remote: true, class: 'product_link btn btn-success', 'data-toggle' => 'modal', 'data-target' => '#productModal' %>
 				</div>
 	<% end %> 

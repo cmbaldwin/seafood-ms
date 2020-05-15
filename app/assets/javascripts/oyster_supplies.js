@@ -122,14 +122,34 @@ $( document ).on('turbolinks:load', function() {
 			$(this).find('input').val(total);
 		});
 
-		// If Volume Subtotal isn't 0 and Price Input IS 0 then give a visual alert for the input
+		// If Volume Subtotal isn't 0 and Price Input IS 0 (or out of range) then give a visual alert for the input
 		price_input.each(function(index) {
 			var price = parseFloat($(this).find('input').val());
 			var volume = parseFloat($(this).next().find('input').val());;
+			var price_label = $(this).parent().find('th').text()
 			if ((volume != 0) && (price == 0)) {
 				$(this).find('input').addClass("bg-warning");
 			} else {
 				$(this).find('input').removeClass("bg-warning");
+			};
+			if (price_label.includes('むき身', 0)) {
+				if (((price < 600) || (price > 3000)) && (volume != 0)) {
+					$(this).find('input').addClass("bg-warning");
+				} else {
+					$(this).find('input').removeClass("bg-warning");
+				}
+			} else if ((price_label.includes('殻付き〔大-個〕', 0)) || (price_label.includes('殻付き〔小-個〕', 0))) {
+				if (((price < 30) || (price > 100)) && (volume != 0)) {
+					$(this).find('input').addClass("bg-warning");
+				} else {
+					$(this).find('input').removeClass("bg-warning");
+				}
+			} else if (price_label.includes('殻付き〔バラ-㎏〕', 0)) {
+				if (((price < 200) || (price > 800)) && (volume != 0)) {
+					$(this).find('input').addClass("bg-warning");
+				} else {
+					$(this).find('input').removeClass("bg-warning");
+				}
 			};
 		});
 		// Extend this visual alert to the total card for each supplier

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_02_15_033350) do
+ActiveRecord::Schema.define(version: 2020_05_07_025055) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -178,6 +178,8 @@ ActiveRecord::Schema.define(version: 2020_02_15_033350) do
     t.decimal "extra_expense"
     t.boolean "profitable"
     t.decimal "average_price"
+    t.text "infomart_association"
+    t.boolean "associated", default: false
   end
 
   create_table "profit_and_market_joins", force: :cascade do |t|

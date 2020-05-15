@@ -7,6 +7,9 @@ Rails.application.routes.draw do
 	get '/load_online_order/:id' => 'welcome#load_online_order', as: 'load_online_order'
 	get '/update_rakuten_order/:id' => 'welcome#update_rakuten_order', as: 'update_rakuten_order'
 
+	get 'analysis' => 'analysis#index', as: 'analysis'
+	get '/fetch_analysis' => 'analysis#fetch_analysis', as: 'fetch_analysis'
+
 	resources :frozen_oysters
 	get '/insert_frozen_data' => 'frozen_oysters#insert_frozen_data', as: 'insert_frozen_data'
 
@@ -65,6 +68,9 @@ Rails.application.routes.draw do
 	post '/initital_save' => 'profits#initital_save', as: 'initital_save'
 	patch 'profits/:id/tab_keisan' => 'profits#tab_keisan', as: 'tab_keisan'
 
+	get 'products/associations' => 'products#associations', as: 'associations'
+	post 'products/set_associations' => 'products#set_associations', as: 'set_associations'
+	post 'products/reset_associations' => 'products#reset_associations', as: 'reset_associations'
 	resources :products do
 		resources :markets
 		resources :materials

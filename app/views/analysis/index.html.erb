@@ -1,0 +1,40 @@
+<% title "Funabiki Online - データ分析" %>
+
+<div class="container">
+	<div class="row align-middle">
+		<div class="col">
+<% if current_user.admin? or current_user.vip? %>
+			<div class="btn-group float-right" role="group" aria-label="Basic">
+				<%= link_to '前へ', root_path, class: 'btn btn-secondary' %>
+			</div>
+<% end %> 
+		<hr/>
+
+			<h1>データ分析</h1>
+
+	<hr/>
+
+	<div class="container">
+		<div class="row">
+			<div class="col-3 bg-light rounded-lg">
+				<div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+					<a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true"><h4>在庫表・予想</h4></a>
+					<%= link_to '年度会社分け出荷', fetch_analysis_path(area: :product, data: :yearly_company_totals), :remote => 'true', :id => 'analysis-tab', :class => 'nav-link' %>
+					<%= link_to '年度在庫出荷予想', fetch_analysis_path(area: :product, data: :yearly_associated_totals), :remote => 'true', :id => 'analysis-tab', :class => 'nav-link' %>
+					<%= link_to '年度商品出荷', fetch_analysis_path(area: :product, data: :yearly_product_totals), :remote => 'true', :id => 'analysis-tab', :class => 'nav-link' %>
+				</div>
+			</div>
+			<div class="col-9">
+				<div class="tab-content" id="v-pills-tabContent">
+					<div class="tab-pane fade show active" id="analysis" role="tabpanel" aria-labelledby="analysis">
+						<%= render :partial=>'analysis', locals: { analysis: @analysis} %>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	<hr/>
+
+</div>

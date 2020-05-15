@@ -1,39 +1,60 @@
-<p id="notice"><%= notice %></p>
+<div class="container">
+	<div class="row align-middle">
+		<div class="col">
+		<% if current_user.admin? or current_user.vip? %>
+			<div class="btn-group float-right" role="group" aria-label="Basic">
+				<%= link_to '編集', edit_restaurant_path(@restaurant), class: 'btn btn-secondary' %>
+				<%= link_to '前へ', restaurant_path, class: 'btn btn-secondary' %>
+			</div>
+		<% end %>
+		<hr/>
 
-<p>
-  <strong>Namae:</strong>
-  <%= @restaurant.namae %>
-</p>
+			<h1>飲食店: <%= @restaurant.namae + " (" + @restaurant.id.to_s + ")" %></h1>
+			
+		</div>
+	</div>
 
-<p>
-  <strong>Company:</strong>
-  <%= @restaurant.company %>
-</p>
+	<hr/>
+	<p id="notice"><%= notice %></p>
+	<div class="row small">
+		<div class="col">
+			<p>
+				<strong>Namae:</strong>
+				<%= @restaurant.namae %>
+			</p>
 
-<p>
-  <strong>Link:</strong>
-  <%= @restaurant.link %>
-</p>
+			<p>
+				<strong>Company:</strong>
+				<%= @restaurant.company %>
+			</p>
 
-<p>
-  <strong>Address:</strong>
-  <%= @restaurant.address %>
-</p>
+			<p>
+				<strong>Link:</strong>
+				<%= link_to(@restaurant.namae, @restaurant.get_link) %>
+			</p>
 
-<p>
-  <strong>Arrival time:</strong>
-  <%= @restaurant.arrival_time %>
-</p>
+			<p>
+				<strong>Address:</strong>
+				<%= @restaurant.address %>
+			</p>
 
-<p>
-  <strong>Products:</strong>
-  <%= @restaurant.products %>
-</p>
+			<p>
+				<strong>Arrival time:</strong>
+				<%= @restaurant.arrival_time %>
+			</p>
 
-<p>
-  <strong>Stats:</strong>
-  <%= @restaurant.stats %>
-</p>
+			<p>
+				<strong>Products:</strong>
+				<%= @restaurant.products %>
+			</p>
 
-<%= link_to 'Edit', edit_restaurant_path(@restaurant) %> |
-<%= link_to 'Back', restaurants_path %>
+			<p>
+				<strong>Stats:</strong>
+				<%= (ap @restaurant.stats).html_safe %>
+			</p>
+
+			<hr/>
+
+		</div>
+	</div>
+</div>

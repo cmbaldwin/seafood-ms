@@ -63,6 +63,18 @@
 						<%= form.label :extra_expense, '他のコスト' %>
 						<%= form.text_field :extra_expense, class: "form-control form-control-sm mb-2 floatTextBox", label: false %>
 					</div>
+
+					<div class="col-lg-4 col-md-6 col-sm-12 mb-1">
+						<div class="card text-center">
+							<div class="card-header">
+								<%= form.label :associated, ('外部システムの関連あり？').html_safe %>
+							</div>
+							<div class="card-text">
+								<%= form.input :associated, as: :radio_buttons, label: '', collection: [[true, 'はい'], [false, 'いいえ']], label_method: :second, value_method: :first, selected: false, :item_wrapper_class => 'custom-control custom-radio custom-control-inline' %>
+							</div>
+						</div>
+					</div>
+
 				<% end %>
 			</div>
 		</div>

@@ -100,7 +100,7 @@ class OysterSupply < ApplicationRecord
 		end
 	end
 
-	def year_to_date
+	def year_to_date_range
 		#Season starts over (fiscal year) in October
 		if Date.today.month.to_i >= 10
 			start_year = Date.today.year
@@ -111,31 +111,69 @@ class OysterSupply < ApplicationRecord
 		end
 		season_start_date = Date.new(start_year, 10, 1)
 		season_end_date = Date.new(end_year, 9, 30)
-		year_to_date_range = season_start_date..season_end_date
+		#From start of season to date of record called
+		if self.supply_date
+			year_to_date_range = season_start_date..DateTime.strptime(self.supply_date, "%Y年%m月%d日")
+		else
+			year_to_date_range = season_start_date..season_end_date
+		end
+		year_to_date_range
+	end
 
-		year_to_date = Hash.new
+	def calculate_new_year_to_date
+		set_variables
+		#Calculate record
+		new_year_to_date = Hash.new
 		year_to_date_range.each do |d|
 			date = d.strftime('%Y年%m月%d日')
-			oyster_supply = OysterSupply.where(:supply_date => date).first
+			oyster_supply = OysterSupply.find_by(supply_date: date)
 			if !oyster_supply.nil?
 				data = oyster_supply.oysters
 				@types.each do |type|
 					data[type].each do |supplier_id, totals|
-						year_to_date[supplier_id].nil? ? year_to_date[supplier_id] = Hash.new : ()
-						year_to_date[supplier_id][type].nil? ? year_to_date[supplier_id][type] = Hash.new : ()
-						if year_to_date[supplier_id][type][:price].nil?
-							year_to_date[supplier_id][type][:price] = Array.new
-							(totals["price"] != "0") ? year_to_date[supplier_id][type][:price] << totals["price"].to_f : ()
+						new_year_to_date[supplier_id].nil? ? new_year_to_date[supplier_id] = Hash.new : ()
+						new_year_to_date[supplier_id][type].nil? ? new_year_to_date[supplier_id][type] = Hash.new : ()
+						if new_year_to_date[supplier_id][type][:price].nil?
+							new_year_to_date[supplier_id][type][:price] = Array.new
+							(totals["price"] != "0") ? new_year_to_date[supplier_id][type][:price] << totals["price"].to_f : ()
 						else
-							(totals["price"] != "0") ? year_to_date[supplier_id][type][:price] << totals["price"].to_f : ()
+							(totals["price"] != "0") ? new_year_to_date[supplier_id][type][:price] << totals["price"].to_f : ()
 						end
-						year_to_date[supplier_id][type][:volume].nil? ? year_to_date[supplier_id][type][:volume] = totals["volume"].to_f : year_to_date[supplier_id][type][:volume] += totals["volume"].to_f
-						year_to_date[supplier_id][type][:invoice].nil? ? year_to_date[supplier_id][type][:invoice] = totals["invoice"].to_f : year_to_date[supplier_id][type][:invoice] += totals["invoice"].to_f
+						new_year_to_date[supplier_id][type][:volume].nil? ? new_year_to_date[supplier_id][type][:volume] = totals["volume"].to_f : new_year_to_date[supplier_id][type][:volume] += totals["volume"].to_f
+						new_year_to_date[supplier_id][type][:invoice].nil? ? new_year_to_date[supplier_id][type][:invoice] = totals["invoice"].to_f : new_year_to_date[supplier_id][type][:invoice] += totals["invoice"].to_f
 					end
 				end
 			end
 		end
-		year_to_date
+		new_year_to_date[:updated] = DateTime.now
+		new_year_to_date
+	end
+
+	def year_to_date_update_required?
+		year_to_date_range.each do |d|
+			oyster_supply = OysterSupply.find_by(supply_date: d.strftime('%Y年%m月%d日'))
+			if !oyster_supply.nil? && (oyster_supply.id != self.id)
+				if self.oysters[:year_to_date]
+					if oyster_supply.updated_at > self.oysters[:year_to_date][:updated]
+						return true
+						break
+					end
+				else
+					return true
+					break
+				end
+			end
+		end
+		return false
+	end
+
+	def year_to_date
+		if year_to_date_update_required?
+			self.oysters[:year_to_date] = calculate_new_year_to_date
+			self.save
+			puts "Update was required"
+		end
+		self.oysters[:year_to_date]
 	end
 
 	def oyster_data
@@ -228,10 +266,11 @@ class OysterSupply < ApplicationRecord
 		supplies_dates = Array.new
 		date_range.each do |d|
 			date = d.strftime('%Y年%m月%d日')
-			oyster_supply = OysterSupply.where(:supply_date => date).first
+			oyster_supply = OysterSupply.find_by(supply_date: date)
 			if !oyster_supply.nil?
 				supplies_dates << oyster_supply.supply_date
-				oyster_supply[:oysters].each do |time, type|
+				oysters = oyster_supply.oysters.except(:year_to_date, :updated)
+				oysters.each do |time, type|
 					if type.is_a?(Hash)
 						type.each do |key, values|
 							values.each do |id, v|
@@ -292,7 +331,7 @@ class OysterSupply < ApplicationRecord
 				volume_totals = Hash.new
 				date_range.each do |d|
 					date = d.strftime('%Y年%m月%d日')
-					oyster_supply = OysterSupply.where(:supply_date => date).first
+					oyster_supply = OysterSupply.find_by(supply_date: date)
 					if !oyster_supply.nil?
 						data = oyster_supply.oyster_data
 						if data[locale][:total] != 0
@@ -432,7 +471,8 @@ class OysterSupply < ApplicationRecord
 		# INDIVIDUAL FARMER OUTPUT
 		elsif self.export_format == "individual"
 			#get the year to date totals ready
-			year_to_date_data = year_to_date
+			last_date_record = OysterSupply.find_by(supply_date: supplies_dates.last)
+			year_to_date_data = last_date_record.year_to_date
 			# document set up
 			Prawn::Document.generate("PDF.pdf", :page_size => "A4", :margin => [25]) do |pdf|
 				# set utf-8 japanese font
@@ -444,7 +484,7 @@ class OysterSupply < ApplicationRecord
 				
 				pdf.font "SourceHan" 
 				pdf.font_size 10
-
+				
 				suppliers.each_with_index do |supplier, i|
 					if i != 0
 						pdf.start_new_page
@@ -470,7 +510,7 @@ class OysterSupply < ApplicationRecord
 					supplier_type_totals = Hash.new
 					supplier_dates[supplier.id].each do |date|
 						day_total = 0
-						oyster_supply = OysterSupply.where(:supply_date => date).first
+						oyster_supply = OysterSupply.find_by(supply_date: date)
 						if !oyster_supply.nil?
 							data = oyster_supply.oysters
 							d = Date.strptime(date, "%Y年%m月%d日")

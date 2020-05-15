@@ -6,6 +6,7 @@ class Product < ApplicationRecord
 	has_many :profit_and_product_joins
 	has_many :profits, through: :profit_and_product_joins
 	serialize :history
+	serialize :infomart_association
 
 	validates :namae, 
 		presence: true,

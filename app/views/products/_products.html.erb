@@ -25,7 +25,7 @@
 							<div class="btn-group mt-1" role="group">
 								<%= link_to ('<i class="fas fa-external-link-alt fa-xs"></i>').html_safe, product, class: 'btn btn-sm btn-info' %>
 								<% if current_user.admin? %>
-									<%= link_to '編集', insert_product_data_path(id: product.id), remote: true, class: 'product_link btn-sm  btn-success', 'data-toggle' => 'modal', 'data-target' => '#productModal' %>
+									<%= link_to '編集', insert_product_data_path(id: product.id), remote: true, class: 'btn btn-sm btn-success', 'data-toggle' => 'modal', 'data-target' => '#productModal' %>
 									<%= link_to '削除', product, method: :delete, data: { confirm: '削除確認' }, class: 'btn btn-sm btn-danger' %>
 								<% end %>
 							</div>

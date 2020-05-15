@@ -20,4 +20,9 @@ module OysterSuppliesHelper
 		conversion[am_or_pm] ? conversion[am_or_pm] : ()
 	end
 
+	def print_price_title(type)
+		price = {"large" => "￥600 ~ ￥3000", "small" => "￥600 ~ ￥3000", "eggy" => "￥600 ~ ￥3000", "large_shells" => "￥30 ~ ￥100", "small_shells" => "￥30 ~ ￥100", "thin_shells" => "￥200 ~ ￥800"}
+		price[type]
+	end
+
 end

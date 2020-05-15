@@ -395,7 +395,7 @@
 								</tr>
 								<% @types.each_with_index do |type, i| %>
 									<tr class="<%= if i == (@types.count - 1) then 'supplier_last' end %>">
-										<th>
+										<th title="<%= print_price_title(type) %>">
 											<%= type_to_kana(type) %>
 											<span class="float-right font-weight-normal">￥</span>
 										</th>

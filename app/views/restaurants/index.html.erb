@@ -1,6 +1,6 @@
 <% title "Funabiki Online - 飲食店" %>
 
-<div class="container-flex ml-5 mr-5">
+<div class="container">
 	<div class="row align-middle">
 		<div class="col">
 	<% if current_user.admin?%>
@@ -25,13 +25,7 @@
 			<% company = nil %>
 		</div>
 		<div class="col">
-			飲食店名
-		</div>
-		<div class="col">
-			商品名⇒関連商品
-		</div>
-		<div class="col">
-			操作パネル
+			飲食店
 		</div>
 	</div>
 	<% @restaurants.each do |restaurant| %>
@@ -39,23 +33,11 @@
 			<div class="col pb-1">
 				<% if (company.nil?) || (company != restaurant.company) %>
 					<% company = restaurant.company %>
-					<b><%= company %></b>
+					<b><%= company ? company : '会社設定されていない' %></b>
 				<% end %>
 			</div>
 			<div class="col pb-1">
-				<%= link_to(restaurant.namae, restaurant.get_link) %>
-			</div>
-			<div class="col pb-1">
-				<% if restaurant.products %>
-					<% restaurant.products.each do |type, type_hash| %>
-						<% type_hash.each do |product_name, local_id| %>
-							<%= local_id != 0 ? link_to(product_name, Product.find(local_id)) : product_name %><br>
-						<% end %>
-					<% end %>
-				<% end %>
-			</div>
-			<div class="col pb-1">
-				buttons
+				<%= link_to(restaurant.namae, restaurant) %>
 			</div>
 		</div>
 	<% end %>

@@ -37,18 +37,28 @@
 						<li class="nav-iteme">
 							<a class="nav-link light_link" href="/oyster_supplies">牡蠣原料</a>
 						</li>
+						<% if current_user.admin? %>
+						<li class="nav-iteme">
+							<a class="nav-link light_link" href="/analysis">データ分析</a>
+						</li>
+						<% end %>
 						<li class="nav-item dropdown">
 							<a class="nav-link light_link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 								設定
 							</a>
 							<div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+								<% if current_user.admin? %>
 								<a class="dropdown-item dark_link" href="/frozen_oysters">冷凍牡蠣データ</a>
+								<% end %>
 								<a class="dropdown-item dark_link" href="/expiration_cards">消費期限カード</a>
 								<a class="dropdown-item dark_link" href="/suppliers">生産者</a>
+								<% if current_user.admin? %>
 								<a class="dropdown-item dark_link" href="/restaurants">飲食店</a>
+								<% end %>
 								<a class="dropdown-item dark_link" href="/products">商品</a>
 								<a class="dropdown-item dark_link" href="/markets">市場</a>
 								<a class="dropdown-item dark_link" href="/materials">材料</a>
+								<a class="dropdown-item dark_link" href="/materials">商品</a>
 							</div>
 						</li>
 						<li class="nav-item dropdown">

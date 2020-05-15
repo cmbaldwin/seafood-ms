@@ -1,5 +1,7 @@
 module ProductsHelper
 
+	include ManifestsHelper
+
 	def types_hash
 		@types = ["トレイ", "チューブ", "水切り", "殻付き", "冷凍", "単品"]
 		@types_hash = {"1"=>"トレイ", "2"=>"チューブ", "3"=>"水切り", "4"=>"殻付き", "5"=>"冷凍", "6"=>"単品"}

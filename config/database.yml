@@ -27,15 +27,15 @@ development:
   # https://dashboard.heroku.com/apps/funabiki-online get the name (i.e. "postgresql-contoured-13400")
   # rake db:drop
   # heroku pg:pull postgresql-contoured-13400 yyyymmdd_backup
-  database: ENV['LOCAL_DATABASE']
+  database: 20200510_backup
   # The specified database role being used to connect to postgres.
   # To create additional roles in postgres see `$ createuser --help`.
   # When left blank, postgres will use the default role. This is
   # the same name as the operating system user that initialized the database.
-  username: ENV['LOCAL_DB_USER']
+  username: root
 
   # The password associated with the postgres role (username).
-  password: ENV['LOCAL_DB_PASS']
+  password: root
 
   # Connect on a TCP socket. Omitted by default since the client uses a
   # domain socket that doesn't need configuration. Windows does not have
@@ -60,7 +60,7 @@ development:
 # Do not set this db to the same as development or production.
 test:
   <<: *default
-  database: ENV['LOCAL_TEST_DTABASE']
+  database: 20200413_backup
 
 # As with config/secrets.yml, you never want to store sensitive information,
 # like your database password, in your source code. If your source code is
@@ -83,6 +83,6 @@ test:
 #
 production:
   <<: *default
-  database: ENV['KANRI_DATABASE']
-  username: ENV['KANRI_DTABASE_USER']
-  password: ENV['KANRI_DATABASE_PASSWORD']
+  database: funabiki-online_production
+  username: funabiki-online
+  password: <%= ENV['KANRI_DATABASE_PASSWORD'] %>

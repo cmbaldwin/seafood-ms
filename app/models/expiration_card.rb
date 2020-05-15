@@ -8,7 +8,7 @@ class ExpirationCard < ApplicationRecord
 		pack_date = self.manufactuered_date
 		use_by_date = self.expiration_date
 		manufactured_only = self.made_on ? '（製造日なし）' : ''
-		filename = self.product_name + '-' + self.manufactuered_date + '-' + self.expiration_date + manufactured_only + "-カード.pdf"
+		filename = self.product_name + '-' + pack_date + '-' + use_by_date + manufactured_only + "-カード.pdf"
 		Prawn::Document.generate(filename, :page_size => "A4", :margin => [15]) do |pdf|
 			#document set up
 			pdf.font_families.update("SourceHan" => {
@@ -30,9 +30,9 @@ class ExpirationCard < ApplicationRecord
 			shell_card << [' 用                     途', self.consumption_restrictions]
 			shell_card << [' 保    存    温    度', self.storage_recommendation]
 			if self.made_on
-				shell_card << [' 製  造  年  月  日', {:content => self.manufactuered_date, :align => :center}]
+				shell_card << [' 製  造  年  月  日', {:content => pack_date, :align => :center}]
 			end
-			shell_card << [self.print_shomiorhi, {:content => self.expiration_date, :align => :center}]
+			shell_card << [self.print_shomiorhi, {:content => use_by_date, :align => :center}]
 			one_shell_card = pdf.make_table( shell_card, :cell_style => {:border_width => 0.25, :valign => :center, :inline_format => true, :padding => 4, :height => 17}, :width => (pdf.bounds.width / 2 - 25), :column_widths => {0 => 75 } )
 			cards = Array.new
 			cards << [' ', ' ']

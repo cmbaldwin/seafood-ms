@@ -1,0 +1,64 @@
+<nav>
+	<div class="nav nav-tabs" id="nav-tab" role="tablist">
+		<% @analysis.each_with_index do |(year, vhash), i| %>
+			<a class="nav-item nav-link<%= i == 0 ? ' active' : () %>" id="nav-<%= year %>-tab" data-toggle="tab" href="#nav-<%= year %>" role="tab" aria-controls="nav-<%= year %>" aria-selected="<%= i == 0 ? 'true' : 'false' %>">
+				<%= year %>
+			</a>
+			<% if vhash[0] && !vhash[0].empty? %>
+				<a class="nav-item nav-link" id="nav-<%= year %>-unassociated-tab" data-toggle="tab" href="#nav-<%= year %>-unassociated" role="tab" aria-controls="nav-<%= year %>-unassociated" aria-selected="false">
+					<%= year %> 関連設定なし商品
+				</a>
+			<% end %>
+		<% end %>
+	</div>
+</nav>
+<div class="tab-content p-3 border" id="nav-tabContent">
+	<% @analysis.each_with_index do |(year, vhash), i| %>
+		<div class="tab-pane fade<%= i == 0 ? ' show active' : () %>" id="nav-<%= year %>" role="tabpanel" aria-labelledby="nav-<%= year %>-tab">
+			<% ytd = get_ytd(year) %>
+			<% #somehow got to get the number left to ~810 %>			
+			<% manufactured_adjustments = {46 => (3055 + 2060)} %>
+			<% offsets = {46 => 323500} %>
+			<% vhash.each do |seperator, values| %>
+				<% if seperator.is_a?(Integer) %>
+					<!-- by association -->
+					<% if seperator != 0 %>
+						<% product = Product.find(seperator) %>
+						<b><%= product.namae %><br></b>
+						<% ytd ? (ytd[seperator.to_s] ? (season = ytd[seperator.to_s] * product.count) : (season = 0)) : () %>
+						今シーズン: <%= season %><br>
+						<% manufactured_adjustments[seperator] ? (manufactured_adjustment = manufactured_adjustments[seperator]) : (manufactured_adjustment = 0) %>
+						二年度製造予算: <%= manufactured_adjustment * product.count %> (<%= manufactured_adjustment %> * <%= product.count %>)<br>
+						<% offsets[seperator] ? (offset = offsets[seperator]) : (offset = 0) %>
+						相殺予算: <%= offset %><br>
+						出荷予算: <%= values %><br><br>
+						<% if season && offset && manufactured_adjustment && values %>
+							Inventory Estimate: <%= season + (manufactured_adjustment * product.count) - values - offset %>
+						<% end %>
+					<% end %>				
+				<% elsif values.is_a?(Hash) %>
+					<!-- by company -->
+					<h5 class="m-1"><%= seperator %></h5><br>
+					<p>
+						<% values.each do |restaurant, value| %>
+							<%= restaurant %>: <b><%= value %></b><br>
+						<% end %><br>
+					</p>
+				<% else %>
+					<!-- by restaurant -->
+					<%= vhash.keys.first == seperator ? '(インフォマートの登録名前で)' : () %><br>
+					<b class="m-1"><%= seperator %></b>: <%= values %><br>
+				<% end %>
+			<% end %>
+		</div>
+		<% if vhash[0] && !vhash[0].empty? %>
+			<div class="tab-pane fade" id="nav-<%= year %>-unassociated" role="tabpanel" aria-labelledby="nav-<%= year %>-unassociated-tab">
+				<%= link_to "InfoMart関連商品を設定する", associations_path, :class => "btn btn-info w-100 m-2" %>
+				<% vhash[0].each do |seperator, values| %>
+					<%= seperator %><br>
+					<%= values %><br><br>
+				<% end %>
+			</div>
+		<% end %>
+	<% end %>
+</div>

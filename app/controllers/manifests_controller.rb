@@ -19,7 +19,8 @@ class ManifestsController < ApplicationController
 	# GET /manifests/1
 	# GET /manifests/1.json
 	def show
-
+		#bot_response = HTTParty.post('https://thawing-journey-94236.herokuapp.com/api?admin[email]=' + ENV['BOT_LOGIN'] + '&admin[password]=' + ENV['BOT_PASSWORD'])
+		#ap bot_response.parsed_response
 	end
 
 	# GET /manifests/new

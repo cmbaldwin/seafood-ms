@@ -6,15 +6,6 @@ class ApplicationController < ActionController::Base
 	
 	def authorize_admin
 	    redirect_to :back, status: 401 unless current_user.admin
-	    #redirects to previous page
-	end
-
-	protected
-
-	def configure_permitted_parameters
-		added_attrs = [:username, :email, :password, :password_confirmation, :remember_me]
-		devise_parameter_sanitizer.permit :sign_up, keys: added_attrs
-		devise_parameter_sanitizer.permit :account_update, keys: added_attrs
 	end
 
 	def time_setup
@@ -23,6 +14,18 @@ class ApplicationController < ActionController::Base
 		@this_season_end = (Date.today.month < 10) ? Date.new(Date.today.year, 10, 1) : Date.new((Date.today.year - 1), 10, 1)
 		@prior_season_start = (Date.today.month < 10) ? Date.new((Date.today.year - 2), 10, 1) : Date.new((Date.today.year - 1), 10, 1)
 		@prior_season_end = (Date.today.month < 10) ? Date.new((Date.today.year - 1), 10, 1) : Date.new((Date.today.year - 2), 10, 1)
+	end
+
+	def to_nengapi(datetime)
+		datetime.strftime('%Y年%m月%d日')
+	end
+
+	protected
+
+	def configure_permitted_parameters
+		added_attrs = [:username, :email, :password, :password_confirmation, :remember_me]
+		devise_parameter_sanitizer.permit :sign_up, keys: added_attrs
+		devise_parameter_sanitizer.permit :account_update, keys: added_attrs
 	end
 
 end
