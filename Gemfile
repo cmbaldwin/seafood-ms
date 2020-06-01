@@ -7,13 +7,13 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 # heroku config:set BUNDLE_WITHOUT="development:test" --app funabiki-online
 
 #using rbenv locally https://github.com/rbenv/rbenv#installing-ruby-versions
-ruby '2.6.5'
+ruby '2.6.6'
 
 # Set up local .env file, require immediately
 gem 'dotenv-rails', :require => 'dotenv/rails-now'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails' 
-gem 'rails', '~> 5.2.1'
+gem 'rails', '~> 6.0.3.1'
 
 # Use postgresql as the database for Active Record
 gem 'pg'
@@ -30,7 +30,7 @@ gem 'hiredis'
 # Enable RedisToGo, change the Env variable and turn on the Worker from the dashboard or from CLI.
 #gem 'sidekiq', '~> 2.7', '>= 2.7.1'
 
-# Default JS compiler for Rail 6
+# Default JS compiler for Rails 6
 gem "webpacker"
 
 # Use SCSS for stylesheets
