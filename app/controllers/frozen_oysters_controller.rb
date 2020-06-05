@@ -40,7 +40,7 @@ class FrozenOystersController < ApplicationController
 		@frozen_oyster.manufacture_date = Date.today.strftime("%Y年%m月%d日")
 		@frozen_oyster.finished_packs = Hash.new
 		@frozen_oyster.fix_empty_products
-		@frozen_oysterset_nil_to_zero
+		@frozen_oyster.set_nil_to_zero
 		@frozen_oyster.losses = Hash.new
 	end
 

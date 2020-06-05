@@ -20,7 +20,7 @@
 			<div class="field noshi_type">
 				<p><b>熨斗タイプ</b></p>
 				
-				<%= form.collection_radio_buttons( :ntype, [[1, '1'], [2, '2'], [3, '3'], [4, '4'], [5, '5'], [6, '6'], [7, '7'], [8, '8'], [9, '9'], [10, '10'], [11, '11'], [12, '12'], [13, '13'], [14, '14'], [15, '15'], [16, '16']], :first, :last, :item_wrapper_class => 'horizontal') { |ntype| ntype.label { ntype.radio_button + image_tag("#{ENV['GBUCKET_PREFIX']}noshi/thumbs/noshi#{ntype.text}-thumb.jpg") } } %>
+				<%= form.collection_radio_buttons( :ntype, [[1, '1'], [2, '2'], [3, '3'], [4, '4'], [5, '5'], [6, '6'], [7, '7'], [8, '8'], [9, '9'], [10, '10'], [11, '11'], [12, '12'], [13, '13'], [14, '14'], [15, '15'], [16, '16'], [17, '17']], :first, :last, :item_wrapper_class => 'horizontal') { |ntype| ntype.label { ntype.radio_button + image_tag("#{ENV['GBUCKET_PREFIX']}noshi/thumbs/noshi#{ntype.text}-thumb.jpg") } } %>
 			</div>
 		</p>
 	</div>

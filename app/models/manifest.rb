@@ -646,13 +646,13 @@ class Manifest < ApplicationRecord
 							#recipent name
 							order_data_row << '""'
 							#500L
-							if details[:item_name].include?("デカプリオイスター") && details[:item_name].exclude?("大粒") && details[:item_name].exclude?("岡山県産") && order[:client].exclude?("ブリーズオブ東京")  && order[:client].exclude?("オイスターバー品川店")
+							if details[:item_name].include?("デカプリオイスター") && details[:item_name].exclude?("大粒") && details[:item_name].exclude?("LL") && details[:item_name].exclude?("岡山県産") && order[:client].exclude?("ブリーズオブ東京")  && order[:client].exclude?("オイスターバー品川店")
 								order_data_row << ( if details[:item_name].include? "×20" then '20 × ' else '500g ×' end ) + details[:item_count]
 							else
 								order_data_row << ''
 							end
 							#500LL size
-							if details[:item_name].include?("デカプリオイスター") && details[:item_name].include?("大粒") && order[:client].exclude?("ブリーズオブ東京") && order[:client].exclude?("オイスターバー品川店") or details[:item_name].include?("岡山県産") && details[:item_name].include?("デカプリオイスター")
+							if details[:item_name].include?("デカプリオイスター") && (details[:item_name].include?("大粒") or details[:item_name].include?("LL")) && order[:client].exclude?("ブリーズオブ東京") && order[:client].exclude?("オイスターバー品川店") or details[:item_name].include?("岡山県産") && details[:item_name].include?("デカプリオイスター")
 								order_data_row << ( (details[:item_name].include? "岡山") ? ('㊐ ') : ('') ) + ( if details[:item_name].include? "×20" then '20 × ' + details[:item_count] elsif details[:item_name].include? "×10" then '10 × ' + details[:item_count] else '500g ×' + details[:item_count] end )
 							else
 								order_data_row << ''

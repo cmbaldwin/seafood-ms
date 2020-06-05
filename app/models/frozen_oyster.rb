@@ -54,7 +54,6 @@ class FrozenOyster < ApplicationRecord
 		stats["ハネ"] = (((self.losses["ハネ"].to_f / 2) / stats[:raw_total]) * 100).round(2).to_s + "%"
 		stats[:raw_to_frozen_loss] = (-(((stats[:frozen_total] / (stats[:raw_total])) * 100) - 100).round(2)).to_s + "%"
 		stats[:grams_to_pack] = stats[:raw_total] / stats[:finished_packs_total]
-		stats[:year_to_date] = self.year_to_date
 		stats
 	end
 

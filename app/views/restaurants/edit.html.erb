@@ -1,6 +1,19 @@
-<h1>Editing Restaurant</h1>
+<div class="container">
+	<div class="row align-middle">
+		<div class="col">
+			<div class="btn-group float-right" role="group" aria-label="Basic">
+				<%= link_to '前へ', restaurants_path, class: 'btn btn-secondary' %>
+			</div>
+			<hr/>
 
-<%= render 'form', restaurant: @restaurant %>
-
-<%= link_to 'Show', @restaurant %> |
-<%= link_to 'Back', restaurants_path %>
+			<h1>編集 #<%= @restaurant.id %></h1>
+			<hr/>
+		</div>
+	</div>
+	<div class="row align-middle">
+		<div class="col">
+			<%= render 'form' %>
+			<hr/>
+		</div>
+	</div>
+</div>

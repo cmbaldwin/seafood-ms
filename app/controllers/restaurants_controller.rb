@@ -10,6 +10,11 @@ class RestaurantsController < ApplicationController
 	# GET /restaurants.json
 	def index
 		@restaurants = Restaurant.all.order(:company, :namae)
+		@restaurant = Restaurant.new
+	end
+
+	def insert_restaurant_data
+		params[:id] ? (@restaurant = Restaurant.find(params[:id])) : (@restaurant = Restaurant.new)
 	end
 
 	# GET /restaurants/1

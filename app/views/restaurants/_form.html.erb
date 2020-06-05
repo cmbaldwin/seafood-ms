@@ -1,19 +1,45 @@
-
 <%= simple_form_for(@restaurant) do |f| %>
-	<%= f.error_notification %>
-	<%= f.error_notification message: f.object.errors[:base].to_sentence if f.object.errors[:base].present? %>
 
-	<div class="form-inputs">
-		<%= f.text_field :namae %>
-		<%= f.text_field :company %>
-		<%= f.text_field :link %>
-		<%= f.text_field :address %>
-		<%= f.text_field :arrival_time %>
-		<%= f.text_field :products %>
-		<%= f.text_field :stats %>
+	<% if @product && @product.errors.any? %>
+	<div class="container small">
+		<div class="alert alert-warning alert-dismissible">
+				<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+				<h5 class="text-danger">
+			<%= pluralize(@product.errors.count, "error") %> prohibited this product from being saved:
+				</h5>
+				<ul>
+			<% @product.errors.full_messages.each do |msg| %>
+			<li><%= msg %></li>
+			<% end %>
+				</ul>
+		</div>
 	</div>
-
-	<div class="form-actions">
-		<%= f.button :submit %>
+	<% end %>
+	<div class="card container">
+		<div class="card-body row">
+			<div class="col-sm-12">
+				<%= f.label :namae, '飲食店名' %>
+				<%= f.text_field :namae, class: "form-control form-control-sm mb-2" %>
+			</div>
+			<div class="col-lg-6 col-sm-12">
+				<%= f.label :company, '親会社' %>
+				<%= f.text_field :company, class: "form-control form-control-sm mb-2" %>
+			</div>
+			<div class="col-lg-6 col-sm-12">
+				<%= f.label :link, 'InfoMartリンクコード' %>
+				<%= f.text_field :link, class: "form-control form-control-sm mb-2", readonly: 'readonly' %>
+			</div>
+			<div class="col-lg-6 col-sm-12">
+				<%= f.label :address, '住所' %>
+				<%= f.text_field :address, class: "form-control form-control-sm mb-2" %>
+			</div>
+			<div class="col-lg-6 col-sm-12">
+				<%= f.label :arrival_time, '届日時間指定' %>
+				<%= f.text_field :arrival_time, class: "form-control form-control-sm mb-2" %>
+			</div>
+			<div class="col-sm-12">
+				<%= f.button :submit, :class => 'btn btn-success' %>
+			</div>
+		</div>
 	</div>
 <% end %>

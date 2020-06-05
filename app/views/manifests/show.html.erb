@@ -107,7 +107,7 @@
 										500g × <%= details[:item_count] %>
 									<% end %>
 								<% elsif type == :frozen %>
-									<% if details[:item_name].include?("デカプリオイスター") && details[:item_name].exclude?("大粒") && details[:item_name].exclude?("岡山県産") && order_details[:client].exclude?("ブリーズオブ東京")  && order_details[:client].exclude?("オイスターバー品川店") %>
+									<% if details[:item_name].include?("デカプリオイスター") && details[:item_name].exclude?("大粒") && details[:item_name].exclude?("LL") && details[:item_name].exclude?("岡山県産") && order_details[:client].exclude?("ブリーズオブ東京")  && order_details[:client].exclude?("オイスターバー品川店") %>
 										<%= if details[:item_name].include? "×20" then '20 ×' else '500g ×' end %> <%= details[:item_count] %><br>
 									<% end %>
 								<% end %>
@@ -118,7 +118,7 @@
 										1k × <%= details[:item_count] %>
 									<% end %>
 								<% elsif type == :frozen %>
-									<% if details[:item_name].include?("デカプリオイスター") && details[:item_name].include?("大粒") && details[:item_name].include?("大粒") && order_details[:client].exclude?("ブリーズオブ東京")  && order_details[:client].exclude?("オイスターバー品川店") or details[:item_name].include?("岡山県産") && details[:item_name].include?("デカプリオイスター") %>
+									<% if details[:item_name].include?("デカプリオイスター") && (details[:item_name].include?("大粒") or details[:item_name].include?("LL")) && order_details[:client].exclude?("ブリーズオブ東京")  && order_details[:client].exclude?("オイスターバー品川店") or details[:item_name].include?("岡山県産") && details[:item_name].include?("デカプリオイスター") %>
 										<%= if details[:item_name].include? "×20" then '20 ×' + details[:item_count].to_s elsif details[:item_name].include? "×10" then '10 ×' + details[:item_count].to_s else '500g × ' + details[:item_count].to_s end %><%= if details[:item_name].include?("岡山") then " ㊐" end %><br>
 									<% end %>
 								<% end %>
