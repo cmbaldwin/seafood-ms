@@ -1,6 +1,3 @@
-<h1>Editing Oyster Supply</h1>
+<% title "Funabiki Online - 牡蠣原料 " + @oyster_supply.supply_date.to_s %>
 
-<%= render 'form', oyster_supply: @oyster_supply, cached: true %>
-
-<%= link_to 'Show', @oyster_supply %> |
-<%= link_to 'Back', oyster_supplies_path %>
+<%= render 'form', material: @oyster_supply, cached: true %>

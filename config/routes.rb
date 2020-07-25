@@ -21,6 +21,9 @@ Rails.application.routes.draw do
 	get '/oyster_supplies/new_by/:supply_date(.:format)', as: :new_by, to: 'oyster_supplies#new_by'
 	get '/oyster_supplies/supply_check/:id(.:format)', as: :supply_check, to: 'oyster_supplies#supply_check'
 	get '/oyster_supplies/fetch_supplies/:start/:end(.:format)', as: :fetch_supplies, to: 'oyster_supplies#fetch_supplies'
+	get '/oyster_supplies/fetch_invoice/:id(.:format)', as: 'fetch_invoice', to: 'oyster_supplies#fetch_invoice'
+	get '/oyster_supplies/new_invoice/:start_date/:end_date(.:format)', as: 'new_invoice', to: 'oyster_supplies#new_invoice'
+	
 	resources :suppliers
 	devise_for :users, controllers: { sessions: 'users/sessions', registrations: 'users/registrations' }
 	get '/login', to: 'sessions#new'
@@ -103,6 +106,11 @@ Rails.application.routes.draw do
 	get '/manifests/empty_manifest/:type(.:format)', as: :empty_manifest, to: 'manifests#empty_manifest'
 
 	resources :restaurants
+	get '/insert_restaurant_data' => 'restaurants#insert_restaurant_data', as: 'insert_restaurant_data'
+
+	resources :oyster_invoices
+	get '/oyster_invoices/search/:id(.:format)', as: :oyster_invoice_search, to: 'oyster_invoices#index'
+	get '/oyster_invoices/create/:start_date/:end_date(.:format)', as: :create, to: 'oyster_invoices#create'
 
 end
 

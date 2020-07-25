@@ -3,8 +3,10 @@ Rails.application.configure do
 
   # Code is not reloaded between requests.
   config.cache_classes = true
+
   #added via: https://blog.heroku.com/rails-database-optimization
   config.cache_store = :redis_cache_store, { url: ENV['REDIS_URL'] }
+
   # Eager load code on boot. This eager loads most of Rails and
   # your application in memory, allowing both threaded web servers
   # and those relying on copy on write to perform better.
@@ -26,7 +28,7 @@ Rails.application.configure do
   # Compress JavaScripts and CSS.
   # config.assets.js_compressor = :uglifier
   config.assets.js_compressor = Uglifier.new(harmony: true)
-  # config.assets.css_compressor = :sass
+  config.assets.css_compressor = :sass
 
   # Do not fallback to assets pipeline if a precompiled asset is missed.
   config.assets.compile = false
@@ -110,4 +112,6 @@ Rails.application.configure do
 
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
+
+  config.active_job.queue_adapter = :sucker_punch
 end

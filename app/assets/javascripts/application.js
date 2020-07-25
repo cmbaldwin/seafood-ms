@@ -13,6 +13,8 @@
 //= require jquery
 //= require jquery_ujs
 //
+//= require moment
+//= require moment/ja.js
 //= require bootstrap-4.1.3-dist/js/bootstrap
 //= require bootstrap-4.1.3-dist/js/bootstrap.bundle
 //= require popper
@@ -20,8 +22,8 @@
 //= require bootstrap-sprockets
 //= require bootstrap-datepicker/core
 //= require bootstrap-datepicker/locales/bootstrap-datepicker.ja.js
+//= require tempusdominus-bootstrap-4.js
 //= require jquery.ui.widget
-//= require moment 
 //= require fullcalendar
 //= require fullcalendar/locale-all
 //= require chartkick
@@ -39,23 +41,43 @@
 //= require turbolinks
 //
 
-// Calendar 
+// Calendar
 function eventCalendar() {
 	const place = $('#supply_calendar').attr("data-place");
-	return $('#supply_calendar').fullCalendar({ 
+	return $('#supply_calendar').fullCalendar({
 		locale: 'ja',
 		plugins: [ 'interaction', 'dayGrid' ],
 		header: {
-			left: 'prev,next today',
+			left: 'prev,next today shikiri',
 			center: 'title',
 			right: 'appendArea'
 		},
 		customButtons: {
+			shikiri: {
+				text: '仕切り',
+				bootstrapFontAwesome: 'far fa-list-alt',
+				click: function() {
+					location.href = '/oyster_invoices';
+				}
+			},
 			appendArea: {
-				text: ' ',
+				text: ''
 			}
 		},
 		events: '/oyster_supplies.json?place=' + place,
+		eventClick: function(info) {
+			if (info.className == 'invoice_event') {
+					$('#invoiceModal').modal('toggle');
+					$.ajax({
+						type: "GET",
+						url: "/oyster_supplies/fetch_invoice/" + info.id,
+						dataType: "script",
+						data: info.id,
+						success: function() {
+						}
+					});
+				}
+			},
 		selectable: true,
 		dayClick: function(date, jsEvent, view) {
 			$('.fc-appendArea-button').remove();
@@ -64,7 +86,20 @@ function eventCalendar() {
 		select: function(startDate, endDate) {
 			var start_date = startDate.format();
 			var end_date = endDate.format();
-			$('.fc-appendArea-button').parent().append('<div class="btn-toolbar" role="toolbar" aria-label="ツールバー"><div class="btn-group mr-2" role="group" aria-label="ボタングルコース"><a type="button" class="btn btn-small text-white btn-secondary btn-disabled cursor-help">支払明細書:</a><a type="button" class="pdf_btn btn-small btn btn-primary" href="/oyster_supplies/payment_pdf/all/' + start_date + '/' + end_date + '/sakoshi", target="_blank">坂越</a><a type="button" class="pdf_btn btn btn-small btn-primary" href="/oyster_supplies/payment_pdf/all/' + start_date + '/' + end_date + '/aioi", target="_blank">相生</a><a type="button" class="btn btn-secondary btn-small text-white btn-disabled cursor-help">各生産者:</a><a type="button" class="pdf_btn btn btn-small btn-info" href="/oyster_supplies/payment_pdf/individual/' + start_date + '/' + end_date + '/sakoshi", target="_blank">坂越</a><a type="button" class="pdf_btn btn btn-small btn-info" href="/oyster_supplies/payment_pdf/individual/' + start_date + '/' + end_date + '/aioi", target="_blank">相生</a></div></div>');
+			while ($('.fc-appendArea-button').next('div').length) {
+				$('.fc-appendArea-button').next('div').remove();
+			}
+			$('.fc-appendArea-button').parent().append('<div class="btn-toolbar" role="toolbar" aria-label="ツールバー"><div class="btn-group mr-2" role="group" aria-label="botton-group"><small class="badge align-middle text-wrap btn btn-white pt-2 border border-grey cursor-default">支払明細書<br>プレビュー</small><div type="button" class="btn btn-small text-white btn-secondary btn-disabled cursor-help">生産者まとめ :</div><a type="button" class="pdf_btn btn-small btn btn-primary pl-1 pr-1" href="/oyster_supplies/payment_pdf/all/' + start_date + '/' + end_date + '/sakoshi", target="_blank">坂越</a><a type="button" class="pdf_btn btn btn-small btn-primary pl-1 pr-1" href="/oyster_supplies/payment_pdf/all/' + start_date + '/' + end_date + '/aioi", target="_blank">相生</a><a type="button" class="btn btn-secondary btn-small text-white btn-disabled cursor-help">各生産者:</a><a type="button" class="pdf_btn btn btn-small btn-info pl-1 pr-1" href="/oyster_supplies/payment_pdf/individual/' + start_date + '/' + end_date + '/sakoshi", target="_blank">坂越</a><a type="button" class="pdf_btn btn btn-small btn-info pl-1 pr-1" href="/oyster_supplies/payment_pdf/individual/' + start_date + '/' + end_date + '/aioi", target="_blank">相生</a><small class="badge align-middle text-wrap btn btn-white pt-2 border border-grey cursor-default">仕切り作成<br>送信予約</small><a type="button" class="btn btn-small btn-success pl-1 pr-1" data-toggle="modal" data-target="#invoiceModal">作成画面</a></div></div>'
+				);
+			$.ajax({
+				type: "GET",
+				url: '/oyster_supplies/new_invoice/' + start_date + '/' + end_date + '/',
+				dataType: "script",
+				data: start_date + end_date,
+				success: function() {
+				}
+			});
+			//$('#create_invoice').attr("href", '/oyster_invoices/create/' + start_date + '/' + end_date + '/');
 		},
 		unselect: function(jsEvent, view) {
 
@@ -73,13 +108,13 @@ function eventCalendar() {
 };
 
 function clearCalendar() {
-  $('#calendar').fullCalendar('delete'); 
+  $('#calendar').fullCalendar('delete');
   $('#calendar').html('');
 };
 
 
 $(document).on('turbolinks:load', function(){
-  eventCalendar();  
+  eventCalendar();
 });$(document).on('turbolinks:before-cache', clearCalendar);
 
 // Fade Flash Notices
@@ -92,7 +127,7 @@ $( document ).on('turbolinks:load', function() {
 //all popovers on, make them appear on hover and stay open on click
 $( document ).on('turbolinks:load', function() {
 	$('[data-toggle="popover"]').popover({
-			html:true,
+			html: true,
 			trigger: 'hover click'
 	})
 });
@@ -122,6 +157,12 @@ $( document ).on('turbolinks:load', function() {
 });
 
 //adds datapicker to a input box (for dates, duh)
+$.fn.datetimepicker.Constructor.Default = $.extend({}, $.fn.datetimepicker.Constructor.Default, {
+            icons: {
+                time: 'far fa-clock',
+                date: 'far fa-calendar',
+            } });
+
 $( document ).on('turbolinks:load', function() {
 	$('.datepicker').datepicker({
 		maxViewMode: 2,
@@ -132,6 +173,8 @@ $( document ).on('turbolinks:load', function() {
 		todayHighlight: true,
 		orientation: "bottom auto",
 		toggleActive: true
+		});
+	$('.datetimepicker').datetimepicker({ 
 		});
 });
 
@@ -153,7 +196,7 @@ $( document ).on('turbolinks:load', function() {
 //select all checkboxes with the select_all class
 $( document ).on('turbolinks:load', function() {
 	$('form').find('div.noshi :checkbox').each(function () {
-	
+
 	});
 	$('#select_all').click (function () {
 		var checkedStatus = this.checked;

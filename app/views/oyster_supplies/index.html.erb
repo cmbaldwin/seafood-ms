@@ -1,5 +1,21 @@
 <% title "Funabiki Online - 牡蠣原料マスター" %>
 
+<div class="modal fade" id="invoiceModal" tabindex="-1" role="dialog" aria-labelledby="invoiceModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="invoiceModalLabel">支払い明細書</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div id="invoice_partial">
+				<%= render :partial => 'invoice', locals: { invoice: @invoice }, remote: true %>
+			</div>
+		</div>
+	</div>
+</div>
+
 <div class="container">
 	<div id="supply_calendar" data-place="<%= 'supply_index' %>"></div>
 </div>

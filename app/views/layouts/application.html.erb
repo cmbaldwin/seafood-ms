@@ -6,7 +6,7 @@
 	<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;" />
 	<head>
 		<title><%= content_for?(:title) ? content_for(:title) : "Funabiki Online" %></title>
-		
+
 		<link href="https://fonts.googleapis.com/earlyaccess/notosansjapanese.css" rel="stylesheet" />
 
 		<%= stylesheet_link_tag    'application', 'data-turbolinks-track' => true %>
@@ -15,7 +15,7 @@
 		<%= csrf_meta_tags %>
 		<%= csp_meta_tag %>
 		<!-- include summernote css/js -->
-		
+
 	</head>
 
 	<body>
@@ -28,7 +28,7 @@
 				<ul class="navbar-nav mr-auto">
 				<% if user_signed_in? %>
 					<% if current_user.approved? && !current_user.supplier? %>
-						<li class="nav-item"> 
+						<li class="nav-item">
 							<a class="nav-link light_link" href="/articles">マニュアル</a>
 						</li>
 						<li class="nav-iteme">
@@ -37,8 +37,8 @@
 						<li class="nav-iteme">
 							<a class="nav-link light_link" href="/oyster_supplies">牡蠣原料</a>
 						</li>
-						<% if current_user.admin? %>
-						<li class="nav-iteme">
+						<% if false #current_user.admin? %>
+						<li class="nav-item">
 							<a class="nav-link light_link" href="/analysis">データ分析</a>
 						</li>
 						<% end %>
@@ -79,23 +79,23 @@
 					<% if user_signed_in? %>
 						<span class="navbar-text">
 							<div class="btn-group" role="group" aria-label="Basic">
-								<%= link_to ('<i class="fas fa-user"></i>').html_safe, edit_user_registration_path, :class => 'navbar-link btn btn-primary', 
-									"data-content" => 
+								<%= link_to ('<i class="fas fa-user"></i>').html_safe, edit_user_registration_path, :class => 'navbar-link btn btn-primary',
+									"data-content" =>
 										'メール <strong>: ' + current_user.email + '</strong><br>ユーザー名 <strong>: ' + current_user.username + '</strong>',
 								"role" => "button", "data-toggle" => "popover", "data-placement" => "top", :title => 'ユーザー', :alt => 'ユーザー', "tabindex" => "0" %>
 								<%= link_to ('<i class="fas fa-sign-out-alt"></i>').html_safe, destroy_user_session_path, :method => :delete, :class => 'navbar-link btn btn-danger' %>
 							</div>
-						</span> 
+						</span>
 						<% else %>
 						<span class="navbar-text">
-							<%= link_to "サインアップ", new_user_registration_path, :class => 'navbar-link'  %> | 
+							<%= link_to "サインアップ", new_user_registration_path, :class => 'navbar-link'  %> |
 							<%= link_to "ログイン", new_user_session_path, :method => :post, :class => 'navbar-link'  %>
 						</span>
 					<% end %>
 				</ul>
 
 			</div>
-		</nav>  
+		</nav>
 
 		<!-- Alerts -->
 		<% if notice %>

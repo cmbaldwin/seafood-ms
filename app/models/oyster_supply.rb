@@ -1,4 +1,5 @@
 class OysterSupply < ApplicationRecord
+
 	validates_presence_of :supply_date
 	validates_uniqueness_of :supply_date
 	serialize :oysters, Hash
@@ -7,6 +8,11 @@ class OysterSupply < ApplicationRecord
 	attr_accessor :start_date
 	attr_accessor :end_date
 	attr_accessor :export_format
+	attr_accessor :password
+
+	include OrderQuery
+	order_query :oyster_supply_query,
+		[:supply_date] # Sort :supply_date in :desc order
 
 	def weekday_japanese(num)
 		#d.strftime("%w") to Japanese
@@ -69,6 +75,53 @@ class OysterSupply < ApplicationRecord
 		@types = ["large", "small", "eggy", "large_shells", "small_shells", "thin_shells"]
 		@supplier_numbers = @sakoshi_suppliers.pluck(:id).map(&:to_s)
 		@supplier_numbers += @aioi_suppliers.pluck(:id).map(&:to_s)
+	end
+
+	def check_completion
+		completion = Hash.new
+		set_variables
+		@types.each do |type|
+			self.oysters[type].each do |supplier_id, supply_hash|
+				if (supply_hash["volume"]) != "0" && (supply_hash["price"] == "0")
+					completion[type].nil? ? ((completion[type] = Array.new) && (completion[type] << supplier_id)) : (completion[type] << supplier_id)
+				end
+			end
+		end
+		completion
+	end
+
+	def locked?
+		used_supply_ids = OysterInvoice.all.map {|i| i.oyster_supplies.ids }.flatten
+		used_supply_ids.include?(self.id)
+	end
+
+	def invoice
+		OysterInvoice.all.map { |i| (i.oyster_supplies.ids.include?(self.id)) ? (i.id) : () }.compact.first
+	end
+
+	def check_errors
+		set_variables
+		errors = Hash.new
+		prev = self.oyster_supply_query.previous.year_to_date
+		@types.each do |type|
+			self.oysters[type].each do |supplier_id, supplier_hash|
+				if supplier_hash["volume"].to_i > 0
+					last_price = prev[supplier_id][type]["price"].sort.reverse.last.to_i
+					current_price = supplier_hash["price"].to_i
+					if current_price != last_price
+						if (current_price < last_price * 0.8) || (current_price > last_price * 1.2)
+							errors[supplier_id].nil? ? (errors[supplier_id] = Hash.new) : ()
+							errors[supplier_id][type] = Hash.new
+							errors[supplier_id][type]["previous_price"] = last_price
+							errors[supplier_id][type]["current_price"] = current_price
+							errors[supplier_id][type]["should not be less than"] = last_price * 0.8
+							errors[supplier_id][type]["should not be more than"] = last_price * 1.2
+						end
+					end
+				end
+			end
+		end
+		errors
 	end
 
 	def do_setup
@@ -149,18 +202,21 @@ class OysterSupply < ApplicationRecord
 		new_year_to_date
 	end
 
+	def last_oysters_update
+		self.oysters_last_update.nil? ? (self.oysters_last_update = self.updated_at) : ()
+		self.oysters_last_update
+	end
+
 	def year_to_date_update_required?
 		year_to_date_range.each do |d|
 			oyster_supply = OysterSupply.find_by(supply_date: d.strftime('%Y年%m月%d日'))
 			if !oyster_supply.nil? && (oyster_supply.id != self.id)
 				if self.oysters[:year_to_date]
-					if oyster_supply.updated_at > self.oysters[:year_to_date][:updated]
+					if self.last_oysters_update > self.oysters[:year_to_date][:updated]
 						return true
-						break
 					end
 				else
 					return true
-					break
 				end
 			end
 		end
@@ -170,8 +226,12 @@ class OysterSupply < ApplicationRecord
 	def year_to_date
 		if year_to_date_update_required?
 			self.oysters[:year_to_date] = calculate_new_year_to_date
-			self.save
-			puts "Update was required"
+			if self.save
+				puts "Year to date re-caclulation was required"
+			else
+				puts "There was an error saving the year to date re-caclulation"
+				puts self.errors.messages
+			end
 		end
 		self.oysters[:year_to_date]
 	end
@@ -179,7 +239,6 @@ class OysterSupply < ApplicationRecord
 	def oyster_data
 		set_variables
 		oysters = self.oysters
-		alert = false
 		oyster_data = Hash.new
 		locations = ["坂越", "相生"]
 		locations.each do |location|
@@ -188,7 +247,6 @@ class OysterSupply < ApplicationRecord
 		end
 		@types.each do |type|
 			oysters[type].each do |supplier_id, keys|
-
 				supplier = Supplier.where(:id => supplier_id).first
 
 				oyster_data[supplier.location][type].nil? ? oyster_data[supplier.location][type] = Hash.new : ()
@@ -213,13 +271,6 @@ class OysterSupply < ApplicationRecord
 				else
 					oyster_data[supplier.location][:price_type_total][type] += (keys["price"].to_f * keys["volume"].to_f)
 				end
-
-				if keys["volume"] != "0"
-					if keys["price"] == "0"
-						alert = true
-					end
-				end
-
 			end
 		end
 		locations.each do |location|
@@ -309,7 +360,7 @@ class OysterSupply < ApplicationRecord
 					:light => ".fonts/SourceHan/SourceHanSans-Light.ttf",
 				})
 				# set utf-8 japanese font
-				pdf.font "SourceHan" 
+				pdf.font "SourceHan"
 				pdf.font_size 10
 				# Set up the table data and header
 				table_data = Array.new
@@ -344,7 +395,7 @@ class OysterSupply < ApplicationRecord
 								i += 1
 							end
 							daily_data_row = Array.new
-							daily_volume_row = Array.new
+							#daily_volume_row = Array.new
 							# Make subtotal table
 								subtotal_table_data = Array.new
 								volume_subtotal_table_data = Array.new
@@ -354,7 +405,7 @@ class OysterSupply < ApplicationRecord
 									data[locale][type].each do |price, volume|
 										if volume != 0
 											subtotal_row = Array.new
-											if is == 0 
+											if is == 0
 												subtotal_row << d.strftime('%m') + "." + d.strftime('%d') + "（" + weekday_japanese(d.strftime("%w").to_i) + "）"
 												is += 1
 											else
@@ -372,7 +423,7 @@ class OysterSupply < ApplicationRecord
 												it += 1
 											end
 										end
-									end 
+									end
 									volume_totals[type].nil? ? (volume_totals[type] = Hash.new) : ()
 									volume_totals[type][:volume].nil? ? (volume_totals[type][:volume] = data[locale][:volume_total][type]) : (volume_totals[type][:volume] += data[locale][:volume_total][type])
 									volume_totals[type][:total].nil? ? (volume_totals[type][:total] = data[locale][:price_type_total][type]) : (volume_totals[type][:total] += data[locale][:price_type_total][type])
@@ -389,9 +440,9 @@ class OysterSupply < ApplicationRecord
 									end
 									bad_cells.background_color = "FFAAAA"
 								end
-								volume_subtotal_table = pdf.make_table(volume_subtotal_table_data, :position => :center, :width => 544, :cell_style => { :border_width => 0, :size => 7, :padding => 3 }, :column_widths => {0 => 35, 1 => 170, 2 => 45, 3 => 45, 4 => 70, 5 => 70, 6 => 109}) do |t|
-									
-								end
+								#volume_subtotal_table = pdf.make_table(volume_subtotal_table_data, :position => :center, :width => 544, :cell_style => { :border_width => 0, :size => 7, :padding => 3 }, :column_widths => {0 => 35, 1 => 170, 2 => 45, 3 => 45, 4 => 70, 5 => 70, 6 => 109}) do |t|
+								#
+								#end
 							daily_data_row << { :content => subtotal_table, :colspan => 7 }
 							#daily_volume_row << { :content => volume_subtotal_table, :colspan => 7, :height => 100 }
 							daily_data << daily_data_row
@@ -407,7 +458,7 @@ class OysterSupply < ApplicationRecord
 							table_data << [{:content => daily_table, :colspan => 3}]
 						end
 					end
-				end 
+				end
 
 				# Volume totals row
 				volume_total_table_rows = Array.new
@@ -462,6 +513,8 @@ class OysterSupply < ApplicationRecord
 						page.column(-1).border_right_width = 2
 					end
 				end
+
+				pdf.encrypt_document(user_password: self.password,owner_password: self.password) if self.password
 				pdf_data = Array.new
 				pdf_data << dates_for_print
 				pdf_data << pdf
@@ -481,10 +534,10 @@ class OysterSupply < ApplicationRecord
 					:bold => ".fonts/SourceHan/SourceHanSans-Bold.ttf",
 					:light => ".fonts/SourceHan/SourceHanSans-Light.ttf",
 				})
-				
-				pdf.font "SourceHan" 
+
+				pdf.font "SourceHan"
 				pdf.font_size 10
-				
+
 				suppliers.each_with_index do |supplier, i|
 					if i != 0
 						pdf.start_new_page
@@ -527,7 +580,7 @@ class OysterSupply < ApplicationRecord
 								price = data[type][supplier.id.to_s]["price"]
 								subtotal = yenify((volume.to_f * price.to_f))
 								if volume != "0"
-									if it == 0 
+									if it == 0
 										daily_data << [gapi, type_to_japanese(type), volume, type_to_unit(type), yenify(price), subtotal, "" ]
 										it += 1
 									else
@@ -637,8 +690,8 @@ class OysterSupply < ApplicationRecord
 						volume_row << yearly[type][:volume].to_s
 					end
 					yearly_data << type_row
-					yearly_data << volume_row 
-					yearly_data << price_row 
+					yearly_data << volume_row
+					yearly_data << price_row
 					yearly_data << invoice_row
 					pdf.table(yearly_data, :position => :center, :width => 545.28, :cell_style => { :inline_format => true, :size => 7, :align => :center, :border_width => 0.25 }) do |t|
 						t.row(0).size = 10
@@ -650,6 +703,8 @@ class OysterSupply < ApplicationRecord
 					end
 
 				end
+
+				pdf.encrypt_document(user_password: self.password,owner_password: self.password) if self.password
 				pdf_data = Array.new
 				pdf_data << dates_for_print
 				pdf_data << pdf
@@ -687,7 +742,7 @@ class OysterSupply < ApplicationRecord
 				:light => ".fonts/SourceHan/SourceHanSans-Light.ttf",
 			})
 			# set utf-8 japanese font
-			pdf.font "SourceHan" 
+			pdf.font "SourceHan"
 			pdf.font_size 10
 			am_or_pm.each_with_index do |am_or_pm, i|
 				if i != 0
@@ -716,7 +771,7 @@ class OysterSupply < ApplicationRecord
 						thin_shell_subtotal = self.oysters.dig(kanji_am_pm(am_or_pm), "thin_shells", supplier.id.to_s, "0").to_i
 						darken = (large_subtotal + small_subtotal + large_shell_subtotal + small_shell_subtotal + thin_shell_subtotal).zero?
 						supplier_top_row = Array.new
-						if i == 0 
+						if i == 0
 							supplier_top_row << { :content => supplier.location[0] + "<br>" + supplier.location[1] + "<font size='11'><br><br>大<br>" + large_total.to_s + "<br><br>小<br>" + small_total.to_s + "</font>", :rowspan => (area_suppliers.length * 2), :size => 28, :valign => :center, :align => :center}
 						end
 						#set up totals for shucked oysters

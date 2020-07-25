@@ -1,8 +1,9 @@
 namespace :stats do
 
-	desc "Scrape Infomart restaurants"
+	desc "Market and Product Stats"
 	task :refresh_stats => :environment do
 
+		puts "Calculating Market and Product stats"
 		puts 'First checking old Frozen Oyster data for products without entries'
 		FrozenOyster.all.each do |fro|
 			fro.fix_empty_products
@@ -35,12 +36,12 @@ namespace :restaurants do
 
 	desc "Scrape Infomart restaurants"
 	task :scrape_infomart_for_restaurants => :environment do
-
 		require 'mechanize'
 
+		puts "Scraping Infomart for restaurants"
 		agent = Mechanize.new
-		# Set scrape date
-		scrape_date = DateTime.now
+		# Set scrape date (unused)
+		# scrape_date = DateTime.now
 		#Init browsing agent
 		#go to the login page with endpoint of customers page
 		page = agent.get('https://www2.infomart.co.jp/trade/my_catalog_trade.page?2')
@@ -51,7 +52,8 @@ namespace :restaurants do
 		page = agent.submit(login_form)
 		#we're in setup a hash to temporarily store information and let's iterate
 		restaurant_ids = Hash.new
-		page_number = page.search('#id1 span.num')
+		# Iterating pages won't work with mechanize's limited JS ability
+		# page_number = page.search('#id1 span.num')
 		puts 'This only works for the first page (because of JS issues), scraping that page now'
 		restaurant_links = page.search('#dataList tbody.slip-summary-a')
 		puts 'Found ' + restaurant_links.length.to_s + ' potential restaurants on this page'
@@ -100,9 +102,9 @@ namespace :restaurants do
 
 	desc "Set existing Manifests with associated Restaurant"
 	task :set_manifest_restaurants => :environment do
-
 		include ActionView::Helpers::ManifestsHelper
 
+		puts "Setting existing Manifests with associated Restaurant"
 		Manifest.all.each_with_index do |manifest, i|
 			@manifest = manifest
 			new_hash = Hash.new
@@ -155,6 +157,7 @@ namespace :restaurants do
 
 	desc "Search existing Manifests for products to be associated with Restaurants"
 	task :set_restaurant_products_from_manifests => :environment do
+		puts "Searching existing Manifests for products to be associated with Restaurants"
 		task_length = Manifest.all.length + 1
 		Manifest.all.each_with_index do |manifest, i|
 			puts "Checking Manifest ID#{manifest.id} (#{i + 1}/#{task_length})"
@@ -185,7 +188,19 @@ namespace :restaurants do
 		end
 	end
 
-	task :runall => [:scrape_infomart_for_restaurants, :set_manifest_restaurants, :set_restaurant_products_from_manifests] do
+	desc "Calculate totals and other stats for each Restaurant"
+	task :calculate_restaurant_stats => :environment do
+		puts "Calculating totals and other stats for each Restaurant"
+		allRestaurants = Restaurant.all
+		allRestaurants.each_with_index do |r, i|
+			puts i.to_s + ' of ' + allRestaurants.length.to_s
+			puts 'Calculating stats for ' + r.namae + ' (ID#' + r.id.to_s + ')'
+			r.do_stats
+			puts 'finished'
+		end
+	end
+
+	task :runall => [:scrape_infomart_for_restaurants, :set_manifest_restaurants, :set_restaurant_products_from_manifests, :calculate_restaurant_stats] do
 		puts "All tasks completed"
 	end
 
@@ -243,12 +258,12 @@ namespace :daily_shell_cards do
 	task :do_prep => :environment do
 
 		today = Date.today
-		def nengapi_maker(date, plus)
-			(date + plus).strftime('%Y年%m月%d日')
+		def nengapi_maker(date, adjust)
+			(date + adjust).strftime('%Y年%m月%d日')
 		end
 		
 		#Destroy cards from prior day
-		ExpirationCard.where(manufactuered_date: nengapi_maker(today, -1)).destroy_all
+		ExpirationCard.where(manufactuered_date: [nengapi_maker(today, -1), '']).destroy_all
 
 		#Sakoshi Today + 4
 		puts 'Create Sakoshi Today + 4'
@@ -290,6 +305,14 @@ namespace :daily_shell_cards do
 		puts 'Created:'
 		puts @sakoshi_expiration_today_five_expo.to_s
 		puts '------------------------'
+		#Sakoshi Muji
+		puts 'Create Sakoshi Muji'
+		@sakoshi_expiration_muji = ExpirationCard.new(product_name: "殻付き かき", manufacturer_address: "兵庫県赤穂市中広1576-11", manufacturer: "株式会社 船曳商店", ingredient_source: "兵庫県坂越海域", consumption_restrictions: "生食用", manufactuered_date: '', expiration_date: '', storage_recommendation: "要冷蔵　0℃～10℃", made_on: true, shomiorhi: true)
+		@sakoshi_expiration_muji.create_pdf
+		@sakoshi_expiration_muji.save
+		puts 'Created:'
+		puts @sakoshi_expiration_muji.to_s
+		puts '------------------------'
 
 		#Aioi Today + 4
 		puts 'Create Aioi Today + 4'
@@ -330,6 +353,14 @@ namespace :daily_shell_cards do
 		@aioi_expiration_today_five_expo.save
 		puts 'Created:'
 		puts @aioi_expiration_today_five_expo.to_s
+		puts '------------------------'
+		#Sakoshi Muji
+		puts 'Create Aioi Muji'
+		@aioi_expiration_muji = ExpirationCard.new(product_name: "殻付き かき", manufacturer_address: "兵庫県赤穂市中広1576-11", manufacturer: "株式会社 船曳商店", ingredient_source: "兵庫県相生海域", consumption_restrictions: "生食用", manufactuered_date: '', expiration_date: '', storage_recommendation: "要冷蔵　0℃～10℃", made_on: true, shomiorhi: true)
+		@aioi_expiration_muji.create_pdf
+		@aioi_expiration_muji.save
+		puts 'Created:'
+		puts @aioi_expiration_muji.to_s
 		puts '------------------------'
 
 	end
@@ -619,4 +650,23 @@ task refresh_all_online_shop: :environment do
 		puts "Updated #" + manifest.id.to_s + "(" + i.to_s + "of" + total_count.to_s + ")"
 	end
 	puts "Finished."
+end
+
+desc "Check for mail that needs to be sent and send it"
+task mail_check_and_send: :environment do
+	counter = 0
+	OysterInvoice.all.each do |invoice|
+		unless invoice.completed
+			if invoice.send_at <= DateTime.now
+				puts 'Sending mailer for invoice from ' + invoice.start_date + ' ~ ' + invoice.end_date
+				InvoiceMailer.with(invoice: invoice).sakoshi_invoice_email.deliver_now
+				InvoiceMailer.with(invoice: invoice).aioi_invoice_email.deliver_now
+				invoice.completed = true
+				invoice.data[:mail_sent] = DateTime.now
+				invoice.save
+				counter += 1
+			end
+		end
+	end
+	puts 'Sent ' + counter.to_s + ' e-mail(s)'
 end

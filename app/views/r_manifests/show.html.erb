@@ -280,6 +280,16 @@
 									<% end %>
 								</td>
 								<td scope="col">
+									<% if !order[:tako][:amount].nil? %>
+										<% order[:tako][:amount].each_with_index do |amount, i| %>
+											<% if i > 0 %> <br> <% end %>
+											ボイルたこ (~1㎏) × <%= amount %>
+											<% count = order[:tako][:count].shift %>
+											<% if count > 1 %>
+												<%= '× ' + count.to_s %>
+											<% end %>
+										<% end %>
+									<% end %>
 									<% if !order[:karaebi80g][:amount].nil? %>
 										<% order[:karaebi80g][:amount].each_with_index do |amount, i| %>
 											<% if i > 0 %> <br> <% end %>

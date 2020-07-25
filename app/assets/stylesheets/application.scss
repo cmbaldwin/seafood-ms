@@ -24,6 +24,7 @@
 @import "font-awesome-sprockets";
 @import "font-awesome";
 @import "bootstrap-datepicker";
+@import "tempusdominus-bootstrap-4.css";
 @import "colorpicker/colorpicker";
 @import "fullcalendar";
 
@@ -272,3 +273,14 @@ input[type=number]::-webkit-outer-spin-button {
 .cursor-wait {cursor: wait !important;}
 .cursor-zoom-in {cursor: zoom-in !important;}
 .cursor-zoom-out {cursor: zoom-out !important;}
+
+.no-bs-validation {
+  .is-valid, .is-invalid {
+    border-color: $gray-400;
+    background-image: inherit;
+    &:focus {
+      border-color: inherit;
+      box-shadow: 0 0 0 .2rem $gray-400;
+    }
+  }
+}

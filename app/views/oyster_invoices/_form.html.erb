@@ -1,0 +1,78 @@
+<div class="row row-cols-1 row-cols-md-2">
+	<div class="col mb-4">
+		<div class="card">
+			<div class="card-header">
+				<b><%= invoice_display_date(@oyster_invoice) %></b>
+				<span class="badge badge-secondary float-right">ID# <%= @oyster_invoice.id %></span>
+			</div>
+			<div class="card-body">
+				<table class="table">
+					<thead>
+						<tr>
+							<th scope="col">場所</th>
+							<th scope="col">フォーマット</th>
+							<th scope="col">PDFリンク</th>
+							<th scope="col">PDFパスワード</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<th scope="row">坂越</th>
+							<td>まとめ</td>
+							<td><%= link_to (@oyster_invoice.data[:processing] ? '<i class="fas fa-spinner"></i>' : '<i class="far fa-file-pdf"></i>').html_safe, @oyster_invoice.sakoshi_all_pdf.url, class: 'btn btn-sm btn-info' %></td>
+							<td><samp><%= @oyster_invoice[:data][:passwords]["sakoshi_all_password"] %></samp></td>
+						</tr>
+						<tr>
+							<th scope="row">坂越</th>
+							<td>各生産者</td>
+							<td><%= link_to (@oyster_invoice.data[:processing] ? '<i class="fas fa-spinner"></i>' : '<i class="far fa-file-pdf"></i>').html_safe, @oyster_invoice.sakoshi_seperated_pdf.url, class: 'btn btn-sm btn-info' %></td>
+							<td><samp><%= @oyster_invoice[:data][:passwords]["sakoshi_seperated_password"] %></samp></td>
+						</tr>
+						<tr>
+							<th scope="row">相生</th>
+							<td>まとめ</td>
+							<td><%= link_to (@oyster_invoice.data[:processing] ? '<i class="fas fa-spinner"></i>' : '<i class="far fa-file-pdf"></i>').html_safe, @oyster_invoice.aioi_all_pdf.url, class: 'btn btn-sm btn-info' %></td>
+							<td><samp><%= @oyster_invoice[:data][:passwords]["aioi_all_password"] %></samp></td>
+						</tr>
+						<tr>
+							<th scope="row">相生</th>
+							<td>各生産者</td>
+							<td><%= link_to (@oyster_invoice.data[:processing] ? '<i class="fas fa-spinner"></i>' : '<i class="far fa-file-pdf"></i>').html_safe, @oyster_invoice.aioi_all_pdf.url, class: 'btn btn-sm btn-info' %></td>
+							<td><samp><%= @oyster_invoice[:data][:passwords]["aioi_seperated_password"] %></samp></td>
+						</tr>
+					</tbody>
+				</table>
+				<p class="card-text">
+					<%= form_for @oyster_invoice do |f| %>
+						<%= f.label :sakoshi_emails, "坂越へのメール", class: 'pr-0' %>
+						<%= f.text_field :sakoshi_emails, class: 'form-control form-control-sm' %>
+						<%= f.label :aioi_emails, "相生へのメール", class: 'pr-0' %>
+						<%= f.text_field :aioi_emails, class: 'form-control form-control-sm' %>
+						<hr>
+						<%= f.label :send_at, "送信予約日時", class: 'pr-0' %>
+						<div class="input-group date datetimepicker" id="<%= @oyster_invoice.id %>" data-target-input="nearest">
+							<%= f.text_field :send_at, 'data-target' => "##{@oyster_invoice.id}", class: 'datetimepicker-input form-control', value: (@oyster_invoice.send_at.nil? ? (DateTime.now.monday + 1.week + 9.hours) : (@oyster_invoice.send_at)) %>
+							<hr>
+							<div class="input-group-append" data-target="#<%= @oyster_invoice.id %>" data-toggle="datetimepicker">
+							<div class="input-group-text"><i class="fa fa-calendar"></i></div>
+							</div>
+						</div>
+						<hr>
+						<span class="float-left">
+							<%= f.label :completed, '送信済？', class: 'pr-0' %>
+							<%= f.check_box :completed, class: 'ml-1' %>
+						</span>
+						<%= link_to '削除', @oyster_invoice, method: :delete, data: { confirm: '削除?' }, class: 'btn btn-sm btn-danger float-right m-2' %>
+						<%= f.submit '更新', class: 'btn btn-success btn-sm float-right m-2' %>
+					<% end %>
+				</p>
+			</div>
+			<div class="card-footer">
+				<small class="text-muted float-left">
+					最終更新時刻: <%= @oyster_invoice.updated_at %><br>
+					原料入力の最終更新時刻:
+				</small>
+			</div>
+		</div>
+	</div>
+</div>

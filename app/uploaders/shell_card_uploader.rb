@@ -1,4 +1,4 @@
-class CarrierStringIO < StringIO
+class CarrierStringECIO < StringIO
 	def original_filename
 		"賞味期限カード.pdf"
 	end

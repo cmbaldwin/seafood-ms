@@ -12,7 +12,7 @@ Dotenv::Railtie.load
 module FunabikiOnline
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
-    config.load_defaults 5.2
+    config.load_defaults 6.0
 
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration can go into files in config/initializers
@@ -21,7 +21,9 @@ module FunabikiOnline
 
     # Set up Devise alerts in Japanese
 	config.i18n.load_path += Dir[Rails.root.join('locales', '*.{rb,yml}').to_s]
-	config.i18n.default_locale = :'ja'
+	config.i18n.default_locale = :ja
   config.time_zone = 'Tokyo'
+
+  config.active_job.queue_adapter = :sucker_punch
   end
 end

@@ -14,6 +14,7 @@ $( document ).on('turbolinks:load', function() {
 	});
 
 	// Calendar Setup
+	$('a.invoice_event').attr('data-remote', 'true');
 	$('.fc-appendArea-button').addClass('d-none').attr('disabled', 'disabled').removeClass('fc-button fc-state-default fc-corner-left fc-corner-right');
 	$('.fc-center').addClass('float-left ml-3');
 	$('#supply_calendar .fc-body').click(function(event){

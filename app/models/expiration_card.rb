@@ -49,7 +49,7 @@ class ExpirationCard < ApplicationRecord
 				t.row(0).height = 5
 				t.row(-1).height = 0
 			end
-			self.download = CarrierStringIO.new(pdf.render)
+			self.download = CarrierStringECIO.new(pdf.render)
 		end
 		pdf = nil
 	end

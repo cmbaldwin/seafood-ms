@@ -30,6 +30,9 @@ gem 'puma', '~> 3.11'
 gem 'redis', '~> 4.0.1'
 gem 'hiredis'
 
+# Single dyno async
+gem 'sucker_punch', '~> 2.0'
+
 # Default JS compiler for Rails 6
 gem "webpacker"
 
@@ -39,8 +42,6 @@ gem 'sass-rails', '~> 5.0'
 gem 'uglifier', '>= 1.3.0'
 # See https://github.com/rails/execjs#readme for more supported runtimes
 
-# Use CoffeeScript for .coffee assets and views
-gem 'coffee-rails', '~> 4.2'
 # Turbolinks makes navigating your web application faster. Read more: https://github.com/turbolinks/turbolinks
 gem 'turbolinks', '~> 5'
 
@@ -97,6 +98,7 @@ gem 'sprockets-rails', '>= 2.3.2', :require => 'sprockets/railtie'
 gem 'bootstrap', '>= 4.1.3'
 gem 'bootstrap-datepicker-rails', :require => 'bootstrap-datepicker-rails',
                                   :git => 'https://github.com/Nerian/bootstrap-datepicker-rails.git'
+gem 'bootstrap4-datetime-picker-rails'
 
 #Add JQuery (for Bootstrap)
 gem 'jquery-rails', '~> 4.3.1'
@@ -131,8 +133,7 @@ gem 'sendgrid-ruby'
 gem 'will_paginate', '~> 3.1.1'
 
 ## PDF reader and writer for Rakuten Manifests
-gem 'prawn'
-gem 'prawn-table'
+gem 'prawn-rails'
 
 ## On the fly Hankaku / Zenkaku Conversion (http://gimite.net/gimite/rubymess/moji.html)
 gem 'moji', github: 'gimite/moji'
@@ -151,5 +152,9 @@ gem 'momentjs-rails'
 ## Finding next and previous entries for models https://github.com/glebm/order_query
 gem 'order_query', '~> 0.5.0'
 
-## For uploading data
+## For uploading CSV data
 gem 'csv'
+
+## Weather API
+gem 'weatherb'
+gem 'faraday_middleware'

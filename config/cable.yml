@@ -7,5 +7,4 @@ test:
 production:
   adapter: redis
   url: <%= ENV.fetch("REDIS_URL") { "redis://localhost:6379/1" } %>
-  # channel_prefix: shyacho_soft_production ?
   channel_prefix: funabiki_online_production

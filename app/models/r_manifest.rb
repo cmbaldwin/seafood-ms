@@ -184,25 +184,26 @@ class RManifest < ApplicationRecord
 						orders_hash[i][:items] << item
 					end
 				end
-				types = ['mizukiri', 'shells', 'sets', 'karaebi80g', 'mukiebi80g', 'anago', 'dekapuri', 'reitou_shell', 'kakita', 'knife']
+				types = ['mizukiri', 'shells', 'sets', 'karaebi80g', 'mukiebi80g', 'anago', 'dekapuri', 'reitou_shell', 'kakita', 'tako', 'knife']
 				types.each do |type|
 					orders_hash[i][type.to_sym] = Hash.new
 					orders_hash[i][type.to_sym][:amount] = Array.new
 					orders_hash[i][type.to_sym][:count] = Array.new
 				end
-				products = { mizukiri: { 10000003 => 4, 10000002 => 3, 10000001 => 2, 10000018 => 1, 10000035 => 2 },
-					sets: { 10000007 => 101, 10000008 => 201, 10000022 => 301, 10000009 => 202, 10000023 => 302 },
-					shells: { 10000040 => 100, 10000006 => 50, 10000025 => 40, 10000005 => 30, 10000004 => 20, 10000015 => 10 },
-					karaebi80g: { 10000011 => 10, 10000010 => 5 },
-					mukiebi80g: { 10000016 => 3, 10000017 => 5 },
-					anago: { 10000012 => 350, 10000013 => 480, 10000014 => 600 },
-					dekapuri: { 10000027 => 1, 10000030 => 2, 10000028 => 3, 10000029 => 4 },
-					reitou_shell: { 10000042 => 100, 10000041 => 50, 10000039 => 40, 10000038 => 30, 10000037 => 20, 10000031 => 10 }
+				products = { mizukiri: { '10000003' => 4, '10000002' => 3, '10000001' => 2, '10000018' => 1, '10000035' => 2 },
+					sets: { '10000007' => 101, '10000008' => 201, '10000022' => 301, '10000009' => 202, '10000023' => 302 },
+					shells: { '10000040' => 100, '10000006' => 50, '10000025' => 40, '10000005' => 30, '10000004' => 20, '10000015' => 10 },
+					karaebi80g: { '10000011' => 10, '10000010' => 5 },
+					mukiebi80g: { '10000016' => 3, '10000017' => 5 },
+					anago: { '10000012' => 350, '10000013' => 480, '10000014' => 600 },
+					dekapuri: { '10000027' => 1, '10000030' => 2, '10000028' => 3, '10000029' => 4 },
+					tako: { 'boiltako800-1k' => 1},
+					reitou_shell: { '10000042' => 100, '10000041' => 50, '10000039' => 40, '10000038' => 30, '10000037' => 20, '10000031' => 10 }
 					}
 				orders_hash[i][:items].each do |item_details_hash|
 					products.each do |type, id_hash|
 						id_hash.each do |id, amount|
-							if item_details_hash['manageNumber'] == id.to_s
+							if item_details_hash['manageNumber'] == id
 								orders_hash[i][type][:amount] << amount
 								orders_hash[i][type][:count] << item_details_hash['units']
 							end
@@ -269,7 +270,7 @@ class RManifest < ApplicationRecord
 		data = Hash.new
 		knife_data = Hash.new
 		order_types = [:mizukiri, :shells, :sets]
-		other_types = [:dekapuri, :karaebi80g, :mukiebi80g, :anago, :reitou_shell, :kakita]
+		other_types = [:dekapuri, :karaebi80g, :mukiebi80g, :anago, :reitou_shell, :tako, :kakita]
 		all_types = order_types.push(*other_types)
 		intital_data.each_with_index do |order, i|
 			(i == 0) ? data[:knife] = Hash.new : ()
@@ -342,7 +343,7 @@ class RManifest < ApplicationRecord
 			#set utf-8 japanese font
 			pdf.font "SourceHan", :style => :normal
 			header_data_row = ['#', '注文者', '送付先', '500g', 'セル', 'セット', 'その他', 'お届け日', '時間', 'ナイフ', 'のし', '領収書', '備考']
-			translation_hash = {:mizukiri => "水切り", :shells => "セル", :sets => "セット", :dekapuri => "デカプリオイスター", :karaebi80g => "干しエビ（殻付き）80g", :mukiebi80g => "干しエビ（むき身）80g", :anago => "穴子", :reitou_shell => "冷凍せ", :kakita => "カキータ"}
+			translation_hash = {:mizukiri => "水切り", :shells => "セル", :sets => "セット", :dekapuri => "デカプリオイスター", :karaebi80g => "干しエビ（殻付き）80g", :mukiebi80g => "干しエビ（むき身）80g", :anago => "穴子", :reitou_shell => "冷凍せ", :tako => "ボイルたこ (~1㎏)", :kakita => "カキータ"}
 			[final, final_knife].each_with_index do |data_set, mi|
 				all_types.each_with_index do |type, i|
 					if !data_set[type].empty? && !data_set[type].nil?
@@ -407,6 +408,14 @@ class RManifest < ApplicationRecord
 								end
 								#others
 								others_text = ''
+									if !order[:tako][:amount].nil?
+										order[:tako][:amount].each_with_index do |amount, i|
+											if i > 0 then others_text += '
+												' end
+											others_text += 'ボイルたこ (~1㎏)×' + amount.to_s
+											if order[:tako][:count][i] > 1 then others_text += '× ' + order[:tako][:count][i].to_s + '!' end
+										end
+									end
 									if !order[:karaebi80g][:amount].nil?
 										order[:karaebi80g][:amount].each_with_index do |amount, i|
 											if i > 0 then others_text += '
@@ -551,6 +560,7 @@ class RManifest < ApplicationRecord
 		dekapuri_count = 0
 		anago_count = 0
 		ebi_count = 0
+		tako_count = 0
 		if !self.new_orders_hash.nil?
 			self.new_orders_hash.each do |order|
 				if order.is_a?(Hash)
@@ -592,6 +602,11 @@ class RManifest < ApplicationRecord
 							ebi_count += 1
 						end
 					end
+					if !order[:tako].empty?
+						order[:tako][:amount].each_with_index do |amount, i|
+							tako_count += 1
+						end
+					end
 				end
 			end
 		end
@@ -600,6 +615,7 @@ class RManifest < ApplicationRecord
 		counts[:dekapuri] = dekapuri_count
 		counts[:anago] = anago_count
 		counts[:ebi] = ebi_count
+		counts[:tako] = tako_count
 		return counts
 	end
 
@@ -611,6 +627,7 @@ class RManifest < ApplicationRecord
 			mukiebi80g: { 10000016 => 3, 10000010 => 5 },
 			anago: { 10000012 => 350, 10000013 => 480, 10000014 => 600 },
 			dekapuri: { 10000027 => 1, 10000030 => 2, 10000028 => 3, 10000029 => 4 },
+			tako: { 'boiltako800-1k' => 1},
 			reitou_shell: { 10000042 => 100, 10000041 => 50, 10000039 => 40, 10000038 => 30, 10000037 => 20, 10000031 => 10 }
 		}
 		work_totals = Hash.new
@@ -730,6 +747,14 @@ class RManifest < ApplicationRecord
 					end
 					#others
 					others_text = ''
+						if !order[:tako][:amount].nil?
+							order[:tako][:amount].each_with_index do |amount, i|
+								if i > 0 then others_text += '
+									' end
+								others_text += 'ボイルたこ (~1㎏)' + amount.to_s
+								if order[:tako][:count][i] > 1 then others_text += '× ' + order[:tako][:count][i].to_s + '!' end
+							end
+						end
 						if !order[:karaebi80g][:amount].nil?
 							order[:karaebi80g][:amount].each_with_index do |amount, i|
 								if i > 0 then others_text += '
