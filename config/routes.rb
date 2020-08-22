@@ -33,7 +33,12 @@ Rails.application.routes.draw do
 	match 'users/:id' => 'users#destroy', :via => :delete, :as => :admin_destroy_user
 	match 'users/:id' => 'users#show', via: 'get', as: :user
 	resources :users
-	
+	if defined?(Sidekiq::Web)
+		authenticate :user do
+			mount Sidekiq::Web => '/sidekiq'
+		end
+	end
+
 	resources :noshis do
 		collection do
 			delete 'destroy_multiple'
@@ -112,5 +117,12 @@ Rails.application.routes.draw do
 	get '/oyster_invoices/search/:id(.:format)', as: :oyster_invoice_search, to: 'oyster_invoices#index'
 	get '/oyster_invoices/create/:start_date/:end_date(.:format)', as: :create, to: 'oyster_invoices#create'
 
-end
+  	resources :yahoo_orders, only: [:index, :show]
+  	get 'yahoo', as: :yahoo_response_auth_code, to: 'yahoo_orders#yahoo_response_auth_code'
+  	get '/fetch_yahoo_list/:date', as: :fetch_yahoo_list, to: 'yahoo_orders#fetch_yahoo_list'
+  	get 'refresh_yahoo', as: :refresh_yahoo, to: 'yahoo_orders#refresh'
+  	get 'yahoo_spreadsheet/:ship_date', as: :yahoo_spreadsheet, to: 'yahoo_orders#yahoo_spreadsheet', defaults: { format: :xls }
+  	get 'yahoo_csv/:ship_date', as: :yahoo_csv, to: 'yahoo_orders#yahoo_csv', defaults: { format: :csv }
+  	get 'yahoo_shipping_list/:ship_date', as: :yahoo_shipping_list, to: 'yahoo_orders#yahoo_shipping_list'
 
+end

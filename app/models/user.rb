@@ -11,6 +11,8 @@ class User < ApplicationRecord
 
 	enum role: [:user, :vip, :admin, :supplier, :employee]
 
+	serialize :data
+
 	attr_writer :login
 
 	def login
@@ -19,6 +21,16 @@ class User < ApplicationRecord
 
 	def set_default_role
 		self.role ||= :user
+	end
+
+	def collect_yahoo_token(code)
+		data = Hash.new
+		data[:yahoo] = Hash.new if !data[:yahoo].is_a?(Hash)
+		data[:yahoo][:token_code] = Hash.new if !data[:yahoo][:token_code].is_a?(Hash)
+		data[:yahoo][:token_code][:code] = code
+		data[:yahoo][:token_code][:acquired] = DateTime.now
+		self.data.nil? ? (self.data = data) : (self.data = self.data.merge(data))
+		self.save
 	end
 
 	#def active_for_authentication? 
@@ -36,7 +48,7 @@ class User < ApplicationRecord
 		elsif conditions.has_key?(:username) || conditions.has_key?(:email)
 			where(conditions.to_h).first
 		end
-    end
+	end
 
 	protected
 	def confirmation_required?

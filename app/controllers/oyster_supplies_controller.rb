@@ -62,7 +62,7 @@ class OysterSuppliesController < ApplicationController
 	end
 
 	# GET /fetch_supplies
-	# GET /fetch_supplies.json
+	# GET /fetch_supplies.js
 	def fetch_supplies
 		supply_start_date = calendar_params["start"] ? (Date.strptime(calendar_params["start"].to_s, '%Y-%m-%d').strftime("%Y年%m月%d日")) : ((Date.today.at_beginning_of_month - 14.days).strftime(""))
 		supply_end_date = calendar_params["end"] ? (Date.strptime(calendar_params["end"].to_s, '%Y-%m-%d').strftime("%Y年%m月%d日")) : ((Date.today.end_of_month + 14.days).strftime(""))
@@ -82,7 +82,8 @@ class OysterSuppliesController < ApplicationController
 
 	def supply_check
 		@filename = '原料チェック表（' + @oyster_supply.supply_date + '）.pdf'
-		send_data @oyster_supply.generate_supply_check.render, :filename => @filename, type: 'application/pdf', disposition: :inline
+		pdf = @oyster_supply.generate_supply_check
+		send_data pdf.render, :filename => @filename, type: 'application/pdf', disposition: :inline
 		pdf = nil
 		File.delete(Rails.root + @filename) if File.exist?(Rails.root + @filename)
 		GC.start
@@ -99,7 +100,7 @@ class OysterSuppliesController < ApplicationController
 		format_name = (oyster_supply.export_format == 'all') ? ('生産者まとめ') : ('各生産者')
 		@filename = location_to_locale(oyster_supply.location) + ' ' + pdf_data[0] + format_name + '.pdf'
 		send_data pdf_data[1].render, :filename => @filename, type: 'application/pdf', disposition: :inline
-		pdf = nil
+		pdf_data = nil
 		GC.start
 		File.delete(Rails.root + @filename) if File.exist?(Rails.root + @filename)
 	end

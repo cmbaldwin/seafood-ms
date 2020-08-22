@@ -44,7 +44,7 @@
 // Calendar
 function eventCalendar() {
 	const place = $('#supply_calendar').attr("data-place");
-	return $('#supply_calendar').fullCalendar({
+	$('#supply_calendar').fullCalendar({
 		locale: 'ja',
 		plugins: [ 'interaction', 'dayGrid' ],
 		header: {
@@ -99,19 +99,46 @@ function eventCalendar() {
 				success: function() {
 				}
 			});
-			//$('#create_invoice').attr("href", '/oyster_invoices/create/' + start_date + '/' + end_date + '/');
 		},
 		unselect: function(jsEvent, view) {
 
 		}
   	});
+	$('#yahoo_orders_calendar').fullCalendar({
+		contentHeight: 450,
+		aspectRatio: 1,
+		locale: 'ja',
+		plugins: [ 'interaction', 'dayGrid' ],
+		header: {
+			left: 'prev,next today',
+			center: '',
+			right: 'title'
+		},
+		customButtons: {
+		},
+		events: '/yahoo_orders.json',
+		eventClick: function(info) {
+		},
+		dayClick: function(info) {
+			$.ajax({
+				type: "GET",
+				url: '/fetch_yahoo_list/' + encodeURI(moment(info._d).format('YYYY-MM-DD')),
+				dataType: "script",
+				data: info._d
+			});
+		},
+		selectable: true,
+		select: function(startDate, endDate) {
+		},
+		unselect: function(jsEvent, view) {
+		}
+  	});
 };
 
 function clearCalendar() {
-  $('#calendar').fullCalendar('delete');
-  $('#calendar').html('');
+  $('.fullCalendar').fullCalendar('delete');
+  $('.fullCalendar').html('');
 };
-
 
 $(document).on('turbolinks:load', function(){
   eventCalendar();

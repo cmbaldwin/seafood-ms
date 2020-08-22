@@ -114,6 +114,8 @@ class RManifest < ApplicationRecord
 				end
 				i == 0 ? (pdf.move_down 40) : ()
 			end
+			oyster_sisters_logo.close
+			funabiki_logo.close
 			return pdf
 		end
 	end

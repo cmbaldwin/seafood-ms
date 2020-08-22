@@ -6,9 +6,10 @@
 	<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;" />
 	<head>
 		<title><%= content_for?(:title) ? content_for(:title) : "Funabiki Online" %></title>
-
+		
 		<link href="https://fonts.googleapis.com/earlyaccess/notosansjapanese.css" rel="stylesheet" />
-
+		
+		<link rel="shortcut icon" href="https://storage.googleapis.com/funabiki-online.appspot.com/favicon.ico" />
 		<%= stylesheet_link_tag    'application', 'data-turbolinks-track' => true %>
 		<%= javascript_include_tag 'application', media: 'all', 'data-turbolinks-track' => true %>
 
@@ -66,8 +67,9 @@
 								通販
 							</a>
 							<div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-								<a class="dropdown-item dark_link" href="/manifests">通販・発送表</a>
+								<a class="dropdown-item dark_link" href="/manifests">IM/WC・発送表</a>
 								<a class="dropdown-item dark_link" href="/r_manifests">楽天・発送表</a>
+								<a class="dropdown-item dark_link" href="/yahoo_orders">ヤフー・発送表</a>
 								<a class="dropdown-item dark_link" href="/noshis">熨斗作成</a>
 							</div>
 						</li>

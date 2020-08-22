@@ -4,7 +4,6 @@ class Manifest < ApplicationRecord
 
 	serialize :infomart_orders
 	serialize :online_shop_orders
-	serialize :aspit_orders
 	attr_accessor :type
 
 	validates_presence_of :sales_date
@@ -274,6 +273,7 @@ class Manifest < ApplicationRecord
 			end
 		end
 		self.online_shop_orders = wc_orders
+		wc_orders_json = nil
 	end
 
 	def get_infomart_csv

@@ -30,7 +30,7 @@ class WelcomeController < ApplicationController
 		# Return a observational data at the present time
 		weatherb = Weatherb::API.new(ENV['CLIMACELL_API'])
 		@weather = weatherb.realtime(lat: 34.733552, lon: 134.377873)
-
+		
 	end
 
 	def frozen_data_setup

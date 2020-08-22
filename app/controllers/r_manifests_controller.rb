@@ -67,7 +67,8 @@ class RManifestsController < ApplicationController
 	def reciept
 		# Set the options
 		@r_manifest.options = params[:r_manifest]
-		send_data @r_manifest.do_reciept.render,
+		pdf = @r_manifest.do_reciept
+		send_data pdf.render,
 			type: 'application/pdf', 
 			disposition: :inline
 		pdf = nil

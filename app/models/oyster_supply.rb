@@ -518,6 +518,7 @@ class OysterSupply < ApplicationRecord
 				pdf_data = Array.new
 				pdf_data << dates_for_print
 				pdf_data << pdf
+				funabiki_logo.close
 				return pdf_data
 			end
 
@@ -708,6 +709,7 @@ class OysterSupply < ApplicationRecord
 				pdf_data = Array.new
 				pdf_data << dates_for_print
 				pdf_data << pdf
+				funabiki_logo.close
 				return pdf_data
 			end
 		else
@@ -832,6 +834,7 @@ class OysterSupply < ApplicationRecord
 					t.row(5 + (@sakoshi_suppliers.length * 2)).column(-1).border_bottom_width = 0.25
 				end
 			end
+			funabiki_logo.close
 			return pdf
 		end
 	end

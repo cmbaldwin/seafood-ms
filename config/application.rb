@@ -6,8 +6,9 @@ require 'rails/all'
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
-require 'dotenv-rails'
-Dotenv::Railtie.load
+if defined?(Dotenv)
+  Dotenv::Railtie.load
+end
 
 module FunabikiOnline
   class Application < Rails::Application
@@ -21,9 +22,8 @@ module FunabikiOnline
 
     # Set up Devise alerts in Japanese
 	config.i18n.load_path += Dir[Rails.root.join('locales', '*.{rb,yml}').to_s]
+  config.autoload_paths << Rails.root.join('lib')
 	config.i18n.default_locale = :ja
   config.time_zone = 'Tokyo'
-
-  config.active_job.queue_adapter = :sucker_punch
   end
 end

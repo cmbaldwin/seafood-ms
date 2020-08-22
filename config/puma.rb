@@ -5,7 +5,7 @@
 # and maximum; this matches the default thread size of Active Record.
 #
 ##threads_count = ENV.fetch("RAILS_MAX_THREADS") { 5 }
-##hreads threads_count, threads_count
+##threads threads_count, threads_count
 
 # Specifies the `port` that Puma will listen on to receive requests; default is 3000.
 #
@@ -35,8 +35,10 @@
 # ORIGINAL IS ABOVE WITH COMMENTED OUT LINES HAVING DOUBLE # ^^^^^^^
 # BELOW IS COPIED FROM https://devcenter.heroku.com/articles/deploying-rails-applications-with-the-puma-web-server
 
+# Specifies the `pidfile` that Puma will use.
+pidfile ENV.fetch("PIDFILE") { "tmp/pids/server.pid" }
 
-##workers Integer(ENV['WEB_CONCURRENCY'] || 2)
+workers Integer(ENV['WEB_CONCURRENCY'] || 1)
 threads_count = Integer(ENV['RAILS_MAX_THREADS'] || 5)
 threads threads_count, threads_count
 
@@ -44,13 +46,14 @@ preload_app!
 
 rackup      DefaultRackup
 port        ENV['PORT']     || 3000
-bind        'tcp://192.168.1.18:3000'
 environment ENV['RACK_ENV'] || 'development'
+if ENV['RACK_ENV'] == 'development'
+	bind        'tcp://192.168.1.18:3000'
+end
 
-##on_worker_boot do
-  # Worker specific setup for Rails 4.1+
+on_worker_boot do
   # See: https://devcenter.heroku.com/articles/deploying-rails-applications-with-the-puma-web-server#on-worker-boot
-##  ActiveRecord::Base.establish_connection
-##end
+  ActiveRecord::Base.establish_connection
+end
 
 plugin :tmp_restart

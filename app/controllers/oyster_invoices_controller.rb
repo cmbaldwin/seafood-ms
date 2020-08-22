@@ -7,6 +7,14 @@ class OysterInvoicesController < ApplicationController
 		@oyster_invoices = OysterInvoice.search(params[:id]).paginate(:page => params[:page], :per_page => 8)
 	end
 
+	def new
+		redirect_to oyster_supplies_path
+	end
+
+	def edit
+		redirect_to oyster_supplies_path
+	end
+
 	# GET /oyster_invoices/1
 	# GET /oyster_invoices/1.json
 	def show
@@ -35,9 +43,9 @@ class OysterInvoicesController < ApplicationController
 		invoice.oyster_supply_ids = invoice.date_range.map { |date| (supply = OysterSupply.find_by(supply_date: (date.strftime('%Y年%m月%d日')))) ? (supply.id) : () }
 		if invoice.save
 			if ProcessInvoiceJob.perform_later(invoice)
-				redirect_to oyster_supplies_path, notice: "仕切りは処理中です。\nしばらくお待ちください。"
+				redirect_to oyster_invoice_search_path(invoice.id), notice: "仕切りは処理中です。しばらくお待ちください。"
 			else
-				redirect_to oyster_supplies_path, notice: "仕切りのエラーが発生しました。\nアドミニストレータに確認してください。"
+				redirect_to oyster_invoice_search_path(invoice.id), notice: "仕切りのエラーが発生しました。アドミニストレータに確認してください。"
 			end
 		else
 			respond_to do |format|
@@ -66,7 +74,7 @@ class OysterInvoicesController < ApplicationController
 	def destroy
 		@oyster_invoice.destroy
 		respond_to do |format|
-			format.html { redirect_to oyster_supplies_url, notice: '仕切りを削除しました。' }
+			format.html { redirect_to oyster_invoices_path, notice: '仕切りを削除しました。' }
 			format.json { head :no_content }
 		end
 	end

@@ -1,16 +1,25 @@
+<% title "Funabiki Online - 牡蠣原料仕切り " + (!@oyster_invoices.first.nil? ? (@oyster_invoices.first.start_date + " ~ " + @oyster_invoices.first.end_date) : '') %>
 
 <div class="container">
+	<div class="row align-middle d-print-none">
+		<div class="col">
+			<div class="btn-group float-right d-print-none" role="group" aria-label="Basic">
+				<%= (params[:id] != nil) ? (link_to '仕切りトップへ', oyster_invoices_path, class: 'btn btn-secondary') : () %>
+			</div>
+		<hr/>
 
-	<h1>牡蠣原料仕切り</h1>
+			<h1>牡蠣原料仕切り</h1>
+		</div>
+	</div>
+
 	<hr>
 
 	<div class="row row-cols-1 row-cols-md-2">
 		<% @oyster_invoices.each do |oyster_invoice| %>
 			<div class="col mb-4">
 				<div class="card">
-					<div class="card-header">
+					<div class="card-header text-center">
 						<b><%= invoice_display_date(oyster_invoice) %></b>
-						<span class="badge badge-secondary float-right">ID# <%= oyster_invoice.id %></span>
 					</div>
 					<div class="card-body">
 						<table class="table">
@@ -26,25 +35,25 @@
 								<tr>
 									<th scope="row">坂越</th>
 									<td>まとめ</td>
-									<td><%= link_to (oyster_invoice.data[:processing] ? '<i class="fas fa-spinner"></i>' : '<i class="far fa-file-pdf"></i>').html_safe, oyster_invoice.sakoshi_all_pdf.url, class: 'btn btn-sm btn-info' %></td>
+									<td><%= link_to (oyster_invoice.data[:processing] ? '<i class="fas fa-spinner"></i>' : '<i class="far fa-file-pdf"></i>').html_safe, oyster_invoice.sakoshi_all_pdf.url, target: '_blank', class: 'btn btn-sm btn-info' %></td>
 									<td><samp><%= oyster_invoice[:data][:passwords]["sakoshi_all_password"] %></samp></td>
 								</tr>
 								<tr>
 									<th scope="row">坂越</th>
 									<td>各生産者</td>
-									<td><%= link_to (oyster_invoice.data[:processing] ? '<i class="fas fa-spinner"></i>' : '<i class="far fa-file-pdf"></i>').html_safe, oyster_invoice.sakoshi_seperated_pdf.url, class: 'btn btn-sm btn-info' %></td>
+									<td><%= link_to (oyster_invoice.data[:processing] ? '<i class="fas fa-spinner"></i>' : '<i class="far fa-file-pdf"></i>').html_safe, oyster_invoice.sakoshi_seperated_pdf.url, target: '_blank', class: 'btn btn-sm btn-info' %></td>
 									<td><samp><%= oyster_invoice[:data][:passwords]["sakoshi_seperated_password"] %></samp></td>
 								</tr>
 								<tr>
 									<th scope="row">相生</th>
 									<td>まとめ</td>
-									<td><%= link_to (oyster_invoice.data[:processing] ? '<i class="fas fa-spinner"></i>' : '<i class="far fa-file-pdf"></i>').html_safe, oyster_invoice.aioi_all_pdf.url, class: 'btn btn-sm btn-info' %></td>
+									<td><%= link_to (oyster_invoice.data[:processing] ? '<i class="fas fa-spinner"></i>' : '<i class="far fa-file-pdf"></i>').html_safe, oyster_invoice.aioi_all_pdf.url, target: '_blank', class: 'btn btn-sm btn-info' %></td>
 									<td><samp><%= oyster_invoice[:data][:passwords]["aioi_all_password"] %></samp></td>
 								</tr>
 								<tr>
 									<th scope="row">相生</th>
 									<td>各生産者</td>
-									<td><%= link_to (oyster_invoice.data[:processing] ? '<i class="fas fa-spinner"></i>' : '<i class="far fa-file-pdf"></i>').html_safe, oyster_invoice.aioi_all_pdf.url, class: 'btn btn-sm btn-info' %></td>
+									<td><%= link_to (oyster_invoice.data[:processing] ? '<i class="fas fa-spinner"></i>' : '<i class="far fa-file-pdf"></i>').html_safe, oyster_invoice.aioi_seperated_pdf.url, target: '_blank', class: 'btn btn-sm btn-info' %></td>
 									<td><samp><%= oyster_invoice[:data][:passwords]["aioi_seperated_password"] %></samp></td>
 								</tr>
 							</tbody>

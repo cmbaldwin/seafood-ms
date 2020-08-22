@@ -144,6 +144,8 @@ class Noshi < ApplicationRecord
 		self.image = File.open(final_name)
 		#delete the original temporary
 		File.delete(final_name) if File.exist?(final_name)
+		noshi_img = nil
+		name_overlay = nil
 		GC.start
 	end
 

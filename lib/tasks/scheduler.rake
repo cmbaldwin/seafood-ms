@@ -582,6 +582,7 @@ namespace :pull_order_data do
 	end
 
 end
+
 desc "Pull all recent order data for today and tomorrow"
 task pull_recent_order_data: :environment do
   Rake::Task['pull_order_data:pull_tsuhan'].execute
@@ -669,4 +670,16 @@ task mail_check_and_send: :environment do
 		end
 	end
 	puts 'Sent ' + counter.to_s + ' e-mail(s)'
+end
+
+
+namespace :yahoo do
+
+	desc "Get Yahoo Orders List (default one week, takes a time period parameter)"
+	task refresh: :environment do
+		YahooAPI.get_store_status
+		YahooAPI.get_new_orders
+	end
+
+
 end

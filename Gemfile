@@ -10,7 +10,11 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 ruby '2.6.6'
 
 # Set up local .env file, require immediately
-gem 'dotenv-rails', :require => 'dotenv/rails-now'
+gem 'dotenv-rails', groups: [:development, :test], :require => 'dotenv/rails-now'
+
+group :production do
+  gem 'sidekiq'
+end
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails' 
 gem 'rails', '~> 6.0.3.1'
@@ -20,17 +24,13 @@ gem 'pg'
 # Use Puma as the app server
 gem 'puma', '~> 3.11'
 
-# For Scaling with Redis and Sidekiq (see: https://stackoverflow.com/questions/13770713/rails-starting-sidekiq-on-heroku)
-# Keeping redis for now. https://blog.heroku.com/rails-database-optimization
-# Costs 7 more bucks for each worker so not adding this for the time being.
-# If we want to start with Sidekiq, add this to procfile "worker: bundle exec sidekiq -c 1 -q default -q tasks"
-# Uncomment the lines in the files "config/sidekiq.yml" and "config/initalizers/redis.rb"
-# Enable RedisToGo, change the Env variable and turn on the Worker from the dashboard or from CLI.
-#gem 'sidekiq', '~> 2.7', '>= 2.7.1'
+# For Scaling with Redis and Sidekiq 
+# https://stackoverflow.com/questions/13770713/rails-starting-sidekiq-on-heroku
+# https://github.com/mperham/sidekiq/wiki/Active+Job
 gem 'redis', '~> 4.0.1'
 gem 'hiredis'
 
-# Single dyno async
+# Single dyno async (testing purposes)
 gem 'sucker_punch', '~> 2.0'
 
 # Default JS compiler for Rails 6
@@ -152,8 +152,9 @@ gem 'momentjs-rails'
 ## Finding next and previous entries for models https://github.com/glebm/order_query
 gem 'order_query', '~> 0.5.0'
 
-## For uploading CSV data
+## For uploading/streaming CSV/XLS data to/from the client
 gem 'csv'
+gem 'spreadsheet'
 
 ## Weather API
 gem 'weatherb'

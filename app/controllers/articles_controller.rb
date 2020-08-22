@@ -15,6 +15,7 @@ class ArticlesController < ApplicationController
 		@category = Category.new
 	end
 
+
 	def destroy_multiple
 	  Categories.destroy(params[:categories])
 	    respond_to do |format|

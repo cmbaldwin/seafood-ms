@@ -1,0 +1,30 @@
+<% title "Funabiki Online - Yahoo!ショップイング・出荷表" %>
+
+<div class="container manifest_index">
+	<div class="row align-middle">
+		<div class="col">
+			<% if current_user.admin? || current_user.vip? %>
+				<div class="btn-group float-right" role="group" aria-label="Basic">
+					<%= link_to 'ヤフーからデータ更新', refresh_yahoo_path, :class => "btn btn-info" %>
+				</div>
+			<% end %> 
+		<hr/>
+
+			<h1>Yahoo!ショップイング・出荷表</h1>
+			
+		</div>
+	</div>
+	
+	<hr/>
+	
+	<div class="row">
+		<div class="col-lg-4">
+			<div id="yahoo_orders_calendar" class="fullCalendar"></div>
+		</div>
+		<div class="col-lg-8">
+			<div id="partial">
+				<%= render :partial => 'daily_orders', locals: { daily_orders: @daily_orders }, remote: true %>
+			</div>
+		</div>
+	</div>
+</div>
