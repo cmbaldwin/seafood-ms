@@ -33,6 +33,14 @@ class YahooOrder < ApplicationRecord
 		self.details["BillLastNameKana"] + " " + self.details["BillFirstNameKana"]
 	end
 
+	def billing_phone
+		if self.shipping_details["BillPhoneNumber"].nil?
+			((self.billing_name == self.shipping_name) ? shipping_details["ShipPhoneNumber"] : "0791436556")
+		else
+			shipping_details["BillPhoneNumber"] 
+		end
+	end
+
 	def shipping_name
 		self.details["ShipLastName"] + " " + self.details["ShipFirstName"]
 	end
@@ -43,6 +51,10 @@ class YahooOrder < ApplicationRecord
 
 	def shipping_details
 		self.details["ResultSet"]["Result"]["OrderInfo"]["Ship"]
+	end
+
+	def shipping_phone
+		self.shipping_details["ShipPhoneNumber"]
 	end
 
 	def billing_details
@@ -170,6 +182,27 @@ class YahooOrder < ApplicationRecord
 		end
 	end
 
+	def yamato_arrival_time
+		req_time = self.shipping_details["ShipRequestTime"]
+		if req_time
+			conversion_hash = {
+				"08:00-12:00" => "0812",
+				"09:00-12:00" => "0812",
+				"14:00-16:00" => "1416",
+				"16:00-18:00" => "1618",
+				"18:00-19:00" => "1820",
+				"19:00-21:00" => "1921"
+			}
+			conversion_hash.keys.include?(req_time) ? conversion_hash[req_time] : req_time
+		else
+			""
+		end
+	end
+
+	def arrival_time
+		(self.shipping_details["ShipRequestTime"].nil? ? "" : self.shipping_details["ShipRequestTime"])
+	end
+
 	def yamato_shipping_format
 		require "moji"
 		[	#送り状種類
@@ -181,9 +214,9 @@ class YahooOrder < ApplicationRecord
 			#お届け予定日
 			self.shipping_arrival_date.strftime("%Y/%m/%d"), 
 			#配達時間帯
-			(self.shipping_details["ShipRequestTime"] || ""), 
+			self.yamato_arrival_time, 
 			#お届け先電話番号
-			self.shipping_details["ShipPhoneNumber"], 
+			self.shipping_phone, 
 			#お届け先電話番号枝番
 			"", 
 			#お届け先郵便番号
@@ -203,7 +236,7 @@ class YahooOrder < ApplicationRecord
 			#敬称
 			"様", 
 			#ご依頼主電話番号
-			self.shipping_details["BillPhoneNumber"], 
+			self.billing_phone, 
 			#ご依頼主郵便番号
 			self.billing_details["BillZipCode"], 
 			#ご依頼主住所

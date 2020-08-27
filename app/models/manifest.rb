@@ -463,8 +463,8 @@ class Manifest < ApplicationRecord
 				#print the date
 				pdf.font_size 16
 				pdf.font "SourceHan", :style => :bold
-				pdf.text  '生食用' + ( ' ' * 168 ) + self.sales_date
-				pdf.move_down 5
+				pdf.text  '生食用 InfoMart/WooCommerce 発送表' + ( ' ' * 99 ) + self.sales_date
+				pdf.move_down 7
 				pdf.font "SourceHan", :style => :normal
 
 				#set up the data, make the header
@@ -615,8 +615,8 @@ class Manifest < ApplicationRecord
 				#print the date
 				pdf.font_size 16
 				pdf.font "SourceHan", :style => :bold
-				pdf.text  'プロトン凍結冷凍用　' + ( ' ' * 137 ) + self.sales_date
-				pdf.move_down 5
+				pdf.text  'プロトン凍結冷凍用 InfoMart/WooCommerce 発送表' + ( ' ' * 73 ) + self.sales_date
+				pdf.move_down 7
 				pdf.font "SourceHan", :style => :normal
 
 				#set up the data, make the header

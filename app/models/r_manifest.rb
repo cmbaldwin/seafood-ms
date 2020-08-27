@@ -70,12 +70,10 @@ class RManifest < ApplicationRecord
 				:italic => ".fonts/SourceHan/SourceHanSans-Light.ttf",
 				:mincho => ".fonts/TakaoPMincho.ttf",
 			})
+			
 			#set utf-8 japanese font
-			pdf.font "SourceHan" 
-
-			#print the date 
-			pdf.font_size 10
 			pdf.font "SourceHan", :style => :mincho
+			pdf.font_size 10
 			pdf.move_down 10
 			receipt_table = Array.new
 			receipt_table << [{content: '   領   収   証   ', colspan: 3, size: 17, align: :center}]
@@ -352,7 +350,7 @@ class RManifest < ApplicationRecord
 						(i != 0 || mi != 0) ? (pdf.start_new_page) : ()
 						data_table = Array.new
 						knife_text = (data_set == final_knife) ? ('+ ナイフ') : ('')
-						data_table << [{:content =>  "発送日:　<b>" + self.sales_date + '</b>', :colspan => 5}, {:content => "商品区別:　<b>" + translation_hash[type] + knife_text +'</b>', :colspan => 5}, {:content => "印刷日:　<b>" + DateTime.now.strftime("%Y年%m月%d日") + '</b>', :colspan => 3}]
+						data_table << [ {:content =>  "発送日:　<b>#{self.sales_date}</b>", :colspan => 5}, {:content => "商品区別:　<b>#{translation_hash[type] + knife_text}</b>", :colspan => 5}, {:content => "印刷日:　<b>#{DateTime.now.strftime("%Y年%m月%d日")}</b>", :colspan => 3}]
 						data_table << header_data_row
 						data_set[type].each do |local_order_number|
 							order = intital_data[local_order_number]
@@ -676,7 +674,7 @@ class RManifest < ApplicationRecord
 			#print the date
 			pdf.font_size 16
 			pdf.font "SourceHan", :style => :bold
-			pdf.text self.sales_date
+			pdf.text self.sales_date + "  楽天市場 発送表"
 			pdf.move_down 15
 			pdf.font "SourceHan", :style => :normal
 

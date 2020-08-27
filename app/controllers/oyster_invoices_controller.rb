@@ -42,7 +42,7 @@ class OysterInvoicesController < ApplicationController
 			)
 		invoice.oyster_supply_ids = invoice.date_range.map { |date| (supply = OysterSupply.find_by(supply_date: (date.strftime('%Y年%m月%d日')))) ? (supply.id) : () }
 		if invoice.save
-			if ProcessInvoiceJob.perform_later(invoice)
+			if ProcessInvoiceWorker.perform_async(invoice.id)
 				redirect_to oyster_invoice_search_path(invoice.id), notice: "仕切りは処理中です。しばらくお待ちください。"
 			else
 				redirect_to oyster_invoice_search_path(invoice.id), notice: "仕切りのエラーが発生しました。アドミニストレータに確認してください。"

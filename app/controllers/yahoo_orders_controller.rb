@@ -1,13 +1,5 @@
 class YahooOrdersController < ApplicationController
 	before_action :set_yahoo_order, only: [:show, :edit, :update, :destroy]
-	before_action :check_status, only: [:yahoo_login, :yahoo_response_auth_code]
-
-	def check_status
-		return unless !current_user.approved? || current_user.user? || current_user.employee?
-		flash[:notice] = 'そのページはアクセスできません。'
-		redirect_to root_path, error: 'そのページはアクセスできません。'
-	end
-
 
 	# GET /fetch_yahoo_list/fetch_daily_orders/:date
 	# GET /fetch_yahoo_list/fetch_daily_orders.js
@@ -28,9 +20,11 @@ class YahooOrdersController < ApplicationController
 	def refresh
 		uri = 'https://www.funabiki.online/yahoo/'
 		@url = "https://auth.login.yahoo.co.jp/yconnect/v1/authorization?response_type=code&client_id=#{ENV['YAHOO_CLIENT_ID']}&redirect_uri=#{uri}&state=#{current_user.id}&scope=openid+profile+email"
-
-		if YahooAPI.access_token_valid?
-			if YahooAPI.get_store_status && YahooAPI.get_new_orders
+		client = YahooAPI.new
+		User.find(current_user.id).reload
+		if client.login_code?
+			client.acquire_auth_token unless client.authorized?
+			if client.get_new_orders
 				flash[:notice] = 'ヤフーからデータを更新完了。'
 				redirect_to yahoo_orders_path
 			else
@@ -48,7 +42,6 @@ class YahooOrdersController < ApplicationController
 		user = User.find(current_user.id)
 		if user.id.to_s == params[:state]
 			if user.collect_yahoo_token(@code)
-				YahooAPI.get_access_token
 				flash[:notice] = 'コード取得出来ました。ヤフーからデータを更新開始。'
 				redirect_to refresh_yahoo_path
 			else
@@ -104,8 +97,14 @@ class YahooOrdersController < ApplicationController
 	# GET /yahoo_shipping_list
 	# GET /yahoo_shipping_list
 	def yahoo_shipping_list
-		puts params
-		redirect_to yahoo_orders_path
+		pdf = PrawnPDF.yahoo_shipping_pdf(params[:ship_date])
+		send_data pdf,
+			type: 'application/pdf', 
+			disposition: :inline,
+			filename: "PDF.pdf"
+		pdf = nil
+		File.delete(Rails.root + 'PDF.pdf') if File.exist?(Rails.root + 'PDF.pdf')
+		GC.start
 	end
 
 	# GET /yahoo_orders/1

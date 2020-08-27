@@ -1,154 +1,178 @@
 class YahooAPI
 	include HTTParty
+	# There are three required variables and two optional variables
+	# ENV['YAHOO_PEM_FILE'] --PEM file name, located in the rails root directory
+	# ENV['YAHOO_PEM_PASS'] --PEM file password (see: https://developer.yahoo.co.jp/webapi/shopping/help.html#orderapicertificate)
+	# ENV["QUOTAGUARDSTATIC_URL"] --The URL of your proxy including user:password and port
+	# ENV['YAHOO_CLIENT_ID'] --A Yahoo shopping API approved development client ID (requires application)
+	# ENV['YAHOO_SECRET'] -- The above client's secret key
+
+	# https://github.com/jnunemaker/httparty/blob/6f4d6ea4a2707a4f1466f45bf5c67556cdbed2b7/lib/httparty.rb#L322
 	if ENV['YAHOO_PEM_FILE'] && ENV['YAHOO_PEM_PASS']
-		# PEM Certificate file https://developer.yahoo.co.jp/webapi/shopping/help.html#orderapicertificate
-		# https://github.com/jnunemaker/httparty/blob/6f4d6ea4a2707a4f1466f45bf5c67556cdbed2b7/lib/httparty.rb#L322
 		pkcs12 File.read(Rails.root.to_s + '/' + ENV['YAHOO_PEM_FILE']), ENV['YAHOO_PEM_PASS']
-		puts 'SSL Certificate availiable'
-	end
-	if ENV["QUOTAGUARDSTATIC_URL"]
-		# see https://github.com/jnunemaker/httparty/blob/6f4d6ea4a2707a4f1466f45bf5c67556cdbed2b7/lib/httparty.rb#L29
-		@proxy = URI(ENV["QUOTAGUARDSTATIC_URL"])
-		puts 'Proxy availiable'
 	end
 
-    # Admin (should be first user) holds the settings for Yahoo automation
-	@admin = User.find(1)
+	# See https://github.com/jnunemaker/httparty/blob/6f4d6ea4a2707a4f1466f45bf5c67556cdbed2b7/lib/httparty.rb#L29
+	# If you haven't set this enviornment variable the client will return an error
+	@proxy = URI(ENV["QUOTAGUARDSTATIC_URL"])
+	http_proxy @proxy.host, @proxy.port, @proxy.user, @proxy.password
 
-	# https://developer.yahoo.co.jp/yconnect/v1/server_app/explicit/authorization.html (must be done manually)
-	authorization = Base64.encode64(ENV['YAHOO_CLIENT_ID'] + ":"  + ENV['YAHOO_SECRET']).gsub(/\n/, '')
-	
-	@headers = {"Content-Type" => "application/x-www-form-urlencoded;charset=UTF-8",
-				"Authorization" => 'Basic ' + authorization}
-
-	def self.test_proxy
-		puts HTTParty.get("http://ip.jsontest.com", 
-			http_proxyaddr: @proxy.host, http_proxyport: @proxy.port, http_proxyuser: @proxy.user, http_proxypass: @proxy.password).parsed_response
+	def initialize
+		# We use the first user as a default because our first user is an admin
+		(defined? current_user) ? (@user = current_user) : (@user = User.find(1)) 
+		(@user.data[:yahoo] = Hash.new if @user.data[:yahoo] != nil) if @user
+		@auth_header = {
+			"Content-Type" => "application/x-www-form-urlencoded;charset=UTF-8",
+			"Authorization" => 'Basic ' + (Base64.encode64(ENV['YAHOO_CLIENT_ID'] + ":"  + ENV['YAHOO_SECRET']).gsub(/\n/, ''))
+		}
 	end
 
-	def self.get_token_code
-		if BrowseBotAPI.acquire_yahoo_token_code
-			@admin.reload
-			true
+	def proxy?
+		self.class.get("http://ip.jsontest.com").parsed_response != HTTParty.get("http://ip.jsontest.com").parsed_response
+	end
+
+	def bot_token_attempt
+		begin
+			puts "Attempting automated token code acquisition."
+			if BrowseBotAPI.acquire_yahoo_token_code
+				@user.reload if @user
+				true
+			end
+		rescue
+			puts 'Error with BrowseBotAPI...Manual login required.'
+			false
 		end
 	end
 
-	def self.acquire_auth_code
-		puts 'Acquiring authorization access token'
-		payload = { 
-				"grant_type" => "authorization_code",
-				# https://developer.yahoo.co.jp/yconnect/v1/server_app/explicit/token.html
-				"code" => @admin.data[:yahoo][:token_code][:code],
-				"redirect_uri" => "https://www.funabiki.online/yahoo/"
-				}
-		HTTParty.post('https://auth.login.yahoo.co.jp/yconnect/v1/token', headers: @headers, body: payload)
-	end
-
-	def self.refresh_auth_code
-		puts 'Refreshing authorization access token'
-		payload = { 
-					"grant_type" => "refresh_token",
-					"refresh_token" => @admin.data[:yahoo][:authorization_code]["refresh_token"]
-					}
-		HTTParty.post("https://auth.login.yahoo.co.jp/yconnect/v1/token", :headers => @headers, body: payload)
-	end
-
-	def self.get_access_token
-		@admin.reload
-		if @admin.data.dig(:yahoo, :authorization_code, "refresh_token") && ((@admin.data[:yahoo][:authorization_code][:acquired] + 59.minutes) > DateTime.now)
-			@admin.data[:yahoo][:authorization_code] = refresh_auth_code.parsed_response
-			@admin.data[:yahoo][:authorization_code][:acquired] = DateTime.now
-			@admin.save
-			puts 'Authorization token Refreshed. Usable for ' + @admin.data[:yahoo][:authorization_code]["expires_in"] + ' seconds.'
-			@admin.reload
-			true
-		elsif (@admin.data.dig(:yahoo, :token_code, :code)) && (@admin.data.dig(:yahoo, :token_code, :acquired) ? ((@admin.data[:yahoo][:token_code][:acquired] + 10.minutes) > DateTime.now) : false )
-			@admin.data[:yahoo][:authorization_code] = acquire_auth_code.parsed_response
-			@admin.data[:yahoo][:authorization_code][:acquired] = DateTime.now
-			@admin.save
-			@admin.reload
-			puts 'New Authorization token Acquired. Usable for ' + @admin.data[:yahoo][:authorization_code]["expires_in"] + ' seconds.'
-			true
-		else
-			puts 'No Token Code or the token code usage window has expired, will attempt automation once.'
-			if get_token_code
-				puts 'Acquired token code via bot, acquring authorization token.'
-				@admin.reload
-				@admin.data[:yahoo][:authorization_code] = acquire_auth_code.parsed_response
-				@admin.data[:yahoo][:authorization_code][:acquired] = DateTime.now
-				@admin.save
-				@admin.reload
-				puts 'New Authorization token Acquired. Usable for ' + @admin.data[:yahoo][:authorization_code]["expires_in"] + ' seconds.'
+	def login_code?
+		@user.reload
+		if defined? @user.data[:yahoo][:login_token_code][:acquired]
+			puts 'Login token code found.'
+			if @user.data[:yahoo][:login_token_code][:acquired] + 10.minutes > DateTime.now
+				puts 'Login token code not expired.'
 				true
 			else
+				puts 'Login token code expired'
 				false
 			end
-		end
-	end
-
-	def self.access_token_valid?
-		unless @admin.data.dig(:yahoo, :authorization_code, :acquired).nil?
-			@admin.data[:yahoo][:authorization_code][:acquired] + 59.minutes > DateTime.now
 		else
+			puts 'No login token code.'
 			false
 		end
 	end
 
-	def self.check_token
-		if access_token_valid?
-			true
-		else
-			puts 'Yahoo access token invalid/expired, attemping to acquire new token.'
-			get_access_token
-		end
-	end
-
-	def self.get_store_status
-		# https://developer.yahoo.co.jp/webapi/shopping/orderCount.html
-		if check_token && !@proxy.nil?
-			get_status = HTTParty.get("https://circus.shopping.yahooapis.jp/ShoppingWebService/V1/orderCount?sellerId=oystersisters",
-				http_proxyaddr: @proxy.host, http_proxyport: @proxy.port, http_proxyuser: @proxy.user, http_proxypass: @proxy.password,
-				:headers => {"Content-Type" => 'text/xml;charset=UTF-8',
-					"Authorization" => 'Bearer ' + @admin.data[:yahoo][:authorization_code]["access_token"]},
-				)
-			@admin.data[:yahoo] = Hash.new unless !@admin.data[:yahoo].nil?
-			@admin.data[:yahoo][:store_status] = Hash.new
-			@admin.data[:yahoo][:store_status][:status] = get_status.parsed_response
-			@admin.data[:yahoo][:store_status][:acquired] = DateTime.now
-			@admin.save
-			true
-		else
-			!@proxy.nil? ? (puts 'API endpoint requires static IP') : (puts "Manual login required")
-			false
-		end
-	end
-
-	def self.get_new_orders(time_period = 1.week)
-		# (https://developer.yahoo.co.jp/webapi/shopping/orderList.html)
-		if check_token && !@proxy.nil?
-			get_orders = HTTParty.post("https://circus.shopping.yahooapis.jp/ShoppingWebService/V1/orderList",
-				http_proxyaddr: @proxy.host, http_proxyport: @proxy.port, http_proxyuser: @proxy.user, http_proxypass: @proxy.password,
-				:headers => {"Content-Type" => 'text/xml;charset=UTF-8',
-					"Authorization" => 'Bearer ' + @admin.data[:yahoo][:authorization_code]["access_token"]},
-				:body => 
-					"<Req>
-						<Search>
-							<Condition>
-							<OrderStatus>1,2,3,4,5</OrderStatus>
-							<OrderTimeFrom>" + (DateTime.now - time_period).strftime("%Y%m%d") + "000000" + "</OrderTimeFrom>
-							<OrderTimeTo>" + DateTime.now.strftime("%Y%m%d%H%M%S") + "</OrderTimeTo>
-							</Condition>
-							<Field>OrderTime,OrderId,DeviceType,IsRoyalty,IsAffiliate,OrderStatus,StoreStatus,IsReadOnly,IsActive,IsSeen,IsSplit,Suspect,IsRoyaltyFix,PayStatus,SettleStatus,PayType,PayMethod,NeedBillSlip,NeedDetailedSlip,NeedReceipt,BillFirstName,BillFirstNameKana,BillLastName,BillLastNameKana,BillPrefecture,ShipFirstName,ShipFirstNameKana,ShipLastName,ShipLastNameKana,ShipPrefecture,ShipStatus,ShipMethod,ShipRequestDateNo,ShipCompanyCode,BuyerCommentsFlag,ReleaseDateFrom,ReleaseDateTo,GetPointFixDateFrom,GetPointFixDateTo,UsePointFixDateFrom,UsePointFixDateTo,IsLogin,TotalPrice</Field>
-						</Search>
-						<SellerId>oystersisters</SellerId>
-					</Req>")
-			if (get_orders.parsed_response.dig("Error", "Code")) && get_orders.parsed_response["Error"]["Code"] == "px-04102"
-				puts "Access token refresh required."
-				@admin.data[:yahoo] = Hash.new
-				@admin.save
-				@admin.reload
+	def refresh_token?
+		@user.reload
+		if defined? @user.data[:yahoo][:authorization]["refresh_token"]
+			puts 'Authorization refresh token found.'
+			if (@user.data[:yahoo][:authorization][:acquired] + 59.minutes) > DateTime.now
+				puts 'Authorization refresh token not expired.'
+				true
+			else 
+				puts 'Authorization refresh token expired.'
 				false
-			elsif response = get_orders.parsed_response["Result"]["Search"]["OrderInfo"]
+			end
+		else 
+			puts 'No authorization refresh token availiable.'
+			false
+		end
+	end
+
+	def authorized?
+		@user.reload
+		if defined? @user.data[:yahoo][:authorization][:acquired]
+			puts 'Authorized to access API.'
+			(@user.data[:yahoo][:authorization][:acquired] + 59.minutes) > DateTime.now
+		else
+			false
+		end
+	end
+
+	def save_auth_token(response)
+		@user.data[:yahoo][:authorization] = Hash.new
+		@user.data[:yahoo][:authorization] = response
+		@user.data[:yahoo][:authorization][:acquired] = DateTime.now
+		puts "Access acquired for #{@user.data[:yahoo][:authorization]["expires_in"]} seconds.'" if @user.save
+		@user.reload
+	end
+
+	def acquire_auth_token
+		# https://developer.yahoo.co.jp/yconnect/v1/server_app/explicit/token.html
+		if login_code?
+			begin
+				puts 'Acquiring authorization access token using temporary login token code'
+				body = { 
+						"grant_type" => "authorization_code",
+						"code" => @user.data[:yahoo][:login_token_code][:token_code],
+						"redirect_uri" => "https://www.funabiki.online/yahoo/"
+						}
+				request = self.class.post('https://auth.login.yahoo.co.jp/yconnect/v1/token', headers: @auth_header, body: body)
+				puts 'Success, Authorization Token Saved.' if save_auth_token(request.parsed_response)
+			rescue TypeError
+				puts 'Error with Yahoo API request:'
+				ap request.parsed_response if request
+			end
+		elsif refresh_token?
+			begin
+				puts 'Refreshing authorization access token'
+				body = { 
+							"grant_type" => "refresh_token",
+							"refresh_token" => @user.data[:yahoo][:authorization]["refresh_token"]
+							}
+				request = self.class.post("https://auth.login.yahoo.co.jp/yconnect/v1/token", :headers => @auth_header, body: body)
+				save_auth_token(request.parsed_response)
+			rescue TypeError
+				puts 'Error with Yahoo API request:'
+				ap request.parsed_response if request
+			end
+		else
+			puts 'No login code or refresh token.'
+		end
+	end
+
+	def get_status
+		# https://developer.yahoo.co.jp/webapi/shopping/orderCount.html
+		if authorized?
+			begin
+				request = self.class.get("https://circus.shopping.yahooapis.jp/ShoppingWebService/V1/orderCount?sellerId=oystersisters",
+					:headers => {"Content-Type" => 'text/xml;charset=UTF-8',
+						"Authorization" => 'Bearer ' + @user.data[:yahoo][:authorization]["access_token"]})
+				@user.data[:yahoo] = Hash.new unless !@user.data[:yahoo].nil?
+				@user.data[:yahoo][:store_status] = Hash.new
+				@user.data[:yahoo][:store_status][:status] = request.parsed_response
+				@user.data[:yahoo][:store_status][:acquired] = DateTime.now
+				@user.save
+				true
+			rescue TypeError
+				puts "Error with Yahoo API request:"
+				ap request.parsed_response if request
+				false
+			end
+		else
+			puts 'No authorization, login required.'
+			false
+		end
+	end
+
+	def get_new_orders(period = 2.weeks)
+		if authorized?
+			begin
+				request = self.class.post("https://circus.shopping.yahooapis.jp/ShoppingWebService/V1/orderList",
+					:headers => {"Content-Type" => 'text/xml;charset=UTF-8',
+						"Authorization" => 'Bearer ' + @user.data[:yahoo][:authorization]["access_token"]},
+					:body => 
+						"<Req>
+							<Search>
+								<Condition>
+								<OrderStatus>1,2,3,4,5</OrderStatus>
+								<OrderTimeFrom>" + (DateTime.now - period).strftime("%Y%m%d") + "000000" + "</OrderTimeFrom>
+								<OrderTimeTo>" + DateTime.now.strftime("%Y%m%d%H%M%S") + "</OrderTimeTo>
+								</Condition>
+								<Field>OrderTime,OrderId,DeviceType,IsRoyalty,IsAffiliate,OrderStatus,StoreStatus,IsReadOnly,IsActive,IsSeen,IsSplit,Suspect,IsRoyaltyFix,PayStatus,SettleStatus,PayType,PayMethod,NeedBillSlip,NeedDetailedSlip,NeedReceipt,BillFirstName,BillFirstNameKana,BillLastName,BillLastNameKana,BillPrefecture,ShipFirstName,ShipFirstNameKana,ShipLastName,ShipLastNameKana,ShipPrefecture,ShipStatus,ShipMethod,ShipRequestDateNo,ShipCompanyCode,BuyerCommentsFlag,ReleaseDateFrom,ReleaseDateTo,GetPointFixDateFrom,GetPointFixDateTo,UsePointFixDateFrom,UsePointFixDateTo,IsLogin,TotalPrice</Field>
+							</Search>
+							<SellerId>oystersisters</SellerId>
+						</Req>")
+				response = request.parsed_response["Result"]["Search"]["OrderInfo"]
 				order_ids = Hash.new
 				if response[0].is_a?(Hash)
 					response.each_with_index do |order_response, i|
@@ -174,18 +198,18 @@ class YahooAPI
 					puts 'Error with acquiring order item details.'
 					false
 				end
-			else
-				puts "Results unprocessible:"
-				ap get_orders.parsed_response
+			rescue TypeError
+				puts "Error with Yahoo API request:"
+				ap request.parsed_response if request
 				false
 			end
 		else
-			!@proxy.nil? ? (puts 'API endpoint requires static IP') : (puts "Manual login required")
+			puts 'No authorization, login required.'
 			false
 		end
 	end
 
-	def self.record_results(compiled_results)
+	def record_results(compiled_results)
 		compiled_results.each do |order_id, order_details|
 			unless YahooOrder.exists?(order_id: order_id)
 				@order = YahooOrder.create(order_id: order_id) 
@@ -199,28 +223,33 @@ class YahooAPI
 		end
 	end
 
-	def self.get_order_details(order_id_array)
+	def get_order_details(order_id_array)
 		# https://developer.yahoo.co.jp/webapi/shopping/orderInfo.html
-		if check_token && !@proxy.nil?
-			all_order_details = Hash.new
-			order_id_array.each do |order_id|
-				order_details = HTTParty.post("https://circus.shopping.yahooapis.jp/ShoppingWebService/V1/orderInfo",
-					http_proxyaddr: @proxy.host, http_proxyport: @proxy.port, http_proxyuser: @proxy.user, http_proxypass: @proxy.password,
-					:headers => {"Content-Type" => 'text/xml;charset=UTF-8',
-						"Authorization" => 'Bearer ' + @admin.data[:yahoo][:authorization_code]["access_token"]},
-					:body => 
-						"<Req>
-							<Target>
-								<OrderId>#{order_id}</OrderId>
-								<Field>LineId,ItemId,Title,SubCode,SubCodeOption,ItemOption,ProductId,Quantity,BillPhoneNumber,BillZipCode,BillPrefecture,BillPrefectureKana,BillCity,BillCityKana,BillAddress1,BillAddress1Kana,BillAddress2,BillAddress2Kana,BillPhoneNumber,PayMethod,PayMethodName,ShipMethod,ShipMethodName,ShipRequestDate,ShipRequestTime,ShipRequestTimeZoneCode,ArriveType,ShipDate,ShipZipCode,ShipPrefecture,ShipPrefectureKana,ShipCity,ShipCityKana,ShipAddress1,ShipAddress1Kana,ShipAddress2,ShipAddress2Kana,ShipPhoneNumber,ShipEmgPhoneNumber,ShipSection1Field,ShipSection1Value,ShipSection2Field,ShipSection2Value</Field>
-								</Target>
-							<SellerId>oystersisters</SellerId>
-						</Req>").parsed_response
-				all_order_details[order_id] = order_details
+		if authorized?
+			begin
+				all_order_details = Hash.new
+				order_id_array.each do |order_id|
+					order_details = self.class.post("https://circus.shopping.yahooapis.jp/ShoppingWebService/V1/orderInfo",
+						:headers => {"Content-Type" => 'text/xml;charset=UTF-8',
+							"Authorization" => 'Bearer ' + @user.data[:yahoo][:authorization]["access_token"]},
+						:body => 
+							"<Req>
+								<Target>
+									<OrderId>#{order_id}</OrderId>
+									<Field>LineId,ItemId,Title,SubCode,SubCodeOption,ItemOption,ProductId,Quantity,BillPhoneNumber,BillZipCode,BillPrefecture,BillPrefectureKana,BillCity,BillCityKana,BillAddress1,BillAddress1Kana,BillAddress2,BillAddress2Kana,BillPhoneNumber,PayMethod,PayMethodName,ShipMethod,ShipMethodName,ShipRequestDate,ShipRequestTime,ShipRequestTimeZoneCode,ArriveType,ShipDate,ShipZipCode,ShipPrefecture,ShipPrefectureKana,ShipCity,ShipCityKana,ShipAddress1,ShipAddress1Kana,ShipAddress2,ShipAddress2Kana,ShipPhoneNumber,ShipEmgPhoneNumber,ShipSection1Field,ShipSection1Value,ShipSection2Field,ShipSection2Value</Field>
+									</Target>
+								<SellerId>oystersisters</SellerId>
+							</Req>").parsed_response
+					all_order_details[order_id] = order_details
+				end
+				all_order_details
+			rescue TypeError
+				puts "Error with Yahoo API request:"
+				ap request.parsed_response if request
+				false
 			end
-			all_order_details
 		else
-			!@proxy.nil? ? (puts 'API endpoint requires static IP') : (puts "Manual login required")
+			puts 'No authorization, login required.'
 			false
 		end
 	end

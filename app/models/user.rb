@@ -25,10 +25,10 @@ class User < ApplicationRecord
 
 	def collect_yahoo_token(code)
 		data = Hash.new
-		data[:yahoo] = Hash.new if !data[:yahoo].is_a?(Hash)
-		data[:yahoo][:token_code] = Hash.new if !data[:yahoo][:token_code].is_a?(Hash)
-		data[:yahoo][:token_code][:code] = code
-		data[:yahoo][:token_code][:acquired] = DateTime.now
+		data[:yahoo] = Hash.new
+		data[:yahoo][:login_token_code] = Hash.new
+		data[:yahoo][:login_token_code][:token_code] = code
+		data[:yahoo][:login_token_code][:acquired] = DateTime.now
 		self.data.nil? ? (self.data = data) : (self.data = self.data.merge(data))
 		self.save
 	end
