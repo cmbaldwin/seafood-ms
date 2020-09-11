@@ -107,6 +107,22 @@ class YahooOrder < ApplicationRecord
 		item_names[self.item_id]
 	end
 
+	def payment_type
+		pay_method = self.details["PayMethod"]
+		method_hash = {
+			"payment_a1" => "クレジットカード決済",
+			"payment_a17" => "PayPay残高払い",
+			"payment_a6" =>"コンビニ (セブン-イレブン）",
+			"payment_a7" => "コンビニ（ファミリーマート、ローソン、その他）",
+			"payment_a8" => "モバイルSuica",
+			"payment_a9" => "ドコモ ケータイ払い",
+			"payment_a10" => "auかんたん決済",
+			"payment_a11" => "ソフトバンクまとめて支払い",
+			"payment_b1" => "銀行振込",
+			"payment_d1" => "商品代引" }
+		method_hash.include?(pay_method) ? method_hash[pay_method] : pay_method
+	end
+
 	def quantity
 		self.item_details["Quantity"]
 	end
@@ -200,7 +216,7 @@ class YahooOrder < ApplicationRecord
 	end
 
 	def arrival_time
-		(self.shipping_details["ShipRequestTime"].nil? ? "" : self.shipping_details["ShipRequestTime"])
+		(self.shipping_details["ShipRequestTime"].nil? ? "午前中" : self.shipping_details["ShipRequestTime"])
 	end
 
 	def yamato_shipping_format

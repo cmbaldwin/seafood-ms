@@ -72,14 +72,22 @@ class OysterSupply < ApplicationRecord
 		@aioi_suppliers = Supplier.where(location: '相生').order(:supplier_number)
 		@all_suppliers = @sakoshi_suppliers + @aioi_suppliers
 		@receiving_times = ["am", "pm"]
-		@types = ["large", "small", "eggy", "large_shells", "small_shells", "thin_shells"]
+		set_types
 		@supplier_numbers = @sakoshi_suppliers.pluck(:id).map(&:to_s)
 		@supplier_numbers += @aioi_suppliers.pluck(:id).map(&:to_s)
 	end
 
+	def set_suppliers
+		
+	end
+
+	def set_types
+		@types = ["large", "small", "eggy", "large_shells", "small_shells", "thin_shells"]
+	end
+
 	def check_completion
 		completion = Hash.new
-		set_variables
+		set_types
 		@types.each do |type|
 			self.oysters[type].each do |supplier_id, supply_hash|
 				if (supply_hash["volume"]) != "0" && (supply_hash["price"] == "0")
@@ -354,11 +362,7 @@ class OysterSupply < ApplicationRecord
 		if self.export_format == "all"
 			Prawn::Document.generate("PDF.pdf", :page_size => "A4", :margin => [25], disposition: "inline") do |pdf|
 				# document set up
-				pdf.font_families.update("SourceHan" => {
-					:normal => ".fonts/SourceHan/SourceHanSans-Normal.ttf",
-					:bold => ".fonts/SourceHan/SourceHanSans-Bold.ttf",
-					:light => ".fonts/SourceHan/SourceHanSans-Light.ttf",
-				})
+				pdf.font_families.update(PrawnPDF.fonts)
 				# set utf-8 japanese font
 				pdf.font "SourceHan"
 				pdf.font_size 10
@@ -530,11 +534,7 @@ class OysterSupply < ApplicationRecord
 			# document set up
 			Prawn::Document.generate("PDF.pdf", :page_size => "A4", :margin => [25]) do |pdf|
 				# set utf-8 japanese font
-				pdf.font_families.update("SourceHan" => {
-					:normal => ".fonts/SourceHan/SourceHanSans-Normal.ttf",
-					:bold => ".fonts/SourceHan/SourceHanSans-Bold.ttf",
-					:light => ".fonts/SourceHan/SourceHanSans-Light.ttf",
-				})
+				pdf.font_families.update(PrawnPDF.fonts)
 
 				pdf.font "SourceHan"
 				pdf.font_size 10
@@ -738,11 +738,7 @@ class OysterSupply < ApplicationRecord
 		require "open-uri"
 		Prawn::Document.generate("PDF.pdf", :page_size => "A4", :margin => [15]) do |pdf|
 			# document set up
-			pdf.font_families.update("SourceHan" => {
-				:normal => ".fonts/SourceHan/SourceHanSans-Normal.ttf",
-				:bold => ".fonts/SourceHan/SourceHanSans-Bold.ttf",
-				:light => ".fonts/SourceHan/SourceHanSans-Light.ttf",
-			})
+			pdf.font_families.update(PrawnPDF.fonts)
 			# set utf-8 japanese font
 			pdf.font "SourceHan"
 			pdf.font_size 10

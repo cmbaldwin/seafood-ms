@@ -5,7 +5,6 @@
 
 			<div class="btn-group float-right" role="group" aria-label="Basic">
 				<%= link_to '追加', new_profit_path, :class => "btn btn-success" %>
-				<%# link_to ('<small>旧追加</small>').html_safe, new_profit_path, :class => "btn btn-success" %>
 			</div>
 		<hr/>
 
@@ -42,12 +41,11 @@
 		</div>
 		<div class="col-md-4"col-sm-12 >
 			<div class="btn-group float-right mt-1" role="group">
-				<%= link_to ('<i class="far fa-file-alt"></i>').html_safe, profit, :alt => "利益表示の個別ページ", class: 'btn btn-info' %>
+				<%= link_to icon("card-list"), profit, :alt => "利益表示の個別ページ", class: 'btn btn-info' %>
 				<% if current_user.admin? or current_user.vip? %>
-					<%= link_to ('<i class="fas fa-edit"></i>').html_safe, edit_profit_path(profit), :alt => "今日の利益計算を編集", class: 'btn btn-success' %>
-					<%# link_to ('<i class="fas fa-edit"></i>').html_safe, edit_profit_path(profit), :alt => "今日の利益計算を編集", class: 'btn btn-warning' %>
+					<%= link_to icon("pencil-square", class: "text-success"), edit_profit_path(profit), :alt => "今日の利益計算を編集", class: 'btn btn-info' %>
 					<% if current_user.admin? %>
-						<%= link_to ('<i class="fas fa-trash-alt"></i>').html_safe, profit, :alt => "この利益計算を取り消す", method: :delete, data: { confirm: '削除してもいい?' }, class: 'btn btn-danger' %>
+						<%= link_to icon("trash-fill", class: "text-danger"), profit, :alt => "この利益計算を取り消す", method: :delete, data: { confirm: '削除してもいい?' }, class: 'btn btn-info' %>
 					<% end %> 
 				<% end %>
 			</div>

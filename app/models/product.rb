@@ -81,9 +81,7 @@ class Product < ApplicationRecord
 		# document set up
 		Prawn::Document.generate("PDF.pdf", :page_size => "A4", :margin => [25]) do |pdf|
 			# set utf-8 japanese font
-			pdf.font_families.update("SourceHan" => {
-				:normal => ".fonts/SourceHan/SourceHanSans-Normal.ttf",
-			})
+			pdf.font_families.update(PrawnPDF.fonts)
 			pdf.font "SourceHan"
 			pdf.font_size 16
 			pdf.text '商品リスト'

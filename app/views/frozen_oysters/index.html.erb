@@ -108,9 +108,9 @@
 						<% end %>
 					<td>
 						<div class="btn-group float-right mt-1" role="group">
-							<%= link_to ('<i class="far fa-file-alt"></i>').html_safe, frozen_oyster, class: 'btn btn-info' %>
-							<%= link_to '修正', insert_frozen_data_path(frozen_oyster: frozen_oyster), remote: true, class: 'btn btn-success', 'data-toggle' => 'modal', 'data-target' => '#formModal' %>
-							<%= link_to '削除', frozen_oyster, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-danger' %>
+							<%= link_to icon("card-list"), frozen_oyster, class: 'btn btn-info' %>
+							<%= link_to icon("pencil-square", class: "text-success"), insert_frozen_data_path(frozen_oyster: frozen_oyster), remote: true, class: 'btn btn-info', 'data-toggle' => 'modal', 'data-target' => '#formModal' %>
+							<%= link_to icon("trash-fill", class: "text-danger"), frozen_oyster, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-info' %>
 						</div>
 					</td>
 				</tr>

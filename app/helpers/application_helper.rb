@@ -30,4 +30,14 @@ module ApplicationHelper
 		(Date.today + number).strftime('%Y年%m月%d日')
 	end
 
+	def icon(icon, options = {})
+		file = File.read("#{Rails.root}/node_modules/bootstrap-icons/icons/#{icon}.svg")
+		doc = Nokogiri::HTML::DocumentFragment.parse file
+		svg = doc.at_css 'svg'
+		if options[:class].present?
+			svg['class'] += " " + options[:class]
+		end
+		doc.to_html.html_safe
+	end
+
 end

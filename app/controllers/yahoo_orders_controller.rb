@@ -97,13 +97,12 @@ class YahooOrdersController < ApplicationController
 	# GET /yahoo_shipping_list
 	# GET /yahoo_shipping_list
 	def yahoo_shipping_list
-		pdf = PrawnPDF.yahoo_shipping_pdf(params[:ship_date])
-		send_data pdf,
-			type: 'application/pdf', 
-			disposition: :inline,
-			filename: "PDF.pdf"
+		filename = "Yahoo-#{params[:ship_date]}-#{DateTime.now.to_s}.pdf"
+		pdf = PrawnPDF.yahoo_shipping_pdf(params[:ship_date], filename)
+		send_data pdf.render,
+			type: 'application/pdf'
 		pdf = nil
-		File.delete(Rails.root + 'PDF.pdf') if File.exist?(Rails.root + 'PDF.pdf')
+		File.delete(Rails.root + filename) if File.exist?(Rails.root + filename)
 		GC.start
 	end
 

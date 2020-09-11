@@ -21,10 +21,8 @@
 /* Primary Imports*/
 @import "bootstrap";
 @import "animate";
-@import "font-awesome-sprockets";
-@import "font-awesome";
 @import "bootstrap-datepicker";
-@import "tempusdominus-bootstrap-4.css";
+@import "tempusdominus-bootstrap-4";
 @import "colorpicker/colorpicker";
 @import "fullcalendar";
 
@@ -39,10 +37,17 @@
 @import "oyster_supplies";
 @import "yahoo_orders";
 
+.vertical {
+	writing-mode: vertical-rl;
+}
 
 /* Fixes */
 .lg-prepend-fix {
 	height: calc(2.875rem + 2px);
+}
+svg.bi {
+    bottom: 2px;
+    position: relative;
 }
 
 /* Turbolinks Loading Bar */

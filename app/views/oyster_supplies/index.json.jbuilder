@@ -1,5 +1,4 @@
 json.array!(@oyster_supply) do |supply|
-	json.extract! supply, :id, :supply_date
 	if @place == "supply_index"
 		json.title '大　' + supply.large_shucked_total.to_s + '
 		小　' + supply.small_shucked_total.to_s + '
@@ -16,9 +15,8 @@ json.array!(@oyster_supply) do |supply|
 	json.borderColor 'rgba(255, 255, 255, 0)'
 	json.url oyster_supply_url(supply)
 end
-
-json.array!(@oyster_invoices) do |invoice|
-	if @place == "supply_index"
+if @place == "supply_index"
+	json.array!(@oyster_invoices) do |invoice|
 		start_date = DateTime.strptime(invoice.start_date, '%Y-%m-%d')
 		end_date = DateTime.strptime(invoice.end_date, '%Y-%m-%d')
 		json.extract! invoice, :id, :start_date, :end_date

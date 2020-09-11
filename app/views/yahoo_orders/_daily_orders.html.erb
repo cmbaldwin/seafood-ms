@@ -1,12 +1,29 @@
 <% if !@daily_orders.empty? %>
 	<div class="clearfix mb-2">
 		<h2 class="float-left"><%= @search_date.day %>日</h2>
-		<%= link_to("出荷データ(CSV)", yahoo_csv_path(ship_date: @search_date), class: "btn btn-primary float-right ml-2", data: {turbolinks: false}) %>
-		<%= link_to("出荷データ(XLS)", yahoo_spreadsheet_path(ship_date: @search_date), class: "btn btn-primary float-right ml-2", data: {turbolinks: false}) %>
-		<%= link_to("発送表", yahoo_shipping_list_path(ship_date: @search_date), class: "btn btn-primary float-right ml-2") %>
+		<%= link_to("出荷データ(CSV)", yahoo_csv_path(ship_date: @search_date), :method => :get, class: "btn btn-primary float-right ml-2", data: {turbolinks: false}) %>
+		<%= link_to("出荷データ(XLS)", yahoo_spreadsheet_path(ship_date: @search_date), :method => :get, class: "btn btn-primary float-right ml-2", data: {turbolinks: false}) %>
+		<%= link_to("発送表", yahoo_shipping_list_path(ship_date: @search_date), :method => :get, target: '_blank', class: "btn btn-primary float-right ml-2") %>
 	</div>
 	<table class="table table-sm">
 		<thead>
+			<tr>
+				<th colspan="4">
+					<table class="table table-borderless">
+						<% counts = order_counts(@daily_orders) %>
+						<tr>
+							<% counts[:headers].each_with_index do |header, i| %>
+								<%= ("</tr><tr>").html_safe if (i % 4 == 0) %>
+									<th class="text-center">
+										<b><%= header %><%= "{ｇ合計}" if (i == 4)%></b><br>
+										<i><%= counts[:values][i].to_s %><%= " {#{counts[:anago]}g}" if (i == 4)%></i>
+										<%= "(#{counts[:cards]}枚)" if (i == 1) %>
+									</th>
+							<% end %>
+						</tr>
+					</table>
+				</th>
+			</tr>
 			<tr class="table-dark">
 				<th>
 					<div class="btn btn-light mr-3">ヤフー注文ID</div><span class="badge badge-secondary">現在の注文ステータス</span>
@@ -16,8 +33,17 @@
 				<th>出荷ステータス</th>
 			</tr>
 			<tr class="table-dark">
-				<th colspan="4">
-					注文明細
+				<th class="pl-3">
+					商品×数量
+				</th>
+				<th>
+					届け日
+				</th>
+				<th>
+					届け時間帯
+				</th>
+				<th>
+					支払い方法
 				</th>
 			</tr>
 		</thead>
@@ -39,8 +65,17 @@
 						</th>
 					</tr>
 					<tr>
-						<td colspan="3" class="pl-3">
+						<td class="pl-3">
 							<%= order.item_name %><%= order.print_quantity %>
+						</td>
+						<td>
+							<%= order.shipping_arrival_date.strftime("%m月%d日") %>
+						</td>
+						<td>
+							<%= order.arrival_time %>
+						</td>
+						<td>
+							<%= order.payment_type %>
 						</td>
 					</tr>
 				<% end %>

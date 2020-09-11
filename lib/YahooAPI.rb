@@ -154,7 +154,31 @@ class YahooAPI
 		end
 	end
 
+	# Used for testing. You'll need to copy an autho code from the app to the local dev enviornment to use this...
+	def test_api(period = 2.weeks)
+		if authorized?
+			request = self.class.post("https://circus.shopping.yahooapis.jp/ShoppingWebService/V1/orderList",
+				:headers => {"Content-Type" => 'text/xml;charset=UTF-8',
+					"Authorization" => 'Bearer ' + @user.data[:yahoo][:authorization]["access_token"]},
+				:body => 
+					"<Req>
+						<Search>
+							<Condition>
+							<OrderStatus>1,2,3,4,5</OrderStatus>
+							<OrderTimeFrom>" + (DateTime.now - period).strftime("%Y%m%d") + "000000" + "</OrderTimeFrom>
+							<OrderTimeTo>" + DateTime.now.strftime("%Y%m%d%H%M%S") + "</OrderTimeTo>
+							</Condition>
+							<Field>OrderTime,OrderId,DeviceType,IsRoyalty,IsAffiliate,OrderStatus,StoreStatus,IsReadOnly,IsActive,IsSeen,IsSplit,Suspect,IsRoyaltyFix,PayStatus,SettleStatus,PayType,PayMethod,NeedBillSlip,NeedDetailedSlip,NeedReceipt,BillFirstName,BillFirstNameKana,BillLastName,BillLastNameKana,BillPrefecture,ShipFirstName,ShipFirstNameKana,ShipLastName,ShipLastNameKana,ShipPrefecture,ShipStatus,ShipMethod,ShipRequestDateNo,ShipCompanyCode,BuyerCommentsFlag,ReleaseDateFrom,ReleaseDateTo,GetPointFixDateFrom,GetPointFixDateTo,UsePointFixDateFrom,UsePointFixDateTo,IsLogin,TotalPrice</Field>
+						</Search>
+						<SellerId>oystersisters</SellerId>
+					</Req>")
+			response = request.parsed_response
+		end
+		response
+	end
+
 	def get_new_orders(period = 2.weeks)
+		# https://developer.yahoo.co.jp/webapi/shopping/orderList.html
 		if authorized?
 			begin
 				request = self.class.post("https://circus.shopping.yahooapis.jp/ShoppingWebService/V1/orderList",
@@ -172,31 +196,38 @@ class YahooAPI
 							</Search>
 							<SellerId>oystersisters</SellerId>
 						</Req>")
+				order_count = request.parsed_response["Result"]["Search"]["TotalCount"]
 				response = request.parsed_response["Result"]["Search"]["OrderInfo"]
-				order_ids = Hash.new
-				if response[0].is_a?(Hash)
-					response.each_with_index do |order_response, i|
-						order_ids[i] = order_response["OrderId"]
-					end
-				else
-					order_ids[0] = response["OrderId"]
-				end
-				puts 'Getting order item details.'
-				if order_details_response = get_order_details(order_ids.values)
-					puts 'Compiling and recording orders in the database.'
-					compiled_results = Hash.new
-					order_ids.each do |i, order_id|
-						compiled_results[order_id] = Hash.new
-						unless order_ids.length < 2
-							compiled_results[order_id] = response[i].merge(order_details_response[order_id])
-						else
-							compiled_results[order_id] = response.merge(order_details_response[order_id])
+				unless order_count.to_i == 0
+					order_ids = Hash.new
+					if response[0].is_a?(Hash)
+						response.each_with_index do |order_response, i|
+							order_ids[i] = order_response["OrderId"]
 						end
+					else
+						order_ids[0] = response["OrderId"]
 					end
-					record_results(compiled_results)
+					puts 'Getting order item details.'
+					if order_details_response = get_order_details(order_ids.values)
+						puts 'Compiling and recording orders in the database.'
+						compiled_results = Hash.new
+						order_ids.each do |i, order_id|
+							compiled_results[order_id] = Hash.new
+							unless order_ids.length < 2
+								compiled_results[order_id] = response[i].merge(order_details_response[order_id])
+							else
+								compiled_results[order_id] = response.merge(order_details_response[order_id])
+							end
+						end
+						record_results(compiled_results)
+						puts "Imported #{order_count} orders."
+					else
+						puts 'Error with acquiring order item details.'
+						false
+					end
 				else
-					puts 'Error with acquiring order item details.'
-					false
+					puts 'No new orders.'
+					true
 				end
 			rescue TypeError
 				puts "Error with Yahoo API request:"

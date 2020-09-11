@@ -5,7 +5,6 @@
 			<div class="col">
 	<% if current_user.admin? %>
 				<div class="btn-group float-right" role="group" aria-label="Basic">
-					<%# link_to 'CSVアップロード', csv_path, :class => "btn btn-success" %>
 					<%= link_to '無印チェック表（生食用）', empty_manifest_path('生食用'), :class => "btn btn-info" %>
 					<%= link_to '無印チェック表（冷凍用）', empty_manifest_path('プロトン凍結冷凍用'), :class => "btn btn-info" %>
 					<%= link_to '追加', new_manifest_path, :class => "btn btn-success" %>
@@ -36,7 +35,6 @@
 				</div>
 		</div>
 		
-		<% cache @manifests do %>
 		<% @manifests.order(sales_date: :desc).each do |manifest| %>
 		<% infomart_count(manifest) %>
 		<% tsuhan_count(manifest) %>
@@ -66,18 +64,17 @@
 				</div>
 				<div class="col-md-3 col-sm-12 text-center">
 					<div class="btn-group">
-						<%= link_to ('<i class="far fa-file-alt"></i>').html_safe, manifest, :alt => "個別ページ", class: 'btn btn-info' %>
-						<%= link_to ('<i class="far fa-file-pdf"></i>').html_safe, manifest_pdf_path(manifest), :method => :get, class: 'btn btn-info', target: "_blank" %>
+						<%= link_to icon("card-list"), manifest, :alt => "個別ページ", class: 'btn btn-info' %>
+						<%= link_to icon("file-earmark-arrow-down"), manifest_pdf_path(manifest), :method => :get, class: 'btn btn-info', target: "_blank" %>
 						<% if current_user.admin? or current_user.vip? %>
-							<%= link_to ('<i class="fas fa-sync-alt"></i>').html_safe, edit_manifest_path(manifest), :alt => "データを編集", class: 'btn btn-success' %>
-							<%= button_to manifest, method: :delete, data: { confirm: '削除しますか?' }, :disabled => !current_user.admin?, form_class: 'btn btn-danger', class: 'blank_button' do %>
-								<i class="fas fa-trash-alt"></i>
+							<%= link_to icon("arrow-counterclockwise", class: "text-success"), edit_manifest_path(manifest), :alt => "データを更新", class: 'btn btn-info' %>
+							<%= button_to manifest, method: :delete, data: { confirm: '削除しますか?' }, :disabled => !current_user.admin?, form_class: 'btn btn-info', class: 'blank_button' do %>
+								<%= icon("trash-fill", class: "text-danger") %>
 							<% end %>
 						<% end %>
 					</div>
 				</div>
 		</div>
-		<% end %>
 		<% end %>
 		<%= will_paginate @manifests %>
 	</div>

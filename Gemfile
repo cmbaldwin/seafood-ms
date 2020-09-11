@@ -12,9 +12,7 @@ ruby '2.6.6'
 # Set up local .env file, require immediately
 gem 'dotenv-rails', groups: [:development, :test], :require => 'dotenv/rails-now'
 
-group :production do
-  gem 'sidekiq'
-end
+gem 'sidekiq'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails' 
 gem 'rails', '~> 6.0.3.1'
@@ -30,16 +28,13 @@ gem 'puma', '~> 3.11'
 gem 'redis', '~> 4.0.1'
 gem 'hiredis'
 
-# Single dyno async (testing purposes)
-gem 'sucker_punch', '~> 2.0'
-
 # Default JS compiler for Rails 6
 gem "webpacker"
 
 # Use SCSS for stylesheets
 gem 'sass-rails', '~> 5.0'
-# Use Uglifier as compressor for JavaScript assets
-gem 'uglifier', '>= 1.3.0'
+# Use Uglifier as compressor for JavaScript assets (removed in upgrade to Rails 6 2020-9-1)
+# gem 'uglifier', '>= 1.3.0'
 # See https://github.com/rails/execjs#readme for more supported runtimes
 
 # Turbolinks makes navigating your web application faster. Read more: https://github.com/turbolinks/turbolinks
@@ -68,6 +63,8 @@ group :development, :test do
   #visualize associations
   gem 'rails-erd'
 
+  #Redis tests
+  gem 'redis-namespace'
   ## Dump Seeds and reset pk squence for reproducing the production database
   #gem 'seed_dump'
   #gem 'activerecord-reset-pk-sequence'
@@ -110,9 +107,6 @@ gem 'groupdate'
 #Add Devise for Authorization and Authentication
 gem 'devise', '>= 4.7.1'
 
-#Add Font Awesome Icons
-gem 'font-awesome-sass', '~> 5.2.0'
-
 #Mini-Magick for Image Processing (のし Generator)
 gem 'mini_magick'
 
@@ -132,7 +126,7 @@ gem 'sendgrid-ruby'
 ## Gemfile for Rails 3+, Sinatra, and Merb
 gem 'will_paginate', '~> 3.1.1'
 
-## PDF reader and writer for Rakuten Manifests
+## PDF reader and writer
 gem 'prawn-rails'
 
 ## On the fly Hankaku / Zenkaku Conversion (http://gimite.net/gimite/rubymess/moji.html)

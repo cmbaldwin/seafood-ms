@@ -11,10 +11,7 @@ class ExpirationCard < ApplicationRecord
 		filename = self.product_name + '-' + pack_date + '-' + use_by_date + manufactured_only + "-カード.pdf"
 		Prawn::Document.generate(filename, :page_size => "A4", :margin => [15]) do |pdf|
 			#document set up
-			pdf.font_families.update("SourceHan" => {
-				:normal => ".fonts/SourceHan/SourceHanSans-Normal.ttf",
-				:bold => ".fonts/SourceHan/SourceHanSans-Bold.ttf",
-			})
+			pdf.font_families.update(PrawnPDF.fonts)
 			#set utf-8 japanese font
 			pdf.font "SourceHan" 
 

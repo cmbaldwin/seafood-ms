@@ -1,7 +1,28 @@
 class PrawnPDF
 	require 'prawn-rails'
 
-	def self.yahoo_shipping_pdf(ship_date)
+	def self.fonts
+		require 'open-uri'
+		{
+			"SourceHan" => {
+				:normal => open(ENV["GBUCKET_PREFIX"] + "fonts/SourceHanSans-Normal.ttf"),
+				:bold => open(ENV["GBUCKET_PREFIX"] + "fonts/SourceHanSans-Bold.ttf"),
+				:light => open(ENV["GBUCKET_PREFIX"] + "fonts/SourceHanSans-Light.ttf"),
+			},
+			"Takao" => {
+				:normal => open(ENV["GBUCKET_PREFIX"] + "fonts/TakaoPMincho.ttf"),
+				:bold => open(ENV["GBUCKET_PREFIX"] + "fonts/TakaoPMincho.ttf"),
+				:light => open(ENV["GBUCKET_PREFIX"] + "fonts/TakaoPMincho.ttf"),
+			},
+			"Aozora" => {
+				:normal => open(ENV["GBUCKET_PREFIX"] + "fonts/AozoraMinchoRegular.ttf"),
+				:bold => open(ENV["GBUCKET_PREFIX"] + "fonts/AozoraMinchoRegular.ttf"),
+				:light => open(ENV["GBUCKET_PREFIX"] + "fonts/AozoraMinchoRegular.ttf"),
+			}
+		}
+	end
+
+	def self.yahoo_shipping_pdf(ship_date, filename)
 		orders = YahooOrder.where(ship_date: ship_date)
 
 		def self.order_counts(orders)
@@ -43,8 +64,10 @@ class PrawnPDF
 				"anago480" => [0, 0, 0, 0, 1, 480, 0, 0, 0],
 				"anago350" => [0, 0, 0, 0, 1, 350, 0, 0, 0] }
 			orders.each do |order|
-				count_hash[order.item_id].each_with_index do |count, i|
-					counts[types_arr[i]] += count
+				unless order.order_status(false) == 4
+					count_hash[order.item_id].each_with_index do |count, i|
+						counts[types_arr[i]] += count
+					end
 				end
 			end
 			[counts.keys, counts.values]
@@ -88,100 +111,97 @@ class PrawnPDF
 			print_array[order.item_id]
 		end
 
-		pdf = Prawn::Document.new(margin: [15])
-		pdf.font_families.update("SourceHan" => {
-			:normal => ".fonts/SourceHan/SourceHanSans-Normal.ttf",
-			:bold => ".fonts/SourceHan/SourceHanSans-Bold.ttf",
-			:light => ".fonts/SourceHan/SourceHanSans-Light.ttf",
-		})
-		#set utf-8 japanese font
-		pdf.font_size 16
-		pdf.font "SourceHan", :style => :bold
-		pdf.text ship_date + "  ヤフーショッピング 発送表"
-		pdf.font "SourceHan", :style => :normal
-		pdf.move_down 15
-		pdf.table(order_counts(orders), 
+		Prawn::Document.generate(filename, margin: [15]) do |pdf|
+			pdf.font_families.update(fonts)
+			#set utf-8 japanese font
+			pdf.font_size 16
+			pdf.font "SourceHan", style: :bold
+			pdf.text "ヤフーショッピング 発送表" + (" " * 82) + ship_date
+			pdf.font "SourceHan", style: :normal
+			pdf.move_down 15
+			pdf.table(order_counts(orders), 
+					:cell_style => {
+						:inline_format => true, 
+						:border_width => 0.25, 
+						:valign => :center, 
+						:align => :center, 
+						:size => 10}, 
+					:width => pdf.bounds.width ) do |t|
+				t.row(0).background_color = "acacac"
+			end
+			pdf.move_down 15
+			data_table = [['#', '注文者', '送付先', '500g', 'セル', 'セット', 'その他', 'お届け日', '時間', 'ナイフ', 'のし', '領収書', '備考']]
+			orders.each_with_index do |order, i|
+				item = print_items(order)
+				order_arr = [(i + 1).to_s]
+				order_arr << order.billing_name
+				order_arr << (order.billing_name == order.shipping_name ? '""' : order.shipping_name)
+				order_arr << item[0]
+				order_arr << item[1]
+				order_arr << item[2]
+				order_arr << item[3]
+				order_arr << order.shipping_arrival_date.strftime("%Y/%m/%d")
+				order_arr << order.arrival_time
+				order_arr << ""
+				order_arr << ""
+				order_arr << ""
+				order_arr << ""
+
+				data_table << order_arr
+			end
+			5.times do 
+				data_table << ['　'] * 13
+			end
+			pdf.font_size 8
+			pdf.table(data_table, 
+				:header => true, 
 				:cell_style => {
-					:inline_format => true, 
 					:border_width => 0.25, 
-					:valign => :center, 
-					:align => :center, 
-					:size => 10}, 
-				:width => pdf.bounds.width ) do |t|
-			t.row(0).background_color = "acacac"
-		end
-		pdf.move_down 15
-		data_table = [['#', '注文者', '送付先', '500g', 'セル', 'セット', 'その他', 'お届け日', '時間', 'ナイフ', 'のし', '領収書', '備考']]
-		orders.each_with_index do |order, i|
-			item = print_items(order)
-			order_arr = [(i + 1).to_s]
-			order_arr << order.billing_name
-			order_arr << (order.billing_name == order.shipping_name ? '""' : order.shipping_name)
-			order_arr << item[0]
-			order_arr << item[1]
-			order_arr << item[2]
-			order_arr << item[3]
-			order_arr << order.shipping_arrival_date.strftime("%Y/%m/%d")
-			order_arr << order.arrival_time
-			order_arr << ""
-			order_arr << ""
-			order_arr << ""
-			order_arr << ""
+					:valign => :center}, 
+				:column_widths => {0 => 18, 1 => 55, 2 => 55, 3 => 30, 4 => 27, 5=> 50, 12=> 100}, 
+				:width => pdf.bounds.width ) do
+			
+				cells.column(0).rows(1..-1).padding = 2
+				cells.columns(1..-1).rows(1..-1).padding = 4
 
-			data_table << order_arr
-		end
-		5.times do 
-			data_table << ['　'] * 13
-		end
-		pdf.font_size 8
-		pdf.table(data_table, 
-			:header => true, 
-			:cell_style => {
-				:border_width => 0.25, 
-				:valign => :center}, 
-			:column_widths => {0 => 18, 1 => 55, 2 => 55, 3 => 30, 4 => 27, 5=> 50, 12=> 100}, 
-			:width => pdf.bounds.width ) do
-		
-			cells.column(0).rows(1..-1).padding = 2
-			cells.columns(1..-1).rows(1..-1).padding = 4
+				header_cells = cells.columns(0..12).rows(0)
+				header_cells.background_color = "acacac"
+				header_cells.size = 7
+				header_cells.font_style = :bold
 
-			header_cells = cells.columns(0..12).rows(0)
-			header_cells.background_color = "acacac"
-			header_cells.size = 7
-			header_cells.font_style = :bold
+				cells.columns(7).rows(1..-1).font_style = :light
 
-			cells.columns(7).rows(1..-1).font_style = :light
+				set_other_time_cells = cells.columns([5, 6, 7, 8, 12]).rows(1..-1)
+				set_other_time_cells.size = 7
 
-			set_other_time_cells = cells.columns([5, 6, 7, 8, 12]).rows(1..-1)
-			set_other_time_cells.size = 7
+				item_cells = cells.columns(3..6).rows(1..-1)
+				multi_cells = item_cells.filter do |cell|
+					cell.content.to_s[/!/]
+				end
+				multi_cells.background_color ="ffc48f"
 
-			item_cells = cells.columns(3..6).rows(1..-1)
-			multi_cells = item_cells.filter do |cell|
-				cell.content.to_s[/!/]
+				item_cells = cells.columns(9..11).rows(1..-6)
+				check_cells = item_cells.filter do |cell|
+					!cell.content.to_s.empty?
+				end
+				check_cells.background_color ="ffc48f"
+
+
+				note_cells = cells.columns(12).rows(1..-1)
+				cash_cells = note_cells.filter do |cell|
+					cell.content.to_s[/代引/]
+				end
+				cash_cells.background_color ="ffc48f"
+
+				date_cells = cells.columns(7).rows(1..-1)
+				not_tomorrow_cells = date_cells.filter do |cell|
+					cell.content.to_s[/月/]
+				end
+				not_tomorrow_cells.background_color ="ffc48f"
 			end
-			multi_cells.background_color ="ffc48f"
 
-			item_cells = cells.columns(9..11).rows(1..-6)
-			check_cells = item_cells.filter do |cell|
-				!cell.content.to_s.empty?
-			end
-			check_cells.background_color ="ffc48f"
-
-
-			note_cells = cells.columns(12).rows(1..-1)
-			cash_cells = note_cells.filter do |cell|
-				cell.content.to_s[/代引/]
-			end
-			cash_cells.background_color ="ffc48f"
-
-			date_cells = cells.columns(7).rows(1..-1)
-			not_tomorrow_cells = date_cells.filter do |cell|
-				cell.content.to_s[/月/]
-			end
-			not_tomorrow_cells.background_color ="ffc48f"
+			return pdf
 		end
-
-		pdf.render
 	end
 
 end

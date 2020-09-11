@@ -1,7 +1,7 @@
 class OysterSuppliesController < ApplicationController
 	before_action :set_oyster_supply, only: [:show, :edit, :update, :destroy, :supply_check]
 	before_action :check_status
-	before_action :set_info, except: [:fetch_invoice]
+	before_action :set_info, except: [:fetch_invoice, :fetch_supplies, :index]
 
 	def check_status
 		return unless !current_user.approved? || current_user.supplier? || current_user.user? || current_user.employee?

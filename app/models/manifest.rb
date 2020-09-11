@@ -18,7 +18,11 @@ class Manifest < ApplicationRecord
 	end
 
 	def nengapi_to_gapi_date(nenngapi_date)
-		DateTime.strptime(nenngapi_date, '%Y年%m月%d日').strftime("%m月%d日")
+		if nenngapi_date.include?("年")
+			DateTime.strptime(nenngapi_date, '%Y年%m月%d日').strftime("%m月%d日")
+		else
+			DateTime.parse(nenngapi_date).strftime("%m月%d日")
+		end
 	end
 
 	def nengapi_to_date(nenngapi_date)
@@ -180,11 +184,7 @@ class Manifest < ApplicationRecord
 	def generate_empty_manifest
 		Prawn::Document.generate("PDF.pdf", :page_size => "A4", :page_layout => :landscape, :margin => [25]) do |pdf_data|
 			#document set up
-			pdf_data.font_families.update("SourceHan" => {
-				:normal => ".fonts/SourceHan/SourceHanSans-Normal.ttf",
-				:bold => ".fonts/SourceHan/SourceHanSans-Bold.ttf",
-				:light => ".fonts/SourceHan/SourceHanSans-Light.ttf",
-			})
+			pdf_data.font_families.update(PrawnPDF.fonts)
 			#set utf-8 japanese font
 			pdf_data.font "SourceHan" 
 			#first page for raw oysters
@@ -451,11 +451,7 @@ class Manifest < ApplicationRecord
 		# 210mm x 297mm
 		Prawn::Document.generate("PDF.pdf", :page_size => "A4", :page_layout => :landscape, :margin => [25]) do |pdf|
 			#document set up
-			pdf.font_families.update("SourceHan" => {
-				:normal => ".fonts/SourceHan/SourceHanSans-Normal.ttf",
-				:bold => ".fonts/SourceHan/SourceHanSans-Bold.ttf",
-				:light => ".fonts/SourceHan/SourceHanSans-Light.ttf",
-			})
+			pdf.font_families.update(PrawnPDF.fonts)
 			#set utf-8 japanese font
 			pdf.font "SourceHan" 
 

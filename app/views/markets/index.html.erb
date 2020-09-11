@@ -35,7 +35,7 @@
 		</div>
 
 		<% @markets.each do |market| %>
-		<div class="row small <%= cycle("even", "odd") %>">
+		<div class="row small <%= cycle('even', 'odd') %>">
 				<div class="col-md-2 col-sm-12 clearfix" data-toggle="popover" data-trigger="focus" data-placement="left" data-content="<%= market.namae %>">
 					<h4 class="float-left" style="border-left: 10px solid <%= market.color %>;">
 						<%= market.nick %>
@@ -66,45 +66,35 @@
 						<a alt="MJS番後" tabindex="0" class="btn btn-secondary" role="button" data-toggle="popover" data-trigger="focus" data-placement="top" title="MJS番後" data-content="
 							<%= market.mjsnumber %>
 						">
-							<i class="fas fa-server"></i>
+							<%= icon("link-45deg") %>
 						</a>
 						<a alt="市場住所" tabindex="0" class="btn btn-secondary" role="button" data-toggle="popover" data-trigger="focus" data-placement="top" title="市場住所" data-content="
 							<%= market.address %>
 							<a href='https://maps.google.com/?q=<%= market.address %>' target='_blank'>Google Maps</a>
 						">
-							<i class="fas fa-map-marked-alt"></i>
+							<%= icon("map") %>
 						</a>
 						<a alt="市場電話番度" tabindex="0" class="btn btn-secondary" role="button" data-toggle="popover" data-trigger="focus" data-placement="top" title="市場電話番後" data-content="<%= market.phone %>">
-							<i class="fas fa-phone"></i>
+							<%= icon("phone") %>
 						</a>
 						<a alt="代表者電話番後" tabindex="0" class="btn btn-secondary" role="button" data-toggle="popover" data-trigger="focus" data-placement="top" title="代表者電話番後" data-content="<%= market.repphone %>">
-							<i class="far fa-address-card"></i>
+							<%= icon("card-heading") %>
 						</a>
 						<a alt="市場ファクス番後" tabindex="0" class="btn btn-secondary" role="button" data-toggle="popover" data-trigger="focus" data-placement="top" title="市場ファクス番後" data-content="<%= market.fax %>">
-							<i class="fas fa-fax"></i>
+							<%= icon("printer") %>
 						</a>
 						<a alt="関係商品" tabindex="0" class="btn btn-secondary" role="button" data-toggle="popover" data-trigger="focus" data-placement="top" title="関係商品" data-content="
 						<% market.products.each do |product| %>
 							<%= product.namae %><br>
 						<% end %>
 						">
-							<i class="fas fa-sitemap"></i>
+							<%= icon("list-ol") %>
 						</a>
-						<%= link_to ('<i class="far fa-file-alt"></i>').html_safe, market, :alt => "市場個別ページ", class: 'btn btn-info' %>
-						<a alt="編集歴史" tabindex="0" class="btn btn-primary" role="button" data-toggle="popover" data-trigger="focus" data-placement="top" title="編集歴史" data-content="
-						<% market.history.each do |key, val| %>
-							<strong><%= key %></strong><br>
-							<% val.each do |v| %>
-								<small><%= v %></small>
-							<% end %>
-						<% end %>
-						">
-							<i class="fas fa-history"></i>
-						</a>
+						<%= link_to icon("card-list"), market, :alt => "市場個別ページ", class: 'btn btn-info' %>
 						<% if current_user.admin?%>
-							<%= link_to ('<i class="fas fa-edit"></i>').html_safe, edit_market_path(market), :alt => "市場のデータを編集", class: 'btn btn-success' %>
+							<%= link_to icon("pencil-square", class: "text-success"), edit_market_path(market), :alt => "市場のデータを編集", class: 'btn btn-info' %>
 							<% if current_user.admin? %>
-								<%= link_to ('<i class="fas fa-trash-alt"></i>').html_safe, market, :alt => "この市場を取り消す", method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-danger' %>
+								<%= link_to icon("trash-fill", class: "text-danger"), market, :alt => "この市場を取り消す", method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-info' %>
 							<% end %> 
 						<% end %>
 					</div>

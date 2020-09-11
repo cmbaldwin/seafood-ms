@@ -74,7 +74,7 @@ GEM
     ancestry (3.1.0)
       activerecord (>= 4.2.0)
     ast (2.4.1)
-    autoprefixer-rails (9.8.6.2)
+    autoprefixer-rails (9.8.6.3)
       execjs
     awesome_print (1.8.0)
     barnes (0.0.8)
@@ -142,8 +142,6 @@ GEM
     faraday_middleware (1.0.0)
       faraday (~> 1.0)
     ffi (1.13.1)
-    font-awesome-sass (5.2.0)
-      sassc (>= 1.11)
     fullcalendar-rails (3.9.0.0)
       jquery-rails (>= 4.0.5, < 5.0.0)
       jquery-ui-rails (>= 5.0.2)
@@ -164,7 +162,7 @@ GEM
     google-cloud-env (1.3.3)
       faraday (>= 0.17.3, < 2.0)
     google-cloud-errors (1.0.1)
-    google-cloud-storage (1.27.0)
+    google-cloud-storage (1.28.0)
       addressable (~> 2.5)
       digest-crc (~> 0.4)
       google-api-client (~> 0.33)
@@ -205,7 +203,7 @@ GEM
     listen (3.2.1)
       rb-fsevent (~> 0.10, >= 0.10.3)
       rb-inotify (~> 0.9, >= 0.9.10)
-    loofah (2.6.0)
+    loofah (2.7.0)
       crass (~> 1.0.2)
       nokogiri (>= 1.5.9)
     mail (2.7.1)
@@ -324,6 +322,8 @@ GEM
     rb-inotify (0.10.1)
       ffi (~> 1.0)
     redis (4.0.3)
+    redis-namespace (1.8.0)
+      redis (>= 3.0.4)
     regexp_parser (1.7.1)
     representable (3.0.4)
       declarative (< 0.1.0)
@@ -411,8 +411,6 @@ GEM
     sqlite3-ruby (1.3.3)
       sqlite3 (>= 1.3.3)
     statsd-ruby (1.4.0)
-    sucker_punch (2.1.2)
-      concurrent-ruby (~> 1.0)
     temple (0.8.2)
     thin (1.7.2)
       daemons (~> 1.0, >= 1.0.9)
@@ -428,8 +426,6 @@ GEM
     tzinfo (1.2.7)
       thread_safe (~> 0.1)
     uber (0.1.0)
-    uglifier (4.2.0)
-      execjs (>= 0.3.0, < 3)
     unf (0.1.4)
       unf_ext
     unf_ext (0.0.7.7)
@@ -498,7 +494,6 @@ DEPENDENCIES
   devise (>= 4.7.1)
   dotenv-rails
   faraday_middleware
-  font-awesome-sass (~> 5.2.0)
   fullcalendar-rails
   groupdate
   hiredis
@@ -518,6 +513,7 @@ DEPENDENCIES
   rails (~> 6.0.3.1)
   rails-erd
   redis (~> 4.0.1)
+  redis-namespace
   rubocop
   sass-rails (~> 5.0)
   selenium-webdriver
@@ -526,10 +522,8 @@ DEPENDENCIES
   simple_form
   spreadsheet
   sprockets-rails (>= 2.3.2)
-  sucker_punch (~> 2.0)
   turbolinks (~> 5)
   tzinfo-data
-  uglifier (>= 1.3.0)
   weatherb
   web-console (>= 3.3.0)
   webdrivers

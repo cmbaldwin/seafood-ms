@@ -164,8 +164,8 @@
 																end %>
 															<% end %>
 																<%= figures_form.check_box base + "[extra_cost]", checked: extra_cost,  :class => 'extra_cost_check_box', label: false %><br>
-															<i class="fas fa-layer-group" data-toggle="tooltip" data-placement="bottom" data-html="true" title="<em>合わせで、送料なし</em>"></i>
-															<i class="fas fa-yen-sign" data-toggle="tooltip" data-placement="bottom" data-html="true" title="<em>特別経費：<br><%= market.optional_cost_description %></em>"></i>
+															<i class="fas fa-layer-group" data-toggle="tooltip" data-placement="bottom" data-html="true" title="<em>合わせで、送料なし</em>"><%= icon("box-seam") %></i>
+															<i class="fas fa-yen-sign" data-toggle="tooltip" data-placement="bottom" data-html="true" title="<em>特別経費：<br><%= market.optional_cost_description %></em>"><%= icon("patch-plus-fll") %></i>
 														<% end %>
 													</div>
 												</div>

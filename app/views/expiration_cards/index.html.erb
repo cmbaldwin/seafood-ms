@@ -21,10 +21,10 @@
 	<div class="row">
 		<% @expiration_cards.each do |expiration_card| %>
 			<div class="col-md-6 col-sm-12">
-				<div class="float-right btn-group">
-					<%= link_to ('<i class="far fa-file-pdf"></i>').html_safe, expiration_card.download.url, class: 'btn btn-sm btn-info', target: "_blank" %>
-					<%= link_to '編集', edit_expiration_card_path(expiration_card), class: 'btn btn-sm btn-success' %>
-					<%= link_to '削除', expiration_card, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-sm btn-danger' %>
+				<div class="float-right btn-group mb-1">
+					<%= link_to icon("card-heading"), expiration_card.download.url, class: 'btn btn-info', target: "_blank" %>
+					<%= link_to icon("pencil-square", class: "text-success"), edit_expiration_card_path(expiration_card), class: 'btn btn-info' %>
+					<%= link_to icon("trash-fill", class: "text-danger"), expiration_card, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-info' %>
 				</div>
 				<table class="table table-sm table-bordered border rounded">
 					<tr>

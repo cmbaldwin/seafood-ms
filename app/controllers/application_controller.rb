@@ -3,7 +3,7 @@ class ApplicationController < ActionController::Base
 
 	before_action :authenticate_user!
 	before_action :configure_permitted_parameters, if: :devise_controller?
-	
+
 	def authorize_admin
 	    redirect_to :back, status: 401 unless current_user.admin
 	end
@@ -18,6 +18,15 @@ class ApplicationController < ActionController::Base
 
 	def to_nengapi(datetime)
 		datetime.strftime('%Y年%m月%d日')
+	end
+
+	def nengapi_maker(date, plus)
+		(date + plus).strftime('%Y年%m月%d日')
+	end
+
+	def rakuten_check
+		rakuten_api_client = RakutenAPI.new
+		@rakuten_shinki = rakuten_api_client.get_details_by_ids(rakuten_api_client.get_shinki_without_shipdate_ids)
 	end
 
 	protected

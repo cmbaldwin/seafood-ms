@@ -21,9 +21,12 @@ class WelcomeController < ApplicationController
 			@online_orders = Manifest.last
 		end
 
+		rakuten_check
+
 		expiration_card_links_setup
 
-		frozen_data_setup
+		# temporarily removed
+		# frozen_data_setup
 
 		infographics_setup
 
@@ -73,9 +76,6 @@ class WelcomeController < ApplicationController
 	end
 
 	def expiration_card_links_setup
-		def nengapi_maker(date, plus)
-			(date + plus).strftime('%Y年%m月%d日')
-		end
 
 		# Set up the shelled oyster expiration cards
 		source_sakoshi = "兵庫県坂越海域"
@@ -112,7 +112,12 @@ class WelcomeController < ApplicationController
 	end
 
 	def load_rakuten_order
+		time_setup
 		@rakuten = RManifest.find(params[:id])
+		rakuten_today = RManifest.where(:sales_date => @today).first
+		if rakuten_today
+			@rakuten.sales_date == (rakuten_today.sales_date) ? rakuten_check : ()
+		end
 		respond_to do |format|
 			format.js { render layout: false }
 		end

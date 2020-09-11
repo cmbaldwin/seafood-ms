@@ -52,7 +52,7 @@
 							<% type_hash[:material_ids].each do |material_id| %>
 								<li>
 								<% current_record = get_material_by_id(material_id) %>
-							<%= link_to ((current_record.namae.to_s + ' | <strong>' + (current_record.cost * current_record.divisor).round(1).to_s) + is_per_product(current_record) + '</strong>　<i class="fas fa-external-link-alt fa-xs"></i>').html_safe, insert_material_data_path(id: material_id), 'data-toggle' => 'tooltip', 'data-html' => 'true', :title => ( current_record.cost.to_s + ' * ' + current_record.divisor.to_s), remote: true, class: 'product_relation_selection_link', 'data-toggle' => 'modal', 'data-target' => '#materialModal' %><br />
+							<%= link_to ((current_record.namae.to_s + ' | <strong>' + (current_record.cost * current_record.divisor).round(1).to_s) + is_per_product(current_record) + '</strong> ' + icon("box-arrow-in-up-right")).html_safe, insert_material_data_path(id: material_id), 'data-toggle' => 'tooltip', 'data-html' => 'true', :title => ( current_record.cost.to_s + ' * ' + current_record.divisor.to_s), remote: true, class: 'product_relation_selection_link', 'data-toggle' => 'modal', 'data-target' => '#materialModal' %><br />
 								</li>
 							<% end %>	
 							</ul>

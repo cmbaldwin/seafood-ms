@@ -64,15 +64,10 @@ class RManifest < ApplicationRecord
 
 		# Make the PDF
 		Prawn::Document.generate("PDF.pdf", page_size: "A5", :margin => [15]) do |pdf|
-			pdf.font_families.update("SourceHan" => {
-				:normal => ".fonts/SourceHan/SourceHanSans-Normal.ttf",
-				:bold => ".fonts/SourceHan/SourceHanSans-Bold.ttf",
-				:italic => ".fonts/SourceHan/SourceHanSans-Light.ttf",
-				:mincho => ".fonts/TakaoPMincho.ttf",
-			})
+			pdf.font_families.update(PrawnPDF.fonts)
 			
 			#set utf-8 japanese font
-			pdf.font "SourceHan", :style => :mincho
+			pdf.font "Takao", :style => :normal
 			pdf.font_size 10
 			pdf.move_down 10
 			receipt_table = Array.new
@@ -335,11 +330,7 @@ class RManifest < ApplicationRecord
 		end
 		# 210mm x 297mm
 		Prawn::Document.generate("PDF.pdf", :margin => [15]) do |pdf|
-			pdf.font_families.update("SourceHan" => {
-				:normal => ".fonts/SourceHan/SourceHanSans-Normal.ttf",
-				:bold => ".fonts/SourceHan/SourceHanSans-Bold.ttf",
-				:light => ".fonts/SourceHan/SourceHanSans-Light.ttf",
-			})
+			pdf.font_families.update(PrawnPDF.fonts)
 			#set utf-8 japanese font
 			pdf.font "SourceHan", :style => :normal
 			header_data_row = ['#', '注文者', '送付先', '500g', 'セル', 'セット', 'その他', 'お届け日', '時間', 'ナイフ', 'のし', '領収書', '備考']
@@ -552,12 +543,12 @@ class RManifest < ApplicationRecord
 		end
 	end
 
-
 	def new_order_counts
 		counts = Hash.new
 		mizukiri_count = 0
 		shells_count = 0
 		dekapuri_count = 0
+		reitou_shell_count = 0
 		anago_count = 0
 		ebi_count = 0
 		tako_count = 0
@@ -587,6 +578,11 @@ class RManifest < ApplicationRecord
 							dekapuri_count += (amount * order[:dekapuri][:count][i])
 						end
 					end
+					if !order[:reitou_shell].empty?
+						order[:reitou_shell][:amount].each_with_index do |amount, i|
+							reitou_shell_count += (amount * order[:reitou_shell][:count][i])
+						end
+					end
 					if !order[:anago].empty?
 						order[:anago][:amount].each_with_index do |amount, i|
 							anago_count += 1
@@ -613,10 +609,11 @@ class RManifest < ApplicationRecord
 		counts[:mizukiri] = mizukiri_count
 		counts[:shells] = shells_count
 		counts[:dekapuri] = dekapuri_count
+		counts[:reitou_shells] = reitou_shell_count
 		counts[:anago] = anago_count
 		counts[:ebi] = ebi_count
 		counts[:tako] = tako_count
-		return counts
+		counts
 	end
 
 	def prep_work_totals
@@ -663,11 +660,7 @@ class RManifest < ApplicationRecord
 		data = self.new_orders_hash.reverse
 		# 210mm x 297mm
 		Prawn::Document.generate("PDF.pdf", :margin => [15]) do |pdf|
-			pdf.font_families.update("SourceHan" => {
-				:normal => ".fonts/SourceHan/SourceHanSans-Normal.ttf",
-				:bold => ".fonts/SourceHan/SourceHanSans-Bold.ttf",
-				:light => ".fonts/SourceHan/SourceHanSans-Light.ttf",
-			})
+			pdf.font_families.update(PrawnPDF.fonts)
 			#set utf-8 japanese font
 			pdf.font "SourceHan" 
 
@@ -679,9 +672,17 @@ class RManifest < ApplicationRecord
 			pdf.font "SourceHan", :style => :normal
 
 			counts = self.new_order_counts
+			work_totals = self.prep_work_totals
 			counts_table = Array.new
-			counts_table << ['むき身', 'セル', 'デカプリ', '穴子', '干しエビ']
-			counts_table << [counts[:mizukiri].to_s + '　<font size="6">パック</font>', counts[:shells].to_s + '　<font size="6">個</font>', counts[:dekapuri].to_s + '　<font size="6">パック</font>', counts[:anago].to_s + '　<font size="6">件</font>', counts[:ebi].to_s + '　<font size="6">件</font>']
+			counts_table << ['むき身', 'セル', 'デカプリ', '冷凍セル', '穴子', 'タコ', '干しエビ', 'ナイフ']
+			counts_table << [counts[:mizukiri].to_s + '　<font size="6">パック</font>', 
+							counts[:shells].to_s + '　<font size="6">個</font>', 
+							counts[:dekapuri].to_s + '　<font size="6">パック</font>', 
+							counts[:reitou_shells].to_s + '　<font size="6">個</font>', 
+							counts[:anago].to_s + '　<font size="6">件</font>', 
+							counts[:tako].to_s + '　<font size="6">件</font>', 
+							counts[:ebi].to_s + '　<font size="6">件</font>', 
+							work_totals[:knife_count].to_s + '　<font size="6">個</font>']
 			pdf.table( counts_table, :cell_style => {:inline_format => true, :border_width => 0.25, :valign => :center, :align => :center, :size => 10}, :width => pdf.bounds.width ) do |t|
 				t.row(0).background_color = "acacac"
 			end

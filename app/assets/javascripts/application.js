@@ -15,14 +15,11 @@
 //
 //= require moment
 //= require moment/ja.js
-//= require bootstrap-4.1.3-dist/js/bootstrap
-//= require bootstrap-4.1.3-dist/js/bootstrap.bundle
 //= require popper
-//= require bootstrap-4.1.3-dist/js/bootstrap-popover
 //= require bootstrap-sprockets
 //= require bootstrap-datepicker/core
 //= require bootstrap-datepicker/locales/bootstrap-datepicker.ja.js
-//= require tempusdominus-bootstrap-4.js
+//= require tempusdominus-bootstrap-4
 //= require jquery.ui.widget
 //= require fullcalendar
 //= require fullcalendar/locale-all
@@ -37,6 +34,9 @@
 //= require oyster_supplies
 //= require welcome
 //= require noshis
+//
+//= require cable
+//= require_tree ./channels
 //
 //= require turbolinks
 //
@@ -118,6 +118,12 @@ function eventCalendar() {
 		},
 		events: '/yahoo_orders.json',
 		eventClick: function(info) {
+			$.ajax({
+				type: "GET",
+				url: '/fetch_yahoo_list/' + encodeURI(moment(info.start._i).format('YYYY-MM-DD')),
+				dataType: "script",
+				data: info.start._i
+			});
 		},
 		dayClick: function(info) {
 			$.ajax({

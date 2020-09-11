@@ -1,164 +1,283 @@
-<div class="card mb-3">
-	<div class="card-header">
-		<h4 class="card-title float-left">楽天状況（<%= @rakuten.sales_date %>）</h4>
+<!-- Modal -->
+<% if @rakuten_shinki %>
+	<div class="modal fade" id="rakuten_shinki_modal" tabindex="-1" aria-labelledby="rakuten_shinki_modal_label" aria-hidden="true">
+		<div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="rakuten_shinki_modal_label">楽天市場の新規（日付無し）注文</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+						<div class="row bg-info text-white p-3 m-1 h5">
+							<div class="col-lg-2 col-md-6 col-sm-12">
+								注文番号
+							</div>
+							<div class="col-lg-2 col-md-6 col-sm-12">
+								注文者・届け先
+							</div>
+							<div class="col-lg-2 col-md-6 col-sm-12">
+								届け県
+							</div>
+							<div class="col-lg-2 col-md-6 col-sm-12">
+								届日設定
+							</div>
+							<div class="col-lg-2 col-md-6 col-sm-12">
+								商品
+							</div>
+							<div class="col-lg-2 col-md-6 col-sm-12">
+								メモ
+							</div>
+						</div>
+					<% @rakuten_shinki.each do |order| %>
+						<div class="row ml-1 mr-1 <%= cycle_table_rows %>">
+							<div class="col-lg-2 col-md-6 col-sm-12 small">
+								<% id = order["orderNumber"].gsub('274763-', '') %>
+								<a href="<%= rakuten_order_link(id) %>"><%= id %></a>
+							</div>
+							<div class="col-lg-2 col-md-6 col-sm-12">
+								<%= order["OrdererModel"]["familyName"] + order["OrdererModel"]["firstName"] %> ・ 
+								<% order["PackageModelList"].each do |package| %>
+									<%= package["SenderModel"]["familyName"] + package["SenderModel"]["firstName"] %>
+								<% end %>
+							</div>
+							<div class="col-lg-2 col-md-6 col-sm-12">
+								<% order["PackageModelList"].each do |package| %>
+									<%= package["SenderModel"]["prefecture"] %> 
+								<% end %>
+							</div>
+							<div class="col-lg-2 col-md-6 col-sm-12">
+								<% if order["deliveryDate"] %>
+									<%= order["deliveryDate"] %>
+								<% else %>
+									<% order["PackageModelList"].each do |package| %>
+										<% package["ShippingModelList"].each do |item| %>
+											<%= item["shippingDate"] ? item["shippingDate"] : '指定日無し' %>
+										<% end %>
+									<% end %>
+								<% end %>
+							</div>
+							<div class="col-lg-2 col-md-6 col-sm-12">
+								<% order["PackageModelList"].each do |package| %>
+									<% package["ItemModelList"].each do |item| %>
+										<%= rakuten_item_id_to_nickname(item["manageNumber"]) %><%= "× #{item["units"]}" if (item["units"].to_i > 1) %>
+									<% end %>
+								<% end %>
+							</div>
+							<div class="col-lg-2 col-md-6">
+								<%= order["memo"] %><br>
+								<%= order["remarks"].scan(/(?<=\[メッセージ添付希望・他ご意見、ご要望がありましたらこちらまで:\]).*/m).first.gsub(/\n/, '') %>
+							</div>
+						</div>
+					<% end %>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">閉じる</button>
+				</div>
+			</div>
+		</div>
+	</div>
+<% end %>
+
+<div class="card m-0 p-0 border-white">
+	<div class="card-header bg-white">
+		<h4 class="card-title float-left">
+			<%= @rakuten.sales_date %>
+		</h4>
 		<div class="float-right">
 			<div class="btn-group float-right d-print-none" role="group" aria-label="Basic">
-				<%= link_to ('<i class="far fa-file-alt"></i>').html_safe, @rakuten, :alt => "個別ページ", class: 'btn btn-info' %>
-				<%= link_to ('<i class="fas fa-sync-alt"></i>').html_safe, edit_r_manifest_path(@rakuten), :alt => "データを編集", class: 'btn btn-success' %>
-				<%= link_to ('<i class="fas fa-layer-group"></i>').html_safe, r_manifest_seperated_pdf_path(@rakuten), :method => :get, class: 'btn btn-info', target: "_blank" %>
-				<%= link_to ('<i class="far fa-file-pdf"></i>').html_safe, r_manifest_new_pdf_path(@rakuten), class: 'btn btn-info', target: '_blank' %>
+				<% if @rakuten_shinki %>
+					<button type="button" class="btn btn-sm btn-info" data-toggle="modal" data-target="#rakuten_shinki_modal">
+						<%= icon("asterisk") %><span class="badge badge-warning ml-1"><%= @rakuten_shinki.length %></span>
+					</button>
+				<% end %>
+				<%= link_to icon("card-list"), @rakuten, :alt => "個別ページ", class: 'btn btn-info' %>
+				<%= link_to icon("arrow-counterclockwise", class: "text-success"), edit_r_manifest_path(@rakuten), :alt => "データ更新", class: 'btn btn-info' %>
+				<%= link_to icon("file-earmark-arrow-down"), r_manifest_new_pdf_path(@rakuten), class: 'btn btn-info', target: '_blank' %>
+				<%= link_to icon("file-earmark-ruled"), r_manifest_seperated_pdf_path(@rakuten), :method => :get, class: 'btn btn-info', target: "_blank" %>
 			</div>
 		</div>
 	</div>
 		<div class="card-text text-center">
 			<% counts = @rakuten.new_order_counts %>
 			<% work_totals = @rakuten.prep_work_totals %>
-			<div class="row text-center mb-1">
-				<div class="col-md-2 col-sm-6 mb-2 border-secondary pb-1">
-					<span class="d-block mb-1 strong border-bottom">むき身</span>
-					<%= if counts[:mizukiri] > 0 then ('<b>').html_safe + counts[:mizukiri].to_s + ('<small>パック</small></b>').html_safe end %>
-				</div>
-				<div class="col-md-2 col-sm-6 mb-2 border-secondary pb-1">
-					<span class="d-block mb-1 strong border-bottom">セル／カード</span>
-					<%= if counts[:shells] > 0 then ('<b>').html_safe + counts[:shells].to_s + ('<small>個</small></b>').html_safe end %> ・ 
-					<b><%= work_totals[:shell_cards] %><small>枚</small></b></b>
-				</div>
-				<div class="col-md-2 col-sm-6 mb-2 border-secondary pb-1">
-					<span class="d-block mb-1 strong border-bottom">デカプリ</span>
-					<%= if counts[:dekapuri] > 0 then ('<b>').html_safe + counts[:dekapuri].to_s + ('<small>パック</small></b>').html_safe end %>
-				</div>
-				<div class="col-md-2 col-sm-6 mb-2 border-secondary pb-1">
-					<span class="d-block mb-1 strong border-bottom">穴子</span>
-					<%= if counts[:anago] > 0 then ('<b>').html_safe + counts[:anago].to_s + ('<small>件</small></b>').html_safe end %>
-				</div>
-				<div class="col-md-2 col-sm-6 mb-2 border-secondary pb-1">
-					<span class="d-block mb-1 strong border-bottom">干しエビ</span>
-					<%= if counts[:ebi] > 0 then ('<b>').html_safe + counts[:ebi].to_s + ('<small>件</small></b>').html_safe end %>
-				</div>
-				<div class="col-md-2 col-sm-6 mb-2 border-secondary pb-1">
-					<span class="d-block mb-1 strong border-bottom">ナイフ</span>
-					<b><%= work_totals[:knife_count] %><small>個</small></b>
-				</div>
-			</div>
-		<div class="row mb-3 m-1">
-			<div class="col-xl-5 col-lg-12 text-center border-top border-left border-right">
-				<div class="col-12">
-					<b>むき身牡蠣500g</b>
-				</div>
-				<div class="row border-bottom small font-weight-light font-italic">
-					<div class="col-3">
-						1p
+			<div class="row text-center m-1 p-1">
+				<div class="btn-group w-100" role="group">
+					<div class="btn col-3 btn-light d-block mb-1 strong">
+						<h6>むき身</h6>
+						<span class="badge badge-<%= counts[:mizukiri] > 0 ? 'info' : 'light' %> w-100">
+							<%= if counts[:mizukiri] > 0 then ('<b>').html_safe + counts[:mizukiri].to_s + ('<small>パック</small></b>').html_safe else ('　') end %>
+						</span>
 					</div>
-					<div class="col-3">
-						2p
+					<div class="btn col-3 btn-light d-block mb-1 strong">
+						<h6>セル／カード</h6>
+						<span class="badge badge-<%= counts[:shells] > 0 ? 'info' : 'light' %> w-100">
+							<%= if counts[:shells] > 0 then ('<b>').html_safe + counts[:shells].to_s + ('<small>個</small></b> ・ ').html_safe else ('　') end %> 
+							<%= (('<b>').html_safe + work_totals[:shell_cards] + ('<small>枚</small></b>').html_safe) if (work_totals[:shell_cards] > 0) %>
+						</span>
 					</div>
-					<div class="col-3">
-						3p
+					<div class="btn col-3 btn-light d-block mb-1 strong">
+						<h6>デカプリ</h6>
+						<span class="badge badge-<%= counts[:dekapuri] > 0 ? 'info' : 'light' %> w-100">
+							<%= if counts[:dekapuri] > 0 then ('<b>').html_safe + counts[:dekapuri].to_s + ('<small>パック</small></b>').html_safe else ('　') end %>
+						</span>
 					</div>
-					<div class="col-3">
-						4p
+					<div class="btn col-3 btn-light d-block mb-1 strong">
+						<h6>冷凍セル</h6>
+						<span class="badge badge-<%= counts[:reitou_shells] > 0 ? 'info' : 'light' %> w-100">
+							<%= if counts[:reitou_shells] > 0 then ('<b>').html_safe + counts[:reitou_shells].to_s + ('<small>個</small></b>').html_safe else ('　') end %> 
+						</span>
 					</div>
 				</div>
-				<div class="row">
-					<div class="col-3">
-						<%= work_totals[:product_counts][:mizukiri][1] %>
+				<div class="btn-group w-100" role="group">
+					<div class="btn col-3 btn-light d-block mb-1 strong">
+						<h6>穴子</h6>
+						<span class="badge badge-<%= counts[:tako] > 0 ? 'info' : 'light' %> w-100">
+							<%= if counts[:tako] > 0 then ('<b>').html_safe + counts[:tako].to_s + ('<small>件</small></b>').html_safe else ('　') end %>
+						</span>
 					</div>
-					<div class="col-3">
-						<%= work_totals[:product_counts][:mizukiri][2] %>
+					<div class="btn col-3 btn-light d-block mb-1 strong">
+						<h6>タコ</h6>
+						<span class="badge badge-<%= counts[:anago] > 0 ? 'info' : 'light' %> w-100">
+							<%= if counts[:anago] > 0 then ('<b>').html_safe + counts[:anago].to_s + ('<small>件</small></b>').html_safe else ('　') end %>
+						</span>
 					</div>
-					<div class="col-3">
-						<%= work_totals[:product_counts][:mizukiri][3] %>
+					<div class="btn col-3 btn-light d-block mb-1 strong">
+						<h6>干しエビ</h6>
+						<span class="badge badge-<%= counts[:ebi] > 0 ? 'info' : 'light' %> w-100">
+							<%= if counts[:ebi] > 0 then ('<b>').html_safe + counts[:ebi].to_s + ('<small>件</small></b>').html_safe else ('　') end %>
+						</span>
 					</div>
-					<div class="col-3">
-						<%= work_totals[:product_counts][:mizukiri][4] %>
+					<div class="btn col-3 btn-light d-block mb-1 strong">
+						<h6>ナイフ</h6>
+						<span class="badge badge-<%= work_totals[:knife_count] > 0 ? 'info' : 'light' %> w-100">
+							<%= if work_totals[:knife_count] > 0 then ('<b>').html_safe + work_totals[:knife_count].to_s + ('<small>個</small></b>').html_safe else ('　') end %>
+						</span>
 					</div>
 				</div>
 			</div>
-			<div class="col-xl-7 col-lg-12 text-center border-top border-right">
-				<div class="col-12">
-					<b>殻付き牡蠣</b>
+		<% if rakuten_raw_oysters?(work_totals) %>	
+			<div class="row mb-3 m-1">
+				<div class="col-xl-5 col-lg-12 text-center border-top border-left border-right p-0 m-0">
+					<div class="col-12 bg-light p-1 m-0">
+						<b>むき身牡蠣500g</b>
+					</div>
+					<div class="row border-bottom small font-weight-light font-italic p-0 m-0">
+						<div class="col-3 p-1">
+							1p
+						</div>
+						<div class="col-3 p-1">
+							2p
+						</div>
+						<div class="col-3 p-1">
+							3p
+						</div>
+						<div class="col-3 p-1">
+							4p
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-3 p-1">
+							<%= work_totals[:product_counts][:mizukiri][1] %>
+						</div>
+						<div class="col-3 p-1">
+							<%= work_totals[:product_counts][:mizukiri][2] %>
+						</div>
+						<div class="col-3 p-1">
+							<%= work_totals[:product_counts][:mizukiri][3] %>
+						</div>
+						<div class="col-3 p-1">
+							<%= work_totals[:product_counts][:mizukiri][4] %>
+						</div>
+					</div>
 				</div>
-				<div class="row border-bottom small font-weight-light font-italic">
-					<div class="col-2">
-						10個
+				<div class="col-xl-7 col-lg-12 text-center border-top border-right p-0 m-0">
+					<div class="col-12 bg-light p-1 m-0">
+						<b>殻付き牡蠣</b>
 					</div>
-					<div class="col-2">
-						20個
+					<div class="row border-bottom small font-weight-light font-italic p-0 m-0">
+						<div class="col-2 p-1">
+							10個
+						</div>
+						<div class="col-2 p-1">
+							20個
+						</div>
+						<div class="col-2 p-1">
+							30個
+						</div>
+						<div class="col-2 p-1">
+							40個
+						</div>
+						<div class="col-2 p-1">
+							50個
+						</div>
+						<div class="col-2 p-1">
+							100個
+						</div>
 					</div>
-					<div class="col-2">
-						30個
-					</div>
-					<div class="col-2">
-						40個
-					</div>
-					<div class="col-2">
-						50個
-					</div>
-					<div class="col-2">
-						100個
+					<div class="row">
+						<div class="col-2 p-1">
+							<%= work_totals[:product_counts][:shells][10] %>
+						</div>
+						<div class="col-2 p-1">
+							<%= work_totals[:product_counts][:shells][20] %>
+						</div>
+						<div class="col-2 p-1">
+							<%= work_totals[:product_counts][:shells][30] %>
+						</div>
+						<div class="col-2 p-1">
+							<%= work_totals[:product_counts][:shells][40] %>
+						</div>
+						<div class="col-2 p-1">
+							<%= work_totals[:product_counts][:shells][50] %>
+						</div>
+						<div class="col-2 p-1">
+							<%= work_totals[:product_counts][:shells][100] %>
+						</div>
 					</div>
 				</div>
-				<div class="row">
-					<div class="col-2">
-						<%= work_totals[:product_counts][:shells][10] %>
+				<div class="col-xl-12 col-lg-12 text-center border p-0 m-0">
+					<div class="col-12 bg-light p-1 m-0">
+						<b>むき身牡蠣500g + 殻付き</b>
 					</div>
-					<div class="col-2">
-						<%= work_totals[:product_counts][:shells][20] %>
+					<div class="row border-bottom small font-weight-light font-italic d-flex justify-content-center p-0 m-0">
+						<div class="col">
+							10個＋１p
+						</div>
+						<div class="col">
+							20個＋１p
+						</div>
+						<div class="col">
+							30個＋１p
+						</div>
+						<div class="col">
+							20個＋2p
+						</div>
+						<div class="col">
+							30個＋2p
+						</div>
 					</div>
-					<div class="col-2">
-						<%= work_totals[:product_counts][:shells][30] %>
-					</div>
-					<div class="col-2">
-						<%= work_totals[:product_counts][:shells][40] %>
-					</div>
-					<div class="col-2">
-						<%= work_totals[:product_counts][:shells][50] %>
-					</div>
-					<div class="col-2">
-						<%= work_totals[:product_counts][:shells][100] %>
+					<div class="row d-flex justify-content-center">
+						<div class="col p-1">
+							<%= work_totals[:product_counts][:sets][101] %>
+						</div>
+						<div class="col p-1">
+							<%= work_totals[:product_counts][:sets][201] %>
+						</div>
+						<div class="col p-1">
+							<%= work_totals[:product_counts][:sets][301] %>
+						</div>
+						<div class="col p-1">
+							<%= work_totals[:product_counts][:sets][202] %>
+						</div>
+						<div class="col p-1">
+							<%= work_totals[:product_counts][:sets][302] %> 
+						</div>
 					</div>
 				</div>
 			</div>
-			<div class="col-xl-12 col-lg-12 text-center border">
-				<div class="col-12">
-					<b>むき身牡蠣500g + 殻付き</b>
-				</div>
-				<div class="row border-bottom small font-weight-light font-italic d-flex justify-content-center">
-					<div class="col">
-						10個＋１p
-					</div>
-					<div class="col">
-						20個＋１p
-					</div>
-					<div class="col">
-						30個＋１p
-					</div>
-					<div class="col">
-						20個＋2p
-					</div>
-					<div class="col">
-						30個＋2p
-					</div>
-				</div>
-				<div class="row d-flex justify-content-center">
-					<div class="col">
-						<%= work_totals[:product_counts][:sets][101] %>
-					</div>
-					<div class="col">
-						<%= work_totals[:product_counts][:sets][201] %>
-					</div>
-					<div class="col">
-						<%= work_totals[:product_counts][:sets][301] %>
-					</div>
-					<div class="col">
-						<%= work_totals[:product_counts][:sets][202] %>
-					</div>
-					<div class="col">
-						<%= work_totals[:product_counts][:sets][302] %>
-					</div>
-				</div>
-			</div>
-		</div>
+		<% end %>
 			<% if counts[:noshi] || counts[:receipt] %>
 				<% orders_hash = @rakuten.new_orders_hash %>
 				<div class="row">
@@ -186,11 +305,11 @@
 				</div>
 			<% end %>
 		</div>
-	<div class="card-footer">
+	<div class="card-footer bg-white">
 		<small class="text-muted float-left">(<%= @rakuten.updated_at.in_time_zone('Tokyo') %>)に更新された</small>
 		<div class="btn-group float-right d-print-none" role="group" aria-label="Basic">
-			<%= link_to ('<i class="fas fa-chevron-circle-left"></i>').html_safe, load_rakuten_order_path(@rakuten.r_manifest_query.previous.id), :alt => "前", class: 'btn btn-sm btn-secondary', remote: true %>
-			<%= link_to ('<i class="fas fa-chevron-circle-right"></i>').html_safe, load_rakuten_order_path(@rakuten.r_manifest_query.next.id), :alt => "次", class: 'btn btn-sm btn-secondary', remote: true %>
+			<%= link_to icon("arrow-left-circle"), load_rakuten_order_path(@rakuten.r_manifest_query.previous.id), :alt => "前", class: 'btn btn-sm btn-secondary', remote: true %>
+			<%= link_to icon("arrow-right-circle"), load_rakuten_order_path(@rakuten.r_manifest_query.next.id), :alt => "次", class: 'btn btn-sm btn-secondary', remote: true %>
 		</div>
 	</div>
 </div>

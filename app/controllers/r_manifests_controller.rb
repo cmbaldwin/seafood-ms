@@ -16,10 +16,19 @@ class RManifestsController < ApplicationController
 		@r_manifests = RManifest.order(sales_date: :desc).paginate(:page => params[:page], :per_page => days)
 	end
 
+	def rakuten_check
+		rakuten_api_client = RakutenAPI.new
+		@rakuten_shinki = rakuten_api_client.get_details_by_ids(rakuten_api_client.get_shinki_without_shipdate_ids)
+	end
+
 	# GET /r_manifests/1 
 	# GET /r_manifests/1.json
 	def show
-
+		time_setup
+		rakuten_today = RManifest.where(:sales_date => @today).first
+		if rakuten_today
+			@r_manifest.sales_date == (rakuten_today.sales_date) ? rakuten_check : ()
+		end
 	end
 
 	# GET /r_manifests/new

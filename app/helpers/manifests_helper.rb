@@ -118,7 +118,7 @@ module ManifestsHelper
 	end
 
 	def frozen_ids
-		frozen_ids = [524, 645, 646, 6554, 13585, 13584, 13583, 13582, 13580, 13579, 13577, 13586, 13587, 13588]
+		[524, 645, 646, 6554, 13585, 13584, 13583, 13582, 13580, 13579, 13577, 13586, 13587, 13588]
 	end
 
 	def check_raw(item)
@@ -156,7 +156,11 @@ module ManifestsHelper
 	end
 
 	def slash_date(nenngapi_date)
-		DateTime.strptime(nenngapi_date, '%Y年%m月%d日').strftime("%Y/%m/%d")
+		if nenngapi_date.include?("年")
+			DateTime.strptime(nenngapi_date, '%Y年%m月%d日').strftime("%Y/%m/%d")
+		else
+			DateTime.parse(nenngapi_date).strftime("%Y/%m/%d")
+		end
 	end
 
 	def nengapi_to_gapi_date(nenngapi_date)

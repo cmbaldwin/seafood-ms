@@ -4,7 +4,7 @@
 		<div class="row align-middle">
 			<div class="col-md-6">
 				<button type="button" class="btn btn-primary mr-3 mb-3 float-left" data-toggle="modal" data-target="#calendarModal">
-					<i class="far fa-calendar-alt"></i>
+					<%= icon("calendar-event-fill") %>
 				</button>
 				<h4>牡蠣原料入力表</h4>
 
@@ -38,18 +38,24 @@
 			</div>
 		</div>
 		<%= f.simple_fields_for :oysters, remote: true do |oysters_form| %>
-			<% if !@oyster_supply.id.nil? %>
-				<%= link_to '削除', @oyster_supply, method: :delete, data: { confirm: '削除を確認してください' }, class: 'btn btn-danger float-right mr-1' %>
-			<% end %>
-			<%= link_to '前へ', oyster_supplies_path, class: 'btn btn-secondary mr-1 float-right' %>
-			<% if @oyster_supply.id %>
-				<%= link_to ('<i class="far fa-file-pdf"></i>').html_safe, supply_check_path, class: 'btn btn-info mr-1 float-right', target: "_blank" %>
-			<% end %>
-			<% if @oyster_supply.locked? %>
-				<%= f.submit '更新', :class => 'btn btn-success submit float-right mr-1 disabled', 'data-toggle' => 'tooltip', 'data-placement' => 'bottom', 'title' => '仕切りに使われてある', 'disabled' => 'disabled' %>
-			<% else %>
-				<%= f.submit '更新', :class => 'btn btn-success submit float-right mr-1' %>
-			<% end %>
+			<div class="btn-group float-right" role="group">
+				<%= link_to icon("box-arrow-up-left"), oyster_supplies_path, class: 'btn btn-info' %>
+				<% if @oyster_supply.locked? %>
+					<%= button_tag(type: "submit", class: "btn btn-info disabled", 'data-toggle' => 'tooltip', 'data-placement' => 'bottom', 'title' => '仕切りに使われてある', 'disabled' => 'disabled') do %>
+						<%= icon("arrow-counterclockwise", class: "text-disabled") %>
+					<% end %>
+				<% else %>
+					<%= button_tag(type: "submit", class: "btn btn-info") do %>
+						<%= icon("arrow-counterclockwise", class: "text-success") %>
+					<% end %>
+				<% end %>
+				<% if @oyster_supply.id %>
+					<%= link_to icon("file-earmark-arrow-down"), supply_check_path, class: 'btn btn-info', target: "_blank" %>
+				<% end %>
+				<% if !@oyster_supply.id.nil? %>
+					<%= link_to icon("trash-fill", class: "text-danger"), @oyster_supply, method: :delete, data: { confirm: '削除を確認してください' }, class: 'btn btn-info' %>
+				<% end %>
+			</div>
 			<nav>
 				<div class="nav nav-tabs" id="nav-tab" role="tablist">
 					<a class="nav-item nav-link active" id="nav-am-tab" data-toggle="tab" href="#nav-am" role="tab" aria-controls="nav-am" aria-selected="true">坂越・午前</a>
