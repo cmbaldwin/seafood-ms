@@ -9,7 +9,7 @@ class ApplicationController < ActionController::Base
 	end
 
 	def time_setup
-		@today = Time.now.strftime('%Y年%m月%d日')
+		@today = DateTime.now.strftime('%Y年%m月%d日')
 		@this_season_start = (Date.today.month < 10) ? Date.new((Date.today.year - 1), 10, 1) : Date.new(Date.today.year, 10, 1)
 		@this_season_end = (Date.today.month < 10) ? Date.new(Date.today.year, 10, 1) : Date.new((Date.today.year - 1), 10, 1)
 		@prior_season_start = (Date.today.month < 10) ? Date.new((Date.today.year - 2), 10, 1) : Date.new((Date.today.year - 1), 10, 1)
@@ -27,6 +27,10 @@ class ApplicationController < ActionController::Base
 	def rakuten_check
 		rakuten_api_client = RakutenAPI.new
 		@rakuten_shinki = rakuten_api_client.get_details_by_ids(rakuten_api_client.get_shinki_without_shipdate_ids)
+	end
+
+	def wc_check
+		@wc_shinki = WCAPI.new.shinki
 	end
 
 	protected

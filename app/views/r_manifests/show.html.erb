@@ -127,8 +127,8 @@
 				<%= icon("asterisk") %><span class="badge badge-warning ml-1"><%= @rakuten_shinki.length %></span>
 			</button>
 		<% end %>
-		<%= link_to icon("file-earmark-arrow-down"), r_manifest_new_pdf_path(@r_manifest), :method => :get, class: 'btn btn-info mb-2' %>
-		<%= link_to icon("file-earmark-ruled"), r_manifest_seperated_pdf_path(@r_manifest), :method => :get, class: 'btn btn-info mb-2' %>
+		<%= link_to icon("file-earmark-arrow-down"), r_manifest_new_pdf_path(@r_manifest), method: :get, class: 'btn btn-info mb-2', target: "_blank"  %>
+		<%= link_to icon("file-earmark-ruled"), r_manifest_seperated_pdf_path(@r_manifest), method: :get, class: 'btn btn-info mb-2', target: "_blank" %>
 	</div>
 
 	<hr/><br>

@@ -647,7 +647,7 @@ class RManifest < ApplicationRecord
 			if !work_totals[type].nil?
 				work_totals[:product_counts][type] = work_totals[type].group_by(&:itself).map { |k,v| [k, v.length] }.to_h
 			else
-				work_totals[:product_counts][type] = 0
+				work_totals[:product_counts][type] = {}
 			end
 		end
 		work_totals[:shell_cards] = 0

@@ -17,7 +17,7 @@
 		</div>
 	</div>
 
-	<%= link_to icon("file-earmark-arrow-down"), manifest_pdf_path(@manifest), :method => :get, class: 'btn btn-info mb-2 float-right', form: {target: '_blank'} %>
+	<%= link_to icon("file-earmark-arrow-down"), manifest_pdf_path(@manifest), :method => :get, class: 'btn btn-info mb-2 float-right', target: "_blank" %>
 	<hr /><br>
 
 	<% counts = @manifest.display_totals %>
@@ -92,7 +92,7 @@
 								<% if details[:item_name].exclude?("坂越バラ牡蠣") || ( details[:item_name].include?("坂越バラ牡蠣") && (order_details[:items].length < 2) ) %>
 									<% i += 1 %>
 									<%= i %>
-									<span class="small float-right">( <a href="<%= get_backend_link(order_details[:backend_id]) %>" target="_blank"><%= order_number %></a> )</span>
+									<span class="small float-right">( <a href="<%= get_infomart_backend_link(order_details[:backend_id]) %>" target="_blank"><%= order_number %></a> )</span>
 								<% end %>
 							</th>
 							<td scope="col">
@@ -220,7 +220,7 @@
 									<%= if !shells.nil? then shells + '個' end %>
 								</td>
 								<td scope="col">
-									<%= slash_date(Moji.zen_to_han(wc_order[:arrival_date])) %>
+									<%= slash_date(Moji.zen_to_han(wc_order[:arrival_date])) unless wc_order[:arrival_date].nil? %>
 								</td>
 								<td scope="col">
 									<%= if wc_order[:arrival_time] then wc_order[:arrival_time].gsub(':00', '') end %>
@@ -283,7 +283,7 @@
 									
 								</td>
 								<td scope="col">
-									<%= slash_date(Moji.zen_to_han(wc_order[:arrival_date])) %>
+									<%= slash_date(Moji.zen_to_han(wc_order[:arrival_date])) unless wc_order[:arrival_date].nil? %>
 								</td>
 								<td scope="col">
 									<%= if wc_order[:arrival_time] then wc_order[:arrival_time].gsub(':00', '') end %>

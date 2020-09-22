@@ -6,6 +6,7 @@ Rails.application.routes.draw do
 	get '/insert_receipt_data' => 'welcome#insert_receipt_data', as: 'insert_receipt_data'
 	get '/load_rakuten_order/:id' => 'welcome#load_rakuten_order', as: 'load_rakuten_order'
 	get '/load_online_order/:id' => 'welcome#load_online_order', as: 'load_online_order'
+	get '/load_yahoo_orders/:date' => 'welcome#load_yahoo_orders', as: 'load_yahoo_orders'
 	get '/update_rakuten_order/:id' => 'welcome#update_rakuten_order', as: 'update_rakuten_order'
 
 	get 'analysis' => 'analysis#index', as: 'analysis'

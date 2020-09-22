@@ -151,10 +151,6 @@ module ManifestsHelper
 		client_name
 	end
 
-	def get_backend_link(backend_id)
-		'https://www2.infomart.co.jp/trade/trade_detail.page?14&tid=' + backend_id + '&del_hf=1&through_status_code&returned_flg'
-	end
-
 	def slash_date(nenngapi_date)
 		if nenngapi_date.include?("年")
 			DateTime.strptime(nenngapi_date, '%Y年%m月%d日').strftime("%Y/%m/%d")

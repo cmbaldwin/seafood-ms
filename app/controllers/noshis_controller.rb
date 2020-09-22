@@ -11,7 +11,7 @@ class NoshisController < ApplicationController
 	# GET /noshis
 	# GET /noshis.json
 	def index
-		@noshis = Noshi.search(params[:term]).paginate(:page => params[:page], :per_page => 9)
+		@noshis = Noshi.search(params[:term]).paginate(:page => params[:page], :per_page => 12)
 	end
 
 	# GET /noshis/1

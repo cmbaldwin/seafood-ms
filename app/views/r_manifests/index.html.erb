@@ -70,8 +70,8 @@
 			<div class="col-md-4 col-sm-12 text-center">
 				<div class="btn-group">
 					<%= link_to icon("card-list"), r_manifest, :alt => "個別ページ", class: 'btn btn-info' %>
-					<%= link_to icon("file-earmark-arrow-down"), r_manifest_new_pdf_path(r_manifest), :method => :get, class: 'btn btn-info' %>
-					<%= link_to icon("file-earmark-ruled"), r_manifest_seperated_pdf_path(r_manifest), :method => :get, class: 'btn btn-info' %>
+					<%= link_to icon("file-earmark-arrow-down"), r_manifest_new_pdf_path(r_manifest), :method => :get, class: 'btn btn-info', target: "_blank" %>
+					<%= link_to icon("file-earmark-ruled"), r_manifest_seperated_pdf_path(r_manifest), :method => :get, class: 'btn btn-info', target: "_blank" %>
 					<% if current_user.admin? || current_user.vip? %>
 						<%= link_to icon("arrow-counterclockwise", class: "text-success"), edit_r_manifest_path(r_manifest), :alt => "データを編集", class: 'btn btn-info' %>
 						<%= button_to r_manifest, method: :delete, data: { confirm: '削除しますか?' }, :disabled => !current_user.admin?, form_class: 'btn btn-info', class: 'blank_button' do %>

@@ -1,0 +1,27 @@
+/* Coolors Exported Palette - https://coolors.co/2d3142-4f5d75-bfc0c0-ffffff-26b3f0-79c94a-dc7632-2d32c4-e8411c */
+
+/* HSL */
+$gunmetal: hsla(229%, 19%, 22%, 1);
+$blackcoral: hsla(218%, 19%, 38%, 1);
+$silver: hsla(180%, 1%, 75%, 1);
+$white: hsla(0%, 0%, 100%, 1);
+$ochre: hsla(18%, 83%, 63%, 1);
+
+/* RGB */
+$gunmetal: rgba(45, 49, 66, 1);
+$blackcoral: rgba(79, 93, 117, 1);
+$silver: rgba(191, 192, 192, 1);
+$white: rgba(255, 255, 255, 1);
+$ochre: rgba(239, 131, 84, 1);
+
+/* Theme Colors */
+
+$theme-colors: (
+  "primary": #26b3f0,
+  "danger": #e8411c,
+  "success": #79c94a,
+  "warning": #DC7632,
+  "info": #2d32c4
+);
+
+$enable-responsive-font-sizes: true;

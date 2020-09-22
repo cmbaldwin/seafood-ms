@@ -10,7 +10,7 @@
 			<tr>
 				<th colspan="4">
 					<table class="table table-borderless">
-						<% counts = order_counts(@daily_orders) %>
+						<% counts = yahoo_order_counts(@daily_orders) %>
 						<tr>
 							<% counts[:headers].each_with_index do |header, i| %>
 								<%= ("</tr><tr>").html_safe if (i % 4 == 0) %>
@@ -49,36 +49,34 @@
 		</thead>
 		<tbody>
 			<% @daily_orders.each do |order| %>
-				<% unless order.order_status(false) == 4 %>
-					<tr class="table-<%= status_color(order) %>">
-						<th>
-							<%= link_to(order.order_id[/\d.*/], order.url, class: "btn btn-primary mr-3", target: "_blank") %><span class="badge badge-<%= status_color(order) %>"><%= order.order_status %></span>
-						</th>
-						<th>
-							<%= order.billing_name %>
-						</th>
-						<th>
-							<%= print_shipping_name(order) %>
-						</th>
-						<th>
-							<span class="badge badge-primary"><%= order.shipping_status %></span>
-						</th>
-					</tr>
-					<tr>
-						<td class="pl-3">
-							<%= order.item_name %><%= order.print_quantity %>
-						</td>
-						<td>
-							<%= order.shipping_arrival_date.strftime("%m月%d日") %>
-						</td>
-						<td>
-							<%= order.arrival_time %>
-						</td>
-						<td>
-							<%= order.payment_type %>
-						</td>
-					</tr>
-				<% end %>
+				<tr class="table-<%= status_color(order) %>">
+					<th>
+						<%= link_to(order.order_id[/\d.*/], order.url, class: "btn btn-primary mr-3", target: "_blank") %><span class="badge badge-<%= status_color(order) %>"><%= order.order_status %></span>
+					</th>
+					<th>
+						<%= order.billing_name %>
+					</th>
+					<th>
+						<%= print_shipping_name(order) %>
+					</th>
+					<th>
+						<span class="badge badge-primary"><%= order.shipping_status %></span>
+					</th>
+				</tr>
+				<tr>
+					<td class="pl-3">
+						<%= order.item_name %><%= order.print_quantity %>
+					</td>
+					<td>
+						<%= order.shipping_arrival_date.strftime("%m月%d日") %>
+					</td>
+					<td>
+						<%= order.arrival_time %>
+					</td>
+					<td>
+						<%= order.payment_type %>
+					</td>
+				</tr>
 			<% end %>
 		</tbody>
 	</table>

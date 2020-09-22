@@ -1,0 +1,1 @@
+json.array!(@year_sales)

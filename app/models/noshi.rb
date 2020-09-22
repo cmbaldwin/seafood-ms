@@ -68,6 +68,7 @@ class Noshi < ApplicationRecord
 		# Create the overlay image
 		name_overlay = MiniMagick::Image.open("#{ENV['GBUCKET_PREFIX']}noshi/noshi_blank.png")
 		# Normal Noshi and Triple tall noshi.
+		font = "#{Rails.root}/.fonts/TakaoPMincho.ttf"
 		if ntype < 15
 			# Resize to A4 @ 300dpi
 			noshi_img.resize "2480x3508"
@@ -77,7 +78,7 @@ class Noshi < ApplicationRecord
 				image.gravity 'North'
 				# Placement based on point size
 				omote_placement_y = (348 - (omote_length * (omote_point_size / 2)))
-				image.font 'TakaoPMincho'
+				image.font font
 				image.pointsize omote_point_size
 				image.fill("#000000")
 				image.draw "text 0,#{omote_placement_y} '#{omote}'"
@@ -91,7 +92,7 @@ class Noshi < ApplicationRecord
 					(name_array_max_length > 8) ? (name_start_placement_y = 1100) : (name_start_placement_y = 1150)
 					(name_array_max_length > 9) ? (name_start_placement_y = 1050) : (name_start_placement_y = 1150)
 					name_placement_y = name_start_placement_y + ((i * name_point_size) - (name_point_size / 2))
-					image.font 'TakaoPMincho'
+					image.font font
 					image.pointsize name_point_size
 					image.fill("#000000")
 					image.draw "text #{name_placement_x},#{name_placement_y} '#{name_array[i]}'"
@@ -108,7 +109,7 @@ class Noshi < ApplicationRecord
 					if ntype == 15
 						omote_placement_x = 570 - (i * 570 )
 						omote_placement_y = 400
-						image.font 'TakaoPMincho'
+						image.font font
 						image.pointsize omote_point_size
 						image.fill("#000000")
 						image.draw "text #{omote_placement_x},#{omote_placement_y} '#{omote}'"
@@ -117,7 +118,7 @@ class Noshi < ApplicationRecord
 					image.gravity 'North'
 					name_placement_x = 570 - (i * 570 )
 					name_placement_y = 1500
-					image.font 'TakaoPMincho'
+					image.font font
 					image.pointsize name_point_size + 12
 					image.fill("#000000")
 					image.draw "text #{name_placement_x},#{name_placement_y} '#{name_array[i]}'"

@@ -33,7 +33,7 @@ class Manifest < ApplicationRecord
 		if type == :raw
 			'生食用'
 		elsif type == :frozen
-			'プロトン凍結冷凍用'
+			'冷凍用'
 		end
 	end
 
@@ -142,6 +142,22 @@ class Manifest < ApplicationRecord
 		end
 	end
 
+	def shinki_im_orders
+		orders = Hash.new
+		i = 0
+		[:raw, :frozen].each do |key|
+			orders[key] = Hash.new unless orders[key].is_a?(Hash)
+			self.infomart_orders[key].each do |order_id, order_details|
+				if order_details[:fresh] 
+					orders[key][order_id] = order_details
+					i += 1
+				end
+			end
+		end
+		orders[:total] = i
+		orders
+	end
+
 	def check_raw(item)
 		#true for raw, so if frozen id is found return false
 		frozen_ids.exclude?(item["product_id"])
@@ -227,7 +243,9 @@ class Manifest < ApplicationRecord
 	def get_woocommerce_orders
 		require "json"
 
-		wc_orders_json = JSON.load(open('https://www.funabiki.info/wp-json/wc/v3/orders?per_page=100&search=' + (DateTime.strptime(self.sales_date, '%Y年%m月%d日')).strftime("%Y-%m-%d") + '&consumer_key=' + ENV['WOOCOMMERCE_CONSUMER_KEY'] + '&consumer_secret=' + ENV['WOOCOMMERCE_CONSUMER_SECRET']))
+		date = (DateTime.strptime(self.sales_date, '%Y年%m月%d日')).strftime("%Y-%m-%d")
+		#get up to 100 orders from the 'orders' api endpoint and search for the date with slashes as a term
+		wc_orders_json = WCAPI.new('orders', '100', date).response
 
 		#iterates through each order and seperates items into their respective type (given a type)
 		def fill_wc_hash(wc_orders, order, item, type)

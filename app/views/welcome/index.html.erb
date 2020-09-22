@@ -33,8 +33,24 @@
 			</div>
 		<% end %>
 
+		<% if current_user.vip? || current_user.admin? || current_user.employee? %>
+			<div class="d-flex col-md-12 col-lg-6 mb-3 align-items-stretch">
+				<div class="card h-100">
+					<div class="card-header">
+						<h5 class="mb-0 float-left">Yahoo!ショッピング</h5>
+						<h4><%= icon("calendar-check", class: "float-right") %></h4>
+					</div>
+					<div class="card-body m-0 p-0">
+						<div id="yahoo_partial">
+							<%= render 'yahoo_orders', locals: {yahoo_orders: @yahoo_orders, yahoo_date: @yahoo_date} %>
+						</div>
+					</div>
+				</div>
+			</div>
+		<% end %>
+
 		<% if current_user.admin? %>
-			<div class="d-flex col-12 mb-3 align-items-stretch d-none d-lg-block">
+			<div class="d-flex col-md-12 col-lg-6 mb-3 align-items-stretch d-none d-lg-block">
 				<div class="card h-100">
 					<div class="card-header">
 						<h5 class="mb-0 float-left">現在の売上状態</h5>

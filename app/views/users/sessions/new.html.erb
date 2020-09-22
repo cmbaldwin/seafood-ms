@@ -13,7 +13,7 @@
 					<div class="input-group mb-2">
 						<div class="input-group-prepend">
 							<div class="input-group-text">
-								<i class="fas fa-user"></i>
+								<%= icon('file-person') %>
 							</div>
 						</div>
 						<%= f.text_field :login, :class => 'form-control form-control-lg', :id=> 'colFormLabelLg', :html => 'placeholder="col-form-label-lg"', autofocus: true %>
@@ -29,7 +29,7 @@
 					<div class="input-group mb-2">
 						<div class="input-group-prepend">
 							<div class="input-group-text">
-								<i class="fas fa-lock"></i>
+								<%= icon('file-lock') %>
 							</div>
 						</div>
 						<%= f.password_field :password, :class => 'form-control form-control-lg', :id=> 'colFormLabelLg', :html => 'placeholder="col-form-label-lg"', autocomplete: "off" %>

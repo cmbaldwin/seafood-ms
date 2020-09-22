@@ -1,11 +1,4 @@
 GIT
-  remote: https://github.com/Nerian/bootstrap-datepicker-rails.git
-  revision: 31be2ecdc26a3d82b3bacc7d003a0c4d40728120
-  specs:
-    bootstrap-datepicker-rails (1.9.0.1)
-      railties (>= 3.0)
-
-GIT
   remote: https://github.com/gimite/moji.git
   revision: fe5013d404a744f1c521145e17943d17385327f8
   specs:
@@ -74,8 +67,6 @@ GEM
     ancestry (3.1.0)
       activerecord (>= 4.2.0)
     ast (2.4.1)
-    autoprefixer-rails (9.8.6.3)
-      execjs
     awesome_print (1.8.0)
     barnes (0.0.8)
       multi_json (~> 1)
@@ -84,14 +75,6 @@ GEM
     bindex (0.8.1)
     bootsnap (1.4.8)
       msgpack (~> 1.0)
-    bootstrap (4.5.2)
-      autoprefixer-rails (>= 9.1.0)
-      popper_js (>= 1.14.3, < 2)
-      sassc-rails (>= 2.0.0)
-    bootstrap4-datetime-picker-rails (0.3.1)
-      jquery-rails (~> 4.2, >= 4.2.0)
-      moment-timezone-rails (~> 1.0)
-      momentjs-rails (>= 2.10.5, <= 3.0.0)
     builder (3.2.4)
     byebug (11.1.3)
     capybara (3.33.0)
@@ -110,7 +93,6 @@ GEM
       activemodel (>= 3.2.0)
       carrierwave (~> 1.2.0)
       google-cloud-storage (~> 1.10)
-    chartkick (3.4.0)
     childprocess (3.0.0)
     choice (0.2.0)
     concurrent-ruby (1.1.7)
@@ -136,16 +118,11 @@ GEM
       railties (>= 3.2)
     erubi (1.9.0)
     eventmachine (1.2.7)
-    execjs (2.7.0)
     faraday (1.0.1)
       multipart-post (>= 1.2, < 3)
     faraday_middleware (1.0.0)
       faraday (~> 1.0)
     ffi (1.13.1)
-    fullcalendar-rails (3.9.0.0)
-      jquery-rails (>= 4.0.5, < 5.0.0)
-      jquery-ui-rails (>= 5.0.2)
-      momentjs-rails (>= 2.9.0)
     globalid (0.4.2)
       activesupport (>= 4.2.0)
     google-api-client (0.43.0)
@@ -192,12 +169,6 @@ GEM
       concurrent-ruby (~> 1.0)
     jbuilder (2.10.0)
       activesupport (>= 5.0.0)
-    jquery-rails (4.3.5)
-      rails-dom-testing (>= 1, < 3)
-      railties (>= 4.2.0)
-      thor (>= 0.14, < 2.0)
-    jquery-ui-rails (6.0.1)
-      railties (>= 3.2.16)
     json (2.3.1)
     jwt (2.2.2)
     listen (3.2.1)
@@ -239,10 +210,6 @@ GEM
     mini_mime (1.0.2)
     mini_portile2 (2.4.0)
     minitest (5.14.1)
-    moment-timezone-rails (1.0.0)
-      momentjs-rails (>= 2.10.5, <= 3.0.0)
-    momentjs-rails (2.20.1)
-      railties (>= 3.1)
     msgpack (1.3.3)
     multi_json (1.15.0)
     multi_xml (0.6.0)
@@ -266,7 +233,6 @@ GEM
       ast (~> 2.4.1)
     pdf-core (0.8.1)
     pg (1.2.3)
-    popper_js (1.16.0)
     prawn (2.3.0)
       pdf-core (~> 0.8.1)
       ttfunk (~> 1.6)
@@ -352,25 +318,6 @@ GEM
     ruby2_keywords (0.0.2)
     ruby_http_client (3.5.1)
     rubyzip (2.3.0)
-    sass (3.7.4)
-      sass-listen (~> 4.0.0)
-    sass-listen (4.0.0)
-      rb-fsevent (~> 0.9, >= 0.9.4)
-      rb-inotify (~> 0.9, >= 0.9.7)
-    sass-rails (5.1.0)
-      railties (>= 5.2.0)
-      sass (~> 3.1)
-      sprockets (>= 2.8, < 4.0)
-      sprockets-rails (>= 2.0, < 4.0)
-      tilt (>= 1.1, < 3)
-    sassc (2.4.0)
-      ffi (~> 1.9)
-    sassc-rails (2.1.2)
-      railties (>= 4.0.0)
-      sassc (>= 2.0)
-      sprockets (> 3.0)
-      sprockets-rails
-      tilt
     selenium-webdriver (3.142.7)
       childprocess (>= 0.5, < 4.0)
       rubyzip (>= 1.2.2)
@@ -420,9 +367,6 @@ GEM
     thread_safe (0.3.6)
     tilt (2.0.10)
     ttfunk (1.6.2.1)
-    turbolinks (5.2.1)
-      turbolinks-source (~> 5.2)
-    turbolinks-source (5.2.0)
     tzinfo (1.2.7)
       thread_safe (~> 0.1)
     uber (0.1.0)
@@ -452,9 +396,6 @@ GEM
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
     will_paginate (3.1.8)
-    woocommerce_api (1.4.0)
-      httparty (~> 0.14, >= 0.14.0)
-      json (~> 2.0, >= 2.0.0)
     xpath (3.2.0)
       nokogiri (~> 1.8)
     zeitwerk (2.4.0)
@@ -482,31 +423,24 @@ DEPENDENCIES
   barnes
   bcrypt (~> 3.1.7)
   bootsnap (>= 1.1.0)
-  bootstrap (>= 4.1.3)
-  bootstrap-datepicker-rails!
-  bootstrap4-datetime-picker-rails
   byebug
   capybara (>= 2.15, < 4.0)
   carrierwave
   carrierwave-google-storage
-  chartkick
   csv
   devise (>= 4.7.1)
   dotenv-rails
   faraday_middleware
-  fullcalendar-rails
   groupdate
   hiredis
   httparty
   jbuilder (~> 2.5)
-  jquery-rails (~> 4.3.1)
   listen
   mailcatcher
   mechanize
   mini_magick
   moji!
-  momentjs-rails
-  order_query (~> 0.5.0)
+  order_query
   pg
   prawn-rails
   puma (~> 3.11)
@@ -515,21 +449,17 @@ DEPENDENCIES
   redis (~> 4.0.1)
   redis-namespace
   rubocop
-  sass-rails (~> 5.0)
   selenium-webdriver
   sendgrid-ruby
   sidekiq
   simple_form
   spreadsheet
-  sprockets-rails (>= 2.3.2)
-  turbolinks (~> 5)
   tzinfo-data
   weatherb
   web-console (>= 3.3.0)
   webdrivers
   webpacker
   will_paginate (~> 3.1.1)
-  woocommerce_api
 
 RUBY VERSION
    ruby 2.6.6p146

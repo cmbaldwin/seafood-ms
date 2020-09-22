@@ -6,7 +6,7 @@ class YahooOrdersController < ApplicationController
 	def fetch_yahoo_list
 		params[:date] ? @search_date = Date.parse(params[:date]) : @search_date = Date.today
 		@daily_orders = YahooOrder.all.where(ship_date: @search_date).order(:order_id)
-		@daily_orders += YahooOrder.where(ship_date: nil).order(:order_id) if @search_date == Date.today
+		@daily_orders += YahooOrder.where(ship_date: nil).order(:order_id).map{ |order| order unless order.order_status(false) == 4}.compact if @search_date == Date.today
 	end
 
 	# GET /yahoo_orders
@@ -14,7 +14,7 @@ class YahooOrdersController < ApplicationController
 	def index
 		fetch_yahoo_list
 		@yahoo_orders = YahooOrder.all.where(ship_date: (params[:start]..params[:end]))
-		@new_orders = YahooOrder.where(ship_date: nil).order(:order_id)
+		@new_orders = YahooOrder.where(ship_date: nil).order(:order_id).map{ |order| order unless order.order_status(false) == 4}.compact
 	end
 
 	def refresh

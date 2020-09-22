@@ -21,8 +21,6 @@
 				</div>
 			</div>
 		</div>
-		
-		<p id="notice"><%= notice %></p>
 
 		<hr/>
 
@@ -38,9 +36,9 @@
 
 		<hr/>
 		
-		<div id="freewall" class="noshis_container">
+		<div class="row">
 			<% @noshis.each do |noshi| %>
-			<div class="brick">
+			<div class="col-lg-3 col-md-6 col-sm-12 mb-2">
 				<div class="card noshi_card">
 						<%= check_box_tag "noshi_ids[]", noshi.id, false, class: 'noshi_checkbox' %>
 					<br>
@@ -48,11 +46,10 @@
 					<br>
 					<br>
 					<div class="btn-group" role="group" aria-label="Basic">
-						<%= link_to "ダウンロード", noshi.image_url, :class => "btn btn-secondary" %>
-						<%= link_to '個別ページ', noshi, class: 'btn btn-secondary' %>
+						<%= link_to icon('file-arrow-down', class: 'text-success'), noshi.image_url, :class => "btn btn-info" %>
+						<%= link_to icon('eye'), noshi, class: 'btn btn-info' %>
 						<% if current_user.admin? or current_user.vip? %>
-							<!-- <%= link_to '編集', edit_noshi_path(noshi), class: 'btn btn-secondary' %> -->
-							<%= link_to '削除', noshi, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-secondary' %>
+							<%= link_to icon('trash-fill', class: 'text-danger'), noshi, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-info' %>
 						<% end %>
 					</div>
 				</div>

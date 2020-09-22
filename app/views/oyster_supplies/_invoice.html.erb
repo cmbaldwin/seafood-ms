@@ -2,9 +2,12 @@
 	<div class="modal-body">
 		<div class="card">
 			<div class="card-header text-center">
-				<h5>
+				<h5 class="float-left">
 					<%= invoice_display_date(@invoice) %>
 				</h5>
+				<span class="float-right">
+					<%= icon('calendar-range') %>
+				</span>
 			</div>
 			<div class="card-body">
 				<% if @invoice.id %>
@@ -59,7 +62,7 @@
 								<%= f.text_field :send_at, 'data-target' => "##{@invoice.id ? @invoice.id : 'new'}", class: 'datetimepicker-input form-control', value: (@invoice.send_at.nil? ? (DateTime.now.monday + 1.week + 9.hours) : (@invoice.send_at)) %>
 								<hr>
 								<div class="input-group-append" data-target="#<%= @invoice.id ? @invoice.id : 'new' %>" data-toggle="datetimepicker">
-									<div class="input-group-text"><i class="fa fa-calendar"></i></div>
+									<div class="input-group-text"><%= icon('calendar-event') %></div>
 								</div>
 							</div>
 							<hr>

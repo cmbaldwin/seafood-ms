@@ -10,6 +10,10 @@ class WelcomeController < ApplicationController
 		# Setup @today's order lists (initial)
 		rakuten_today = RManifest.where(:sales_date => @today).first
 		tsuhan_today = Manifest.where(:sales_date => @today).first
+		@yahoo_orders = YahooOrder.all.where(ship_date: Date.today)
+		@yahoo_date = DateTime.now
+		@new_yahoo_orders = YahooOrder.where(ship_date: nil).order(:order_id).map{ |order| order unless order.order_status(false) == 4}.compact
+		(@new_yahoo_orders.length > 0) ? () : (@new_yahoo_orders = nil)
 		if rakuten_today != nil
 			@rakuten = rakuten_today
 		else
@@ -21,13 +25,19 @@ class WelcomeController < ApplicationController
 			@online_orders = Manifest.last
 		end
 
+		# Check for new and unprocessed orders from rakuten 
 		rakuten_check
 
+		# Check for new and unprocessed orders from WC, Super slow, temporarily disabled
+		#wc_check
+
+		# Set links for daily raw oyster expiration card generator
 		expiration_card_links_setup
 
-		# temporarily removed
-		# frozen_data_setup
+		# Temporarily removed
+		#frozen_data_setup
 
+		# Set up graphs for seasonal profit to date
 		infographics_setup
 
 		# Return a observational data at the present time
@@ -124,7 +134,21 @@ class WelcomeController < ApplicationController
 	end
 
 	def load_online_order
+		time_setup
 		@online_orders = Manifest.find(params[:id])
+		online_today = Manifest.where(:sales_date => @today).first
+		if online_today
+			@online_orders.sales_date == (online_today.sales_date) ? wc_check : ()
+		end
+		respond_to do |format|
+			format.js { render layout: false }
+		end
+	end
+
+	def load_yahoo_orders
+		@yahoo_date = Date.parse(params[:date])
+		@yahoo_orders = YahooOrder.all.where(ship_date: @yahoo_date)
+		(@yahoo_date == Date.today) ? (@new_yahoo_orders = YahooOrder.where(ship_date: nil).order(:order_id).map{ |order| order unless order.order_status(false) == 4}.compact) : ()
 		respond_to do |format|
 			format.js { render layout: false }
 		end
