@@ -7,8 +7,12 @@ class YahooOrder < ApplicationRecord
 
 	def order_status(for_print = true)
 		status = self.details["OrderStatus"]
-		print_status = {1 => '予約中', 2 => '処理中', 3 => '保留', 4 => 'キャンセル', 5 => '完了'}
-		for_print ? print_status[status.to_i] : status.to_i
+		unless self.ship_date == nil
+			print_status = {1 => '予約中', 2 => '処理中', 3 => '保留', 4 => 'キャンセル', 5 => '完了'}
+			for_print ? print_status[status.to_i] : status.to_i
+		else
+			for_print ? '新規' : status.to_i
+		end
 	end
 
 	def shipping_status(for_print = true)
@@ -98,7 +102,7 @@ class YahooOrder < ApplicationRecord
 			"pmuki01" => "冷凍 牡蠣むき身500g×1",
 			"tako1k" => "ボイルたこ 800g",
 			"mebi80x5" => "干えび(ムキ) 80g×5袋",
-			"mebi80x3" => "干えび(ムキ) 80g×5袋",
+			"mebi80x3" => "干えび(ムキ) 80g×3袋",
 			"hebi80x10" => "干えび(殻付) 80g×10袋",
 			"hebi80x5" => "干えび(殻付) 80g×5袋 ",
 			"anago600" => "焼穴子 600g入",
@@ -216,7 +220,7 @@ class YahooOrder < ApplicationRecord
 	end
 
 	def arrival_time
-		(self.shipping_details["ShipRequestTime"].nil? ? "午前中" : self.shipping_details["ShipRequestTime"])
+		(self.shipping_details["ShipRequestTime"].nil? ? "指定無し" : self.shipping_details["ShipRequestTime"])
 	end
 
 	def yamato_shipping_format

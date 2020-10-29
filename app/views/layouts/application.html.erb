@@ -14,7 +14,6 @@
 		<%= stylesheet_pack_tag "application", media: 'all', 'data-turbolinks-track': 'reload' %>
 		<%= javascript_pack_tag 'application', 'data-turbolinks-track': 'reload' %>
 
-		<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.3.2/main.min.css" rel="stylesheet">
 		<%= javascript_pack_tag 'custom', 'data-turbolinks-track': 'reload' %>
 		<%= javascript_pack_tag 'noshis', 'data-turbolinks-track': 'reload' %>
 		<%= javascript_pack_tag 'oyster_supplies', 'data-turbolinks-track': 'reload' %>
@@ -25,9 +24,11 @@
 		<%= csrf_meta_tags %>
 		<%= csp_meta_tag %>
 
+		<%= content_for :render_async %>
+
 	</head>
 
-	<body>
+	<body data-spy="scroll" data-target="#sidebar" data-offset="0">
 		<div class="wrapper">
 			<div id="content">
 				<nav id="top_nav" class="navbar navbar-dark navbar-expand-lg mb-3 d-print-none">
@@ -92,17 +93,19 @@
 							<% if user_signed_in? %>
 								<span class="navbar-text">
 									<div class="btn-group" role="group" aria-label="Basic">
-										<%= link_to icon("arrow-up-right-circle-fill", class: 'text-warning'), destroy_user_session_path, :method => :delete, :class => 'navbar-link btn btn-info' %>
+										<span class="navbar-link btn btn-info" data-toggle="tooltip" data-placement="auto" title="ログアウト">
+											<%= link_to icon("arrow-up-right-circle-fill", class: 'text-warning'), destroy_user_session_path, :method => :delete, :class => 'btn btn-info m-0 p-0' %>
+										</span>
 										<%= link_to icon("file-person", class: 'text-primary'), edit_user_registration_path, :class => 'navbar-link btn btn-info',
 											"data-content" =>
-												'メール <strong>: ' + current_user.email + '</strong><br>ユーザー名 <strong>: ' + current_user.username + '</strong>',
-										"role" => "button", "data-toggle" => "popover", "data-placement" => "top", :title => 'ユーザー', :alt => 'ユーザー', "tabindex" => "0" %>
-										<button type="button" id="sidebarCollapse" class="navbar-link btn btn-info">
+												('メール<strong>:<br><small>' + current_user.email + '</small></strong><br>ユーザー名<strong>:<br>' + current_user.username + '</strong>'),
+										"role" => "button", "data-html" => "true", "data-toggle" => "popover", "data-trigger" => "hover", "data-placement" => "bottom", :title => 'ユーザー', :alt => 'ユーザー', "tabindex" => "0" %>
+										<button type="button" class="sidebarCollapse navbar-link btn btn-info" data-trigger="hover" data-toggle="tooltip" data-placement="auto" title="システム通知パネル">
 											<%= icon('collection', class: 'text-white') %>
 										</button>
 									</div>
 								</span>
-								<% else %>
+							<% else %>
 								<span class="navbar-text">
 									<%= link_to "サインアップ", new_user_registration_path, :class => 'navbar-link'  %> |
 									<%= link_to "ログイン", new_user_session_path, :method => :post, :class => 'navbar-link'  %>
@@ -129,23 +132,33 @@
 
 			<div id="sidebar_spacer" class="active">
 			</div>
-			<nav id="front_sidebar" class="bg-light border-dark border-left active">
-				<div class="sidebar-header bg-primary text-white text-center p-2 m-1 rounded">
-					<h6>システム通報</h6>
+			<nav id="front_sidebar" data-user-id="<%= user_signed_in? ? (current_user.id) : () %>" class="bg-light border-dark border-left active">
+				<div class="sidebar-header bg-light p-2 m-1 rounded">
+					　
+					<h5 class="float-left">システム通報</h5>
+					<button type="button" class="sidebarCollapse navbar-link btn btn-sm m-0 p-0 pl-1 pr-1 btn-light float-right active">
+						<%= icon('x-circle') %>
+					</button>
 				</div>
 
-				<!-- Alerts -->
-				<% if notice %>
-					<div class="container notice_container mt-2 d-print-none">
-						<div class="alert alert-success d-print-none"><%= notice %></div>
-					</div>
-				<% end %>
-				<% if alert %>
-					<div class="container alert_container mt-2 d-print-none">
-						<div class="alert alert-danger d-print-none"><%= alert %></div>
+				<% if user_signed_in? %>
+					<div id="notifications">
+						<%= render 'messages', remote: true %>
 					</div>
 				<% end %>
 			</nav>
+
+			<!-- Alerts -->
+			<% if notice %>
+				<div class="container notice_container mt-2 d-print-none">
+					<div class="alert alert-success d-print-none"><%= notice %></div>
+				</div>
+			<% end %>
+			<% if alert %>
+				<div class="container alert_container mt-2 d-print-none">
+					<div class="alert alert-danger d-print-none"><%= alert %></div>
+				</div>
+			<% end %>
 
 		</div>
 	</body>

@@ -7,6 +7,10 @@ module ProfitsHelper
 		@types_hash = {"1"=>"トレイ", "2"=>"チューブ", "3"=>"水切り", "4"=>"殻付き", "5"=>"冷凍", "6"=>"単品"}
 	end
 
+	def type_to_text(type_str)
+		{"1"=>"トレイ", "2"=>"チューブ", "3"=>"水切り", "4"=>"殻付き", "5"=>"冷凍", "6"=>"単品"}[(type_str)]
+	end
+
 	def get_product_name(product_id)
 		Product.find(product_id).namae
 	end

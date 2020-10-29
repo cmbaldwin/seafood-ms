@@ -7,38 +7,10 @@ class WelcomeController < ApplicationController
 		@users = User.all
 		time_setup
 
-		# Setup @today's order lists (initial)
-		rakuten_today = RManifest.where(:sales_date => @today).first
-		tsuhan_today = Manifest.where(:sales_date => @today).first
-		@yahoo_orders = YahooOrder.all.where(ship_date: Date.today)
-		@yahoo_date = DateTime.now
-		@new_yahoo_orders = YahooOrder.where(ship_date: nil).order(:order_id).map{ |order| order unless order.order_status(false) == 4}.compact
-		(@new_yahoo_orders.length > 0) ? () : (@new_yahoo_orders = nil)
-		if rakuten_today != nil
-			@rakuten = rakuten_today
-		else
-			@rakuten = RManifest.last
-		end
-		if tsuhan_today != nil
-			@online_orders = tsuhan_today
-		else
-			@online_orders = Manifest.last
-		end
-
-		# Check for new and unprocessed orders from rakuten 
-		rakuten_check
-
-		# Check for new and unprocessed orders from WC, Super slow, temporarily disabled
-		#wc_check
-
-		# Set links for daily raw oyster expiration card generator
-		expiration_card_links_setup
-
 		# Temporarily removed
-		#frozen_data_setup
+		# frozen_data_setup
 
-		# Set up graphs for seasonal profit to date
-		infographics_setup
+		rakuten_orders
 
 		# Return a observational data at the present time
 		weatherb = Weatherb::API.new(ENV['CLIMACELL_API'])
@@ -64,25 +36,93 @@ class WelcomeController < ApplicationController
 
 	def infographics_setup
 		# Set up the yearly chart with two recent seasons of data
+		# https://ankane.github.io/chartkick.js/examples/
 		@year_sales = Hash.new
 		@last_year_sales = Hash.new
+		# Consider swithc to Profit.where("sales_date like ?", "%2020%") in the future
+		# Or do a migration with a date to date string
 		Profit.all.order(:sales_date).each do |profit|
 			if profit.sales_date_to_datetime > @this_season_start && profit.sales_date_to_datetime < @this_season_end
 				if !profit.totals[:profits].nil?
-					@year_sales[profit.sales_date_to_datetime.strftime("%m月%d日")] = (profit.totals[:profits] <= 0 ? 0 : profit.totals[:profits])
+					@year_sales[profit.sales_date_to_datetime.strftime("%m月%d日")] = 0 if @year_sales[profit.sales_date_to_datetime.strftime("%m月%d日")].nil?
+					@year_sales[profit.sales_date_to_datetime.strftime("%m月%d日")] += (profit.totals[:profits] <= 0 ? 0 : profit.totals[:profits])
 				end
 			elsif profit.sales_date_to_datetime > @prior_season_start && profit.sales_date_to_datetime < @prior_season_end
 				if !profit.totals[:profits].nil?
-					@last_year_sales[profit.sales_date_to_datetime.strftime("%m月%d日")] = (profit.totals[:profits] <= 0 ? 0 : profit.totals[:profits])
+					@last_year_sales[profit.sales_date_to_datetime.strftime("%m月%d日")] = 0 if @last_year_sales[profit.sales_date_to_datetime.strftime("%m月%d日")].nil?
+					@last_year_sales[profit.sales_date_to_datetime.strftime("%m月%d日")] += (profit.totals[:profits] <= 0 ? 0 : profit.totals[:profits])
 				end
 			end
 		end 
 
 		ymax = @year_sales.merge(@last_year_sales).values.max
-		@yearly_max = ymax.round(-(ymax.to_i.to_s.length - 4))
-		@this_year_daily_average = '￥' + helpers.yenify(@year_sales.values.sum / @year_sales.values.length)
-		@last_year_daily_average = '￥' + helpers.yenify(@last_year_sales.values.sum / @last_year_sales.values.length)
-		@two_year_daily_average = '￥' + helpers.yenify(@year_sales.merge(@last_year_sales).values.sum / @year_sales.merge(@last_year_sales).values.length)
+		ymax.nil? ? (@yearly_max = ymax.round(-(ymax.to_i.to_s.length - 4))) : (@yearly_max = 0)
+
+		#Not used right now, but could be used
+		unless @year_sales.empty? || @last_year_sales.empty?
+			@this_year_daily_average = '￥' + helpers.yenify(@year_sales.values.sum / @year_sales.values.length)
+			@last_year_daily_average = '￥' + helpers.yenify(@last_year_sales.values.sum / @last_year_sales.values.length)
+			@two_year_daily_average = '￥' + helpers.yenify(@year_sales.merge(@last_year_sales).values.sum / @year_sales.merge(@last_year_sales).values.length)
+		end
+	end
+
+	def profit_figures_chart
+		if current_user.admin?
+			# Set up graphs for seasonal profit to date
+			time_setup
+			infographics_setup
+			@data_array = [{name: '今年', data: @year_sales}, 
+						{name: '去年', data: @last_year_sales}, 
+				]
+			@averages_array = [ {name: '今年平均', data: {"10月01日" => (@this_year_daily_average ? @this_year_daily_average : 0)}},
+						{name: '去年平均', data: {"10月01日" => (@last_year_daily_average ? @last_year_daily_average : 0)}},
+						{name: '二年平均', data: {"10月01日" => (@two_year_daily_average ? @two_year_daily_average : 0)}},]
+		else
+			@data_array = [{name: 'Unauthorized', data: {}}]
+		end
+		render json: @data_array
+	end
+
+	def yahoo_orders_partial
+		time_setup
+		@yahoo_orders = YahooOrder.all.where(ship_date: Date.today)
+		@yahoo_date = DateTime.now
+		@new_yahoo_orders = YahooOrder.where(ship_date: nil).order(:order_id).map{ |order| order unless order.order_status(false) == 4}.compact
+		(@new_yahoo_orders.length > 0) ? () : (@new_yahoo_orders = nil)
+
+		render partial: "yahoo_orders"
+	end
+
+	def rakuten_orders
+		time_setup
+		rakuten_today = RManifest.where(:sales_date => @today).first
+		if rakuten_today != nil
+			@rakuten = rakuten_today
+		else
+			@rakuten = RManifest.last
+		end
+		# Check for new and unprocessed orders from rakuten 
+		rakuten_check
+	end
+
+	def online_orders
+		time_setup
+		tsuhan_today = Manifest.where(:sales_date => @today).first
+		if tsuhan_today != nil
+			@online_orders = tsuhan_today
+		else
+			@online_orders = Manifest.last
+		end
+		wc_check
+
+		render partial: "online_orders"
+	end
+
+	def daily_expiration_cards
+		time_setup
+		expiration_card_links_setup
+
+		render partial: "daily_expiration_cards"
 	end
 
 	def expiration_card_links_setup

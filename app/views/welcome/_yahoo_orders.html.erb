@@ -115,7 +115,7 @@
 				<% counts[:headers].each_with_index do |header, i| %>
 					<div class="btn col-3 btn-light d-block mb-1 strong">
 						<h6><%= header %></h6>
-						<span class="badge badge-<%= counts[:values][i] > 0 ? 'info' : 'light' %> w-100">
+						<span class="badge badge-<%= counts[:values][i] > 0 ? 'primary' : 'light' %> p-2">
 							<%= counts[:values][i] %>
 						</span>
 					</div>

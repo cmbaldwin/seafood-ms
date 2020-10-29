@@ -82,27 +82,20 @@ class OysterSuppliesController < ApplicationController
 
 	def supply_check
 		@filename = '原料チェック表（' + @oyster_supply.supply_date + '）.pdf'
-		pdf = @oyster_supply.generate_supply_check
-		send_data pdf.render, :filename => @filename, type: 'application/pdf', disposition: :inline
-		pdf = nil
-		File.delete(Rails.root + @filename) if File.exist?(Rails.root + @filename)
-		GC.start
+		message = Message.new(user: current_user.id, model: 'oyster_supply', state: false, message: '牡蠣原料受入れチェック表を作成中…', data: {oyster_supply_id: @oyster_supply.id, filename: @filename, expiration: (DateTime.now + 1.day)})
+		message.save
+		OysterSupplyCheckWorker.perform_async(@oyster_supply.id, message.id)
 	end
 
-	# GET /oyster_supplies/sakoshi_payment_pdf/:format/:start_date/:end_date/:location
+	# GET /oyster_supplies/payment_pdf/:format/:start_date/:end_date/:location
 	def payment_pdf
-		oyster_supply = OysterSupply.new
-		oyster_supply.start_date = Date.parse(params[:start_date])
-		oyster_supply.end_date = Date.parse(params[:end_date])
-		oyster_supply.location = params[:location]
-		oyster_supply.export_format = params[:format]
-		pdf_data = oyster_supply.do_payment_pdf
-		format_name = (oyster_supply.export_format == 'all') ? ('生産者まとめ') : ('各生産者')
-		@filename = location_to_locale(oyster_supply.location) + ' ' + pdf_data[0] + format_name + '.pdf'
-		send_data pdf_data[1].render, :filename => @filename, type: 'application/pdf', disposition: :inline
-		pdf_data = nil
-		GC.start
-		File.delete(Rails.root + @filename) if File.exist?(Rails.root + @filename)
+		start_date = Date.parse(params[:start_date])
+		end_date = Date.parse(params[:end_date])
+		location = params[:location]
+		export_format = params[:format]
+		message = Message.new(user: current_user.id, model: 'oyster_invoice', state: false, message: '牡蠣原料仕切りプレビュー作成中…', data: {invoice_id: 0, expiration: (DateTime.now + 1.day), invoice_preview: {start_date: start_date, end_date: end_date, location: location, export_format: export_format}})
+		message.save
+		InvoicePreviewWorker.perform_async(start_date, end_date, location, export_format, current_user.id, message.id)
 	end
 
 	# GET /oyster_supplies/1
@@ -184,6 +177,7 @@ class OysterSuppliesController < ApplicationController
 		# Use callbacks to share common setup or constraints between actions.
 		def set_oyster_supply
 			@oyster_supply = OysterSupply.find(params[:id])
+			@oyster_supply.okayama_setup if @oyster_supply.oysters["okayama"].nil? #in case we're viewing a pre-okayama supply
 		end
 
 		# Never trust parameters from the scary internet, only allow the white list through.

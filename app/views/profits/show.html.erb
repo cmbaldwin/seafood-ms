@@ -1,13 +1,55 @@
 <% title "Funabiki Online - " + @profit.sales_date + " 計算表" %>
 
+<div class="modal fade" id="ProfitModal" tabindex="-1" aria-labelledby="ProfitModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="ProfitModalLabel">計算書の選択カレンダー</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+				<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div id="profit_calendar"></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="volumesModal" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="volumesModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div id="volume_partial">
+				<%= render 'volumes', locals: {profit: @profit} %>
+			</div>
+		</div>
+	</div>
+</div>
+
 <div class="container-fluid show_profit_container">
 	<div class="row">
 		<div class="col-12 align-middle d-print-none">
 			<div class="btn-group float-right" role="group" aria-label="Basic">
-				<%= link_to '前', @profit.profit_query.previous, class: 'btn btn-info' %>
-				<%= link_to '次', @profit.profit_query.next, class: 'btn btn-info' %>
-				<%= link_to '編集', edit_profit_path(@profit), class: 'btn btn-success' %>
-				<%= link_to '計算表トップ', profits_path, class: 'btn btn-secondary' %>
+				<span class="btn btn-info p-0 m-0" data-toggle="tooltip" data-placement="bottom" title="牡蠣の量予算">
+					<%= link_to icon('bar-chart-line', class: 'text-primary'), fetch_volumes_path(@profit.id), class: "btn btn-info", "data-toggle" => "modal", "data-target" => "#volumesModal", remote: true %>
+				</span>
+				<span class="btn btn-info p-0 m-0" data-toggle="tooltip" data-placement="bottom" title="前の計算表へ">
+					<%= link_to icon("arrow-left-circle", class: 'text-white'), @profit.profit_query.previous, class: 'btn btn-info' %>
+				</span>
+				<span class="btn btn-info p-0 m-0" data-toggle="tooltip" data-placement="bottom" title="次の計算表へ">
+					<%= link_to icon("arrow-right-circle", class: 'text-white'), @profit.profit_query.next, class: 'btn btn-info' %>
+				</span>
+				<span class="btn btn-info" data-toggle="tooltip" data-placement="bottom" title="計算表をカレンダーで調べる" data-trigger="hover">
+					<button id="ProfitModalButton" type="button" class="btn btn-info m-0 p-0" data-toggle="modal" data-target="#ProfitModal">
+							<%= icon('calendar3', class: 'text-white') %>
+					</button>
+				</span>
+				<span class="btn btn-info p-0 m-0" data-toggle="tooltip" data-placement="bottom" title="編集する">
+					<%= link_to icon("pencil-square", class: "text-success"), edit_profit_path(@profit), class: 'btn btn-info' %>
+				</span>
+				<span class="btn btn-info p-0 m-0" data-toggle="tooltip" data-placement="bottom" title="計算表トップへ">
+					<%= link_to icon('arrow-90deg-up', class: 'text-white'), profits_path, class: 'btn btn-info' %>
+				</span>
 			</div>
 		</div>
 
@@ -18,7 +60,7 @@
 	<% subtotal_hash = @profit.subtotals %>
 	
 	<div class="col-2 d-none d-lg-block">
-		<%= render :partial=>'show_fixed_navigation', locals: { profit: @profit, subtotal_hash: subtotal_hash}, cached: true %>
+			<%= render :partial=>'show_fixed_navigation', locals: { profit: @profit, subtotal_hash: subtotal_hash}, cached: true %>
 	</div>
 
 
@@ -62,7 +104,7 @@
 				<% @profit.markets.each do |market| %>
 					<div class="row clearfix extra_costs_market_row">
 						<div class="col-2">
-								<em><%= market.nick %></em>
+							<em><%= market.nick %></em>
 						</div>
 						<div class="col-2 clearfix">
 							<div class="float-left">

@@ -11,9 +11,9 @@ class ApplicationController < ActionController::Base
 	def time_setup
 		@today = DateTime.now.strftime('%Y年%m月%d日')
 		@this_season_start = (Date.today.month < 10) ? Date.new((Date.today.year - 1), 10, 1) : Date.new(Date.today.year, 10, 1)
-		@this_season_end = (Date.today.month < 10) ? Date.new(Date.today.year, 10, 1) : Date.new((Date.today.year - 1), 10, 1)
+		@this_season_end = (Date.today.month < 10) ? Date.new(Date.today.year, 10, 1) : Date.new((Date.today.year + 1), 10, 1)
 		@prior_season_start = (Date.today.month < 10) ? Date.new((Date.today.year - 2), 10, 1) : Date.new((Date.today.year - 1), 10, 1)
-		@prior_season_end = (Date.today.month < 10) ? Date.new((Date.today.year - 1), 10, 1) : Date.new((Date.today.year - 2), 10, 1)
+		@prior_season_end = (Date.today.month < 10) ? Date.new((Date.today.year - 1), 10, 1) : Date.new((Date.today.year), 10, 1)
 	end
 
 	def to_nengapi(datetime)

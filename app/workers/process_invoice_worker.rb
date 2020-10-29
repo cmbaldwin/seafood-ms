@@ -1,8 +1,10 @@
 class ProcessInvoiceWorker
 	include Sidekiq::Worker
 
-	def perform(invoice_id)
+	def perform(invoice_id, user_id, message_id)
 		invoice = OysterInvoice.find(invoice_id)
+		msg = Message.find(message_id)
+		invoice.data[:message] = message_id
 
 		# Sakoshi All Suppliers
 		pdf_data = OysterSupply.new(
@@ -74,7 +76,8 @@ class ProcessInvoiceWorker
 		invoice.save
 		pdf.close
 		pdf_data = nil
+		pdf = nil
 		GC.start
-
+		msg.update(state: true, message: '牡蠣原料仕切り作成完了')
 	end
 end

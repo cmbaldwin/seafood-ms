@@ -1,8 +1,9 @@
+// Sidebar collapse functions
 $(document).on('turbolinks:load', function(){
-	$('#sidebarCollapse').on('click', function () {
+	$('.sidebarCollapse').on('click', function () {
 		$('#front_sidebar').toggleClass('active');
 		$('#sidebar_spacer').toggleClass('active');
-		$(this).toggleClass('active');
+		$('.sidebarCollapse').toggleClass('active');
 	});
 });
 
@@ -11,26 +12,6 @@ $( document ).on('turbolinks:load', function() {
    $('.alert').delay(500).fadeIn('normal', function() {
 	  $(this).delay(2500).fadeOut();
    });
-});
-
-//adds datapicker to a input box (for dates, duh)
-$( document ).on('turbolinks:load', function() {
-	var datepicker = require('bootstrap-datepicker')
-	$('.datepicker').datepicker({
-		maxViewMode: 2,
-		format: "yyyy年mm月dd日",
-		todayBtn: "linked",
-		language: "ja",
-		daysOfWeekHighlighted: "0,3",
-		todayHighlight: true,
-		orientation: "bottom auto",
-		toggleActive: true
-		});
-	var datetimepicker = require('tempusdominus-bootstrap-4')
-	$.fn.datetimepicker.Constructor.Default = $.extend({}, $.fn.datetimepicker.Constructor.Default, {
-		// config can go here
-		});
-	$('.datetimepicker').datetimepicker({});
 });
 
 //adds loading script to all putts in "load" added to class

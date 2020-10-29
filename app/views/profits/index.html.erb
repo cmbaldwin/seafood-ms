@@ -1,10 +1,62 @@
 <% title "Funabiki Online - 計算表" %>
+
+<div class="modal fade" id="newProfitModal" tabindex="-1" aria-labelledby="newProfitModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="newProfitModalLabel">新しい計算書の日付</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+				<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div id="new_profit_calendar"></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="ProfitModal" tabindex="-1" aria-labelledby="ProfitModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="ProfitModalLabel">計算書の選択カレンダー</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div id="profit_calendar"></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="volumesModal" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="volumesModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div id="volume_partial">
+				<%= render 'volumes', locals: {profit: @profit} %>
+			</div>
+		</div>
+	</div>
+</div>
+
 <div class="container">
 	<div class="row align-middle">
 		<div class="col">
 
 			<div class="btn-group float-right" role="group" aria-label="Basic">
-				<%= link_to '追加', new_profit_path, :class => "btn btn-success" %>
+				<button id="newProfitModalButton" type="button" class="btn btn-info" data-toggle="modal" data-target="#newProfitModal">
+					<span data-toggle="tooltip" data-placement="bottom" title="計算表を追加" data-trigger="hover">
+						<%= icon('plus-circle-fill', class: 'text-success') %>
+					</span>
+				</button>
+				<button id="ProfitModalButton" type="button" class="btn btn-info" data-toggle="modal" data-target="#ProfitModal">
+					<span data-toggle="tooltip" data-placement="bottom" title="計算表をカレンダーで調べる" data-trigger="hover">
+						<%= icon('calendar3') %>
+					</span>
+				</button>
 			</div>
 		<hr/>
 
@@ -22,7 +74,7 @@
 		<div class="col-md-4 col-sm-12 sales_date">
 			<h5 class="float-left mt-2 mr-3 w-10">
 				<%= profit.sales_date.to_s %>
-				<%= (unfinished[0] == 0) ? '' : ('<small><span class="badge badge-warning cursor-help" data-toggle="tooltip" data-html="true" data-placement="top" title="単価無し注文数">' + unfinished[0].to_s + '</span></small>').html_safe %>
+				<%= (unfinished[0] == 0) ? ('<span class="pl-3 pr-3"> </span>').html_safe : ('<small><span class="badge badge-warning cursor-help" data-toggle="tooltip" data-html="true" data-placement="top" title="単価無し注文数">' + (unfinished[0] > 10 ? (unfinished[0].to_s) : ('0' + unfinished[0].to_s)) + '</span></small>').html_safe %>
 			</h5>
 			<span class="float-left ml-3">
 				<%= yenify(profit.totals[:sales]) %>
@@ -31,24 +83,37 @@
 				<strong class="h5">￥<%= yenify(profit.totals[:profits]) %></strong>
 			</span>
 		</div>
-		<div class="col-md-4"col-sm-12 >
-			<span class="ml-3" data-toggle="tooltip" data-html="true" data-placement="top" title="@<b><%= figs[:gohyaku_tanka]%></b> /㎏">
-				<i>500g</i>: <b><%= figs[:gohyaku_total] %>p</b>
-			</span>
-			<span class="ml-3" data-toggle="tooltip" data-html="true" data-placement="top" title="@<b><%= figs[:kilo_tanka]%></b> /㎏">
-				<i>1k</i>: <b><%= figs[:kilo_total] %>枚</b>
-			</span>
-		</div>
-		<div class="col-md-4"col-sm-12 >
-			<div class="btn-group float-right mt-1" role="group">
-				<%= link_to icon("card-list"), profit, :alt => "利益表示の個別ページ", class: 'btn btn-info' %>
-				<% if current_user.admin? or current_user.vip? %>
-					<%= link_to icon("pencil-square", class: "text-success"), edit_profit_path(profit), :alt => "今日の利益計算を編集", class: 'btn btn-info' %>
-					<% if current_user.admin? %>
-						<%= link_to icon("trash-fill", class: "text-danger"), profit, :alt => "この利益計算を取り消す", method: :delete, data: { confirm: '削除してもいい?' }, class: 'btn btn-info' %>
-					<% end %> 
-				<% end %>
+		<div class="col-md-4 col-sm-12" >
+			<div class="container m-0 p-0">
+				<div class="row m-0 p-0">
+					<div class="col-6 m-0 p-0">
+						<span class="ml-3" data-toggle="tooltip" data-html="true" data-placement="top" title="@<b><%= figs[:gohyaku_tanka]%></b> /㎏">
+							<i>500g</i>: <b><%= figs[:gohyaku_total] %>p</b>
+						</span>
+					</div>
+					<div class="col-6 m-0 p-0">
+						<span class="ml-3" data-toggle="tooltip" data-html="true" data-placement="top" title="@<b><%= figs[:kilo_tanka]%></b> /㎏">
+							<i>1k</i>: <b><%= figs[:kilo_total] %>枚</b>
+						</span>
+					</div>
+				</div>
 			</div>
+		</div>
+		<div class="col-md-4 col-sm-12" >
+			<div class="btn-group float-right mt-1" role="group">
+				<span class='btn btn-info m-0 p-0' data-toggle="tooltip" data-placement="top" title="個別ページを見る" data-trigger="hover">
+					<%= link_to icon("card-list", class: 'text-white'), profit, class: 'btn btn-info' %>
+				</span>
+				<span class='btn btn-info m-0 p-0' data-toggle="tooltip" data-placement="top" title="編集する" data-trigger="hover">
+					<%= link_to icon("pencil-square", class: "text-success"), edit_profit_path(profit), :alt => "今日の利益計算を編集", class: 'btn btn-info' %>
+				</span>
+				<span class='btn btn-info m-0 p-0' data-toggle="tooltip" data-placement="top" title="削除する" data-trigger="hover">
+					<%= link_to icon("trash-fill", class: "text-danger"), profit, :alt => "この利益計算を取り消す", method: :delete, data: { confirm: '削除してもいい?' }, class: 'btn btn-info' %>
+				</span>
+			</div>
+			<span class="mt-1 mr-1 float-right" data-toggle="tooltip" data-html="true" data-placement="top" title="牡蠣の量予算" data-trigger="hover">
+				<%= link_to icon('bar-chart-line'), fetch_volumes_path(profit.id), class: "btn btn-primary", "data-toggle" => "modal", "data-target" => "#volumesModal", remote: true %>
+			</span>
 		</div>
 	</div>
 	<% end %>

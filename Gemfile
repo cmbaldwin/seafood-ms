@@ -40,6 +40,9 @@ gem 'bcrypt', '~> 3.1.7'
 # Reduces boot times through caching; required in config/boot.rb
 gem 'bootsnap', '>= 1.1.0', require: false
 
+# Async partial rendering
+gem 'render_async'
+
 #For debugging/analyzing Hash/API output, etc.
 gem 'awesome_print'
 
@@ -113,6 +116,9 @@ gem 'moji', github: 'gimite/moji'
 
 ## API/HTTP Requests
 gem 'httparty'
+
+## Charts
+gem 'chartkick'
 
 ## Browsing automation
 gem 'mechanize'

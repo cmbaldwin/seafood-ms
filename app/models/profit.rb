@@ -1,4 +1,6 @@
 class Profit < ApplicationRecord
+	before_save :set_ampm
+
 	has_many :profit_and_market_joins
 	has_many :markets, through: :profit_and_market_joins
 	has_many :profit_and_product_joins
@@ -20,6 +22,35 @@ class Profit < ApplicationRecord
 	order_query :profit_query,
 		[:sales_date] # Sort :sales_date in :desc order
 
+	## Reference for accessing data from the figures hash
+	# self.figures.each do |type_number, type_hash|
+	# 	type_hash.each do |product_id, product_hash|
+	# 		product_hash.each do |market_id, values_hash|
+	# 			values_hash[:order_count] => (floating-point)
+	# 			values_hash[:unit_price ] => (floating-point)
+	# 			values_hash[:combined] => (0=false/1=true)
+	# 			values_hash[:extra_cost] => (0=false/1=true)
+	# 		end
+	# 	end
+	# end
+
+	def date
+		DateTime.strptime(self.sales_date, "%Y年%m月%d日")
+	end
+
+	def alone?
+		Profit.where(sales_date: self.sales_date).length == 1
+	end
+
+	def check_ampm
+		# Tokyo will always be shipped in the AM
+		self.market_ids.include?(Market.find_by(nick: '東水').id)
+	end
+
+	def set_ampm
+		self.alone? ? () : (self.ampm = check_ampm)
+	end
+
 	def check_completion
 		unfinished = Hash.new
 		unfinished[0] = 0
@@ -29,8 +60,9 @@ class Profit < ApplicationRecord
 					if Product.find(product_id).profitable
 						product_hash.each do |market_id, values_hash|
 							if (values_hash[:order_count] != 0) && (values_hash[:unit_price] == 0)
-								unfinished[market_id].nil? ? unfinished[market_id] = Array.new : ()
-								unfinished[market_id] << product_id
+								mjsnumber = Market.find(market_id).mjsnumber
+								unfinished[mjsnumber].nil? ? unfinished[mjsnumber] = Array.new : ()
+								unfinished[mjsnumber] << product_id
 								unfinished[0] += 1
 							end
 						end
@@ -108,28 +140,28 @@ class Profit < ApplicationRecord
 	end
 
 	def do_autosave
+		def set_figures(figures_hash, type_number, product_id, market_id, values_hash)
+			figures_hash[type_number] = Hash.new unless figures_hash[type_number].is_a?(Hash)
+			figures_hash[type_number][product_id] = Hash.new unless figures_hash[type_number][product_id].is_a?(Hash)
+			figures_hash[type_number][product_id][market_id] = Hash.new unless figures_hash[type_number][product_id][market_id].is_a?(Hash)
+			figures_hash[type_number][product_id][market_id][:order_count] = values_hash["order_count"].to_f
+			figures_hash[type_number][product_id][market_id][:unit_price] = values_hash["unit_price"].to_f
+			figures_hash[type_number][product_id][market_id][:combined] = values_hash["combined"].to_i
+			figures_hash[type_number][product_id][market_id][:extra_cost] = values_hash["extra_cost"].to_i
+		end
 		original_figures = self.figures
 		new_figures = Hash.new 
 		new_figures = self.new_figures
 		new_figures.deep_transform_keys! { |k| k.scan(/^\d+$/).any? ? (k.to_i) : (k.to_s.to_sym) }
-		fixed_figures = Hash.new
+		parsed_figures = Hash.new
 		new_figures.each do |type_number, type_hash|
 			type_hash.each do |product_id, product_hash|
 				product_hash.each do |market_id, values_hash|
-					def set_figures(fixed_figures, type_number, product_id, market_id, values_hash)
-						!fixed_figures[type_number].is_a?(Hash) ? fixed_figures[type_number] = Hash.new : ()
-						!fixed_figures[type_number][product_id].is_a?(Hash) ? fixed_figures[type_number][product_id] = Hash.new : ()
-						!fixed_figures[type_number][product_id][market_id].is_a?(Hash) ? fixed_figures[type_number][product_id][market_id] = Hash.new : ()
-						fixed_figures[type_number][product_id][market_id][:order_count] = values_hash["order_count"].to_f
-						fixed_figures[type_number][product_id][market_id][:unit_price] = values_hash["unit_price"].to_f
-						fixed_figures[type_number][product_id][market_id][:combined] = values_hash["combined"].to_i
-						fixed_figures[type_number][product_id][market_id][:extra_cost] = values_hash["extra_cost"].to_i
-					end
 					if values_hash["order_count"].to_f > 0 || values_hash["unit_price"].to_f > 0
-						set_figures(fixed_figures, type_number, product_id, market_id, values_hash)
+						set_figures(parsed_figures, type_number, product_id, market_id, values_hash)
 					end
 					if !original_figures.dig(type_number, product_id, market_id).nil?
-						set_figures(fixed_figures, type_number, product_id, market_id, values_hash)
+						set_figures(parsed_figures, type_number, product_id, market_id, values_hash)
 						if values_hash["order_count"].to_f == 0 || values_hash["unit_price"].to_f == 0
 							original_figures[type_number][product_id].delete(market_id)
 							if original_figures[type_number][product_id].empty?
@@ -144,7 +176,7 @@ class Profit < ApplicationRecord
 				end
 			end
 		end
-		merged_figures = original_figures.deep_merge(fixed_figures)
+		merged_figures = original_figures.deep_merge(parsed_figures)
 		merged_figures[0] ? merged_figures.delete(0) : ()
 		self.figures = merged_figures
 	end
@@ -157,6 +189,7 @@ class Profit < ApplicationRecord
 		sales = Array.new
 		extras = 0
 		# Make Calculations
+		parsed_figures = Hash.new
 		self.figures.each do |type_number, type_hash|
 			type_hash.each do |product_id, product_hash|
 				#set associated product
@@ -165,32 +198,43 @@ class Profit < ApplicationRecord
 				product_record = Product.find(product_id)
 				unit_multiplier = product_record.count * product_record.multiplier
 				product_hash.each do |market_id, values_hash|
-					#set associated market
-					associated_markets << market_id
-					#add profit from this product sales to array
-					market_record = Market.find(market_id)
-					this_sale = ((values_hash[:unit_price] * values_hash[:order_count] * unit_multiplier) * market_record.handling)
-					!this_sale.zero? ? sales << this_sale : ()
-					#add costs per unit
-					product_cost = product_record.cost.to_f
-					market_shipping = market_record.cost.to_f + market_record.block_cost.to_f
-					if !values_hash[:order_count].zero?
-						costs << (values_hash[:order_count] * product_cost)
-						#also take the market shipping cost and multiply it by the number of boxes ordered to add to costs
-						#if it's a brokerage shipping needs to be added manually as if a product.
-						if !market_record.brokerage
-							costs << (values_hash[:order_count] * market_shipping)
+					unless (values_hash[:order_count].zero? && values_hash[:order_count].zero?)
+						#reformulate the figures hash without empty figures
+						parsed_figures[type_number] = Hash.new unless parsed_figures[type_number].is_a?(Hash)
+						parsed_figures[type_number][product_id] = Hash.new unless parsed_figures[type_number][product_id].is_a?(Hash)
+						parsed_figures[type_number][product_id][market_id] = Hash.new unless parsed_figures[type_number][product_id][market_id].is_a?(Hash)
+						parsed_figures[type_number][product_id][market_id][:order_count] = values_hash[:order_count]
+						parsed_figures[type_number][product_id][market_id][:unit_price] = values_hash[:unit_price]
+						parsed_figures[type_number][product_id][market_id][:combined] = values_hash[:combined]
+						parsed_figures[type_number][product_id][market_id][:extra_cost] = values_hash[:extra_cost]
+						#set associated market
+						associated_markets << market_id
+						#add profit from this product sales to array
+						market_record = Market.find(market_id)
+						this_sale = ((values_hash[:unit_price] * values_hash[:order_count] * unit_multiplier) * market_record.handling)
+						!this_sale.zero? ? sales << this_sale : ()
+						#add costs per unit
+						product_cost = product_record.cost.to_f
+						market_shipping = market_record.cost.to_f + market_record.block_cost.to_f
+						if !values_hash[:order_count].zero?
+							costs << (values_hash[:order_count] * product_cost)
+							#also take the market shipping cost and multiply it by the number of boxes ordered to add to costs
+							#if it's a brokerage shipping needs to be added manually as if a product.
+							if !market_record.brokerage
+								costs << (values_hash[:order_count] * market_shipping)
+							end
 						end
-					end
-					if !values_hash[:extra_cost].zero?
-						extras += (values_hash[:order_count] * market_record.optional_cost)
-					end
-					if !values_hash[:combined].zero?
-						extras -= market_shipping
+						if !values_hash[:extra_cost].zero?
+							extras += (values_hash[:order_count] * market_record.optional_cost)
+						end
+						if !values_hash[:combined].zero?
+							extras -= market_shipping
+						end
 					end
 				end
 			end
 		end
+
 		#add the daily costs for each market (money transfer and fax/data fees)
 		associated_markets.each do |market_id|
 			market_record = Market.find(market_id)
@@ -198,6 +242,7 @@ class Profit < ApplicationRecord
 		end
 
 		#set the profit for saving
+		self.figures = parsed_figures
 		self.product_ids = associated_products
 		self.market_ids = associated_markets
 		total_expenses = 0
@@ -213,6 +258,66 @@ class Profit < ApplicationRecord
 		self.totals[:expenses] = total_expenses
 		self.totals[:extras] = extras
 		self.totals[:profits] = total_sales - total_expenses - extras
+	end
+
+	def volumes
+		product_volumes = Hash.new
+		market_volumes = Hash.new
+		total_sold = 0
+		total_volume = 0
+		magic_number = ENV['MAGIC_NUMBER'] ? (ENV['MAGIC_NUMBER']).to_f : 1
+		self.figures.each do |type_number, type_hash|
+			product_volumes[type_number] = Hash.new if product_volumes[type_number].nil?
+			product_volumes[type_number][:total] = 0 if product_volumes[type_number][:total].nil?
+			product_volumes[type_number][:count] = 0 if product_volumes[type_number][:count].nil?
+			type_hash.each do |product_id, product_hash|
+				product_volumes[type_number][product_id] = Hash.new if product_volumes[type_number][product_id].nil?
+				product_volumes[type_number][product_id][:total] = 0 if product_volumes[type_number][product_id][:total].nil?
+				product_volumes[type_number][product_id][:count] = 0 if product_volumes[type_number][product_id][:count].nil?
+				product = Product.find(product_id)
+				grams = product.grams * (type_number == 3 ? 1 : magic_number)
+				count = product.count
+				multiplier = product.multiplier
+				product_volumes[type_number][product_id][:name] = product.namae
+				product_volumes[type_number][product_id][:grams] = grams
+				product_volumes[type_number][product_id][:multiplier] = multiplier
+				product_hash.each do |market_id, values_hash|
+					products_sold = values_hash[:order_count] * count * multiplier
+					product_volumes[type_number][:count] += products_sold
+					total_sold += products_sold
+					subtotal = grams * products_sold
+					total_volume += subtotal
+					product_volumes[type_number][:total] += subtotal
+					product_volumes[type_number][product_id][:total] += subtotal
+					product_volumes[type_number][product_id][:count] += products_sold
+					market = Market.find(market_id)
+					product_volumes[type_number][product_id][market.mjsnumber] = Hash.new if product_volumes[type_number][product_id][market.mjsnumber].nil?
+					product_volumes[type_number][product_id][market.mjsnumber][:nick] = market.nick
+					product_volumes[type_number][product_id][market.mjsnumber][:color] = market.color
+					product_volumes[type_number][product_id][market.mjsnumber][:count] = products_sold
+					product_volumes[type_number][product_id][market.mjsnumber][:id] = market.id
+					product_volumes[type_number][product_id][market.mjsnumber][:total] = 0 if product_volumes[type_number][product_id][market.mjsnumber][:total].nil?
+					product_volumes[type_number][product_id][market.mjsnumber][:total] += subtotal
+					market_volumes[market.mjsnumber] = Hash.new if market_volumes[market.mjsnumber].nil?
+					market_volumes[market.mjsnumber][:nick] = market.nick
+					market_volumes[market.mjsnumber][:color] = market.color
+					market_volumes[market.mjsnumber][:id] = market.id
+					market_volumes[market.mjsnumber][:count] = 0 if market_volumes[market.mjsnumber][:count].nil?
+					market_volumes[market.mjsnumber][:count] += products_sold
+					market_volumes[market.mjsnumber][:total] = 0 if market_volumes[market.mjsnumber][:total].nil?
+					market_volumes[market.mjsnumber][:total] += subtotal
+					market_volumes[market.mjsnumber][product_id] = Hash.new if market_volumes[market.mjsnumber][product_id].nil?
+					market_volumes[market.mjsnumber][product_id][:name] = product.namae
+					market_volumes[market.mjsnumber][product_id][:grams] = grams
+					market_volumes[market.mjsnumber][product_id][:count] = products_sold
+					market_volumes[market.mjsnumber][product_id][:multiplier] = multiplier
+					market_volumes[market.mjsnumber][product_id][:total] = 0 if market_volumes[market.mjsnumber][product_id][:total].nil?
+					market_volumes[market.mjsnumber][product_id][:total] += subtotal
+				end
+			end
+		end
+		volumes = {product_volumes: product_volumes, market_volumes: market_volumes, total_sold: total_sold, total_volume: total_volume, magic_number: magic_number}
+		volumes
 	end
 
 	def fix_figures

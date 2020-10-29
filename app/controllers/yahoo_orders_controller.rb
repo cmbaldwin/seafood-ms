@@ -20,7 +20,7 @@ class YahooOrdersController < ApplicationController
 	def refresh
 		uri = 'https://www.funabiki.online/yahoo/'
 		@url = "https://auth.login.yahoo.co.jp/yconnect/v1/authorization?response_type=code&client_id=#{ENV['YAHOO_CLIENT_ID']}&redirect_uri=#{uri}&state=#{current_user.id}&scope=openid+profile+email"
-		client = YahooAPI.new
+		client = YahooAPI.new(current_user)
 		User.find(current_user.id).reload
 		if client.login_code?
 			client.acquire_auth_token unless client.authorized?

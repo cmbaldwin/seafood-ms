@@ -17,7 +17,7 @@ class YahooAPI
 	@proxy = URI(ENV["QUOTAGUARDSTATIC_URL"])
 	http_proxy @proxy.host, @proxy.port, @proxy.user, @proxy.password
 
-	def initialize
+	def initialize(current_user = User.find(1))
 		# We use the first user as a default because our first user is an admin
 		(defined? current_user) ? (@user = current_user) : (@user = User.find(1)) 
 		(@user.data[:yahoo] = Hash.new if @user.data[:yahoo] != nil) if @user

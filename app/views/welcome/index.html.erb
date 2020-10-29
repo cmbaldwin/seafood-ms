@@ -21,12 +21,18 @@
 			<div class="d-flex col-md-12 col-lg-6 mb-3 align-items-stretch">
 				<div class="card h-100">
 					<div class="card-header">
-						<h5 class="mb-0 float-left">IM/WC</h5>
+						<h5 class="mb-0 float-left">InfoMart / Funabiki.info</h5>
 						<h4><%= icon("calendar-check", class: "float-right") %></h4>
 					</div>
 					<div class="card-body m-0 p-0">
 						<div id="tsuhan_partial">
-							<%= render 'online_orders', locals: {tsuhan: @online_orders} %>
+							<%= render_async 'online_orders', locals: {tsuhan: @online_orders} do %>
+								<div class="d-flex justify-content-center my-3 py-3">
+									<div class="spinner-border spinner-border-sm" role="status">
+										<span class="sr-only">読み込み中...</span>
+									</div>
+								</div>
+							<% end %>
 						</div>
 					</div>
 				</div>
@@ -42,7 +48,13 @@
 					</div>
 					<div class="card-body m-0 p-0">
 						<div id="yahoo_partial">
-							<%= render 'yahoo_orders', locals: {yahoo_orders: @yahoo_orders, yahoo_date: @yahoo_date} %>
+							<%= render_async 'yahoo_orders_partial', locals: {yahoo_orders: @yahoo_orders, yahoo_date: @yahoo_date} do %>
+								<div class="d-flex justify-content-center my-3 py-3">
+									<div class="spinner-border spinner-border-sm" role="status">
+										<span class="sr-only">読み込み中...</span>
+									</div>
+								</div>
+							<% end %>
 						</div>
 					</div>
 				</div>
@@ -72,7 +84,13 @@
 					<h4><%= icon("card-heading", class: "float-right") %></h4>
 				</div>
 				<div class="card-body text-center">
-					<%= render 'daily_expiration_cards' %>
+					<%= render_async 'daily_expiration_cards' do %>
+						<div class="d-flex justify-content-center my-3 py-3">
+							<div class="spinner-border spinner-border-sm" role="status">
+								<span class="sr-only">読み込み中...</span>
+							</div>
+						</div>
+					<% end %>
 				</div>
 			</div>
 		</div>
@@ -145,7 +163,7 @@
 					<h4><%# icon("thermometer", class: "float-right") %></h4>
 				</div>
 				<div class="card-body scroll">
-					<%# render 'frozen_data', cached: true %>
+					<%# render 'frozen_data' %>
 				</div>
 			</div>
 		</div>

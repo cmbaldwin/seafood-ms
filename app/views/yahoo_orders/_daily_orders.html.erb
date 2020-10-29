@@ -2,7 +2,6 @@
 	<div class="clearfix mb-2">
 		<h2 class="float-left"><%= @search_date.day %>日</h2>
 		<%= link_to("出荷データ(CSV)", yahoo_csv_path(ship_date: @search_date), :method => :get, class: "btn btn-primary float-right ml-2", data: {turbolinks: false}) %>
-		<%= link_to("出荷データ(XLS)", yahoo_spreadsheet_path(ship_date: @search_date), :method => :get, class: "btn btn-primary float-right ml-2", data: {turbolinks: false}) %>
 		<%= link_to("発送表", yahoo_shipping_list_path(ship_date: @search_date), :method => :get, target: '_blank', class: "btn btn-primary float-right ml-2") %>
 	</div>
 	<table class="table table-sm">
@@ -67,8 +66,8 @@
 					<td class="pl-3">
 						<%= order.item_name %><%= order.print_quantity %>
 					</td>
-					<td>
-						<%= order.shipping_arrival_date.strftime("%m月%d日") %>
+					<td class="<%= order.ship_date.nil? ? ('text-warning') : ()  %>">
+						<%= order.ship_date.nil? ? ("Est. ").html_safe : () %><%= order.shipping_arrival_date.strftime("%m月%d日") %>
 					</td>
 					<td>
 						<%= order.arrival_time %>

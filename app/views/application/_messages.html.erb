@@ -1,0 +1,4 @@
+<% get_messages.each do |message| %>
+	<% @message = message %>
+	<%= render 'message', :object => @message %>
+<% end %>

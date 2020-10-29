@@ -67,14 +67,14 @@ class RManifest < ApplicationRecord
 			pdf.font_families.update(PrawnPDF.fonts)
 			
 			#set utf-8 japanese font
-			pdf.font "Takao", :style => :normal
+			pdf.font "Takao"
 			pdf.font_size 10
 			pdf.move_down 10
 			receipt_table = Array.new
 			receipt_table << [{content: '   領   収   証   ', colspan: 3, size: 17, align: :center}]
 			receipt_table << [{content: '<u>  ' + purchaser + '  ' + title + '  </u>' , colspan: 2, size: 14, align: :center}, {content: receipt_date, colspan: 1, size: 10, align: :center}]
 			receipt_table << [{content: '★', size: 10, align: :center}, {content: '<font size="18">￥ ' + ApplicationController.helpers.yenify(amount) + '</font>', size: 10, align: :center}, {content: '★', size: 10, align: :center}]
-			receipt_table << [{content: '但 <i>' + expense + '</i><br>上  記  正  に  領  収  い  た  し  ま  し  た', size: 10, align: :center, valign: :bottom, colspan: 3}]
+			receipt_table << [{content: '但 ' + expense + '<br>上  記  正  に  領  収  い  た  し  ま  し  た', size: 10, align: :center, valign: :bottom, colspan: 3}]
 			if oysis
 				receipt_table << [{content: '内　　訳', colspan: 1}, oysis_logo_cell, {content: oyster_sisters_info, colspan: 1, rowspan: 3, size: 8}]
 			else

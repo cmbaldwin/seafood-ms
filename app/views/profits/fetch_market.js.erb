@@ -1,1 +1,6 @@
 $("#partial").html("<%= escape_javascript(render partial: 'edit_partial_form', locals: { market: @market, profit: @profit } ) %>");
+$('#market-pills .nav-link.active').removeClass('active');
+$("#navBtn<%= escape_javascript(@market.id.to_s) %>").addClass('active');
+// animate active pill/market
+$('#market-pills a.active').addClass('animate__animated animate__pulse animate__infinite') // newly activated tab
+$('#market-pills a').not('.active').removeClass('animate__animated animate__pulse animate__infinite') // other pills

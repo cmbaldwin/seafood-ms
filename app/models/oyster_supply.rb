@@ -14,6 +14,18 @@ class OysterSupply < ApplicationRecord
 	order_query :oyster_supply_query,
 		[:supply_date] # Sort :supply_date in :desc order
 
+	def date
+		DateTime.strptime(self.supply_date, "%Y年%m月%d日")
+	end
+
+	def okayama_keys
+		[:hinase, :tamatsu, :iri, :mushiage]
+	end
+
+	def okayama_key_str(key)
+		{:hinase => "日生", :tamatsu => "玉津", :iri => "伊里", :mushiage => "虫明"}
+	end
+
 	def weekday_japanese(num)
 		#d.strftime("%w") to Japanese
 		weekdays = { 0 => "日", 1 => "月", 2 => "火", 3 => "水", 4 => "木", 5 => "金", 6 => "土" }
@@ -135,40 +147,98 @@ class OysterSupply < ApplicationRecord
 	def do_setup
 		set_variables
 		self[:oysters] = Hash.new
-		if self[:oysters]["tax"].nil? then self[:oysters]["tax"] = "1.08" end
+		self[:oysters]["tax"] = "1.08" if self[:oysters]["tax"].nil?
 		@receiving_times.each do |time|
-			if self[:oysters][time].nil? then self[:oysters][time] = Hash.new end
+			self[:oysters][time] = Hash.new if self[:oysters][time].nil?
 			@types.each do |type|
-				if self[:oysters][time][type].nil? then self[:oysters][time][type] = Hash.new end
+				self[:oysters][time][type] = Hash.new if self[:oysters][time][type].nil? 
 				@supplier_numbers.each do |number|
-					if self[:oysters][time][type][number].nil? then self[:oysters][time][type][number] = Hash.new end
+					self[:oysters][time][type][number] = Hash.new if self[:oysters][time][type][number].nil?
 					if (type == "large") || (type == "small")
 						6.times do |i|
-							if self[:oysters][time][type][number][i.to_s] == nil then self[:oysters][time][type][number][i.to_s] = 0 end
+							self[:oysters][time][type][number][i.to_s] = 0 if self[:oysters][time][type][number][i.to_s] == nil
 						end
 					else
-						if self[:oysters][time][type][number]["0"] == nil then self[:oysters][time][type][number]["0"] = 0 end
+						self[:oysters][time][type][number]["0"] = 0 if self[:oysters][time][type][number]["0"] == nil 
 					end
-					if self[:oysters][time][type][number]["subtotal"].nil? then self[:oysters][time][type][number]["subtotal"] = 0 end
+					self[:oysters][time][type][number]["subtotal"] = 0 if self[:oysters][time][type][number]["subtotal"].nil?
 
-					if self[:oysters][type].nil? then self[:oysters][type] = Hash.new end
-					if self[:oysters][type][number].nil? then self[:oysters][type][number] = Hash.new end
-					if self[:oysters][type][number]["volume"].nil? then self[:oysters][type][number]["volume"] = 0 end
-					if self[:oysters][type][number]["price"].nil? then self[:oysters][type][number]["price"] = 0 end
-					if self[:oysters][type][number]["invoice"].nil? then self[:oysters][type][number]["invoice"] = 0 end
+					self[:oysters][type] = Hash.new if self[:oysters][type].nil? 
+					self[:oysters][type][number] = Hash.new if self[:oysters][type][number].nil? 
+					self[:oysters][type][number]["volume"] = 0 if self[:oysters][type][number]["volume"].nil? 
+					self[:oysters][type][number]["price"] = 0 if self[:oysters][type][number]["price"].nil? 
+					self[:oysters][type][number]["invoice"] = 0 if self[:oysters][type][number]["invoice"].nil? 
 				end
 			end
+		end		
+		okayama_setup
+	end
+
+	def okayama_setup
+		self[:oysters]["tax"] = "1.08" if self[:oysters]["tax"].nil?
+		# Hinase by size, single daily price
+		self[:oysters]["okayama"] = Hash.new if self[:oysters]["okayama"].nil?
+		self[:oysters]["okayama"]["hinase"] = Hash.new if self[:oysters]["okayama"]["hinase"].nil?
+		self[:oysters]["okayama"]["hinase"]["大"] = 0 if self[:oysters]["okayama"]["hinase"]["大"].nil?
+		self[:oysters]["okayama"]["hinase"]["中"] = 0 if self[:oysters]["okayama"]["hinase"]["中"].nil?
+		self[:oysters]["okayama"]["hinase"]["小"] = 0 if self[:oysters]["okayama"]["hinase"]["小"].nil?
+		self[:oysters]["okayama"]["hinase"]["subtotal"] = 0 if self[:oysters]["okayama"]["hinase"]["subtotal"].nil?
+		self[:oysters]["okayama"]["hinase"]["price"] = 0 if self[:oysters]["okayama"]["hinase"]["price"].nil?
+		self[:oysters]["okayama"]["hinase"]["invoice"] = 0 if self[:oysters]["okayama"]["hinase"]["invoice"].nil?
+		# Iri by supplier number, single daily price
+		self[:oysters]["okayama"]["iri"] = Hash.new if self[:oysters]["okayama"]["iri"].nil?
+		self[:oysters]["okayama"]["iri"]["1"] = 0 if self[:oysters]["okayama"]["iri"]["1"].nil?
+		self[:oysters]["okayama"]["iri"]["2"] = 0 if self[:oysters]["okayama"]["iri"]["2"].nil?
+		self[:oysters]["okayama"]["iri"]["5"] = 0 if self[:oysters]["okayama"]["iri"]["5"].nil?
+		self[:oysters]["okayama"]["iri"]["15"] = 0 if self[:oysters]["okayama"]["iri"]["15"].nil?
+		self[:oysters]["okayama"]["iri"]["38"] = 0 if self[:oysters]["okayama"]["iri"]["38"].nil?
+		self[:oysters]["okayama"]["iri"]["subtotal"] = 0 if self[:oysters]["okayama"]["iri"]["subtotal"].nil?
+		self[:oysters]["okayama"]["iri"]["price"] = 0 if self[:oysters]["okayama"]["iri"]["price"].nil?
+		self[:oysters]["okayama"]["iri"]["invoice"] = 0 if self[:oysters]["okayama"]["iri"]["invoice"].nil?
+		# Tamatsu by supplier number, single daily price
+		self[:oysters]["okayama"]["tamatsu"] = Hash.new if self[:oysters]["okayama"]["tamatsu"].nil?
+		self[:oysters]["okayama"]["tamatsu"]["1"] = 0 if self[:oysters]["okayama"]["tamatsu"]["1"].nil?
+		self[:oysters]["okayama"]["tamatsu"]["2"] = 0 if self[:oysters]["okayama"]["tamatsu"]["2"].nil?
+		self[:oysters]["okayama"]["tamatsu"]["4"] = 0 if self[:oysters]["okayama"]["tamatsu"]["4"].nil?
+		self[:oysters]["okayama"]["tamatsu"]["5"] = 0 if self[:oysters]["okayama"]["tamatsu"]["5"].nil?
+		self[:oysters]["okayama"]["tamatsu"]["subtotal"] = 0 if self[:oysters]["okayama"]["tamatsu"]["subtotal"].nil?
+		self[:oysters]["okayama"]["tamatsu"]["price"] = 0 if self[:oysters]["okayama"]["tamatsu"]["price"].nil?
+		self[:oysters]["okayama"]["tamatsu"]["invoice"] = 0 if self[:oysters]["okayama"]["tamatsu"]["invoice"].nil?
+		# Mushiage by array of won bid price and volume (non-specified supplier), many daily prices (up to 8)
+		self[:oysters]["okayama"]["mushiage"] = Hash.new if self[:oysters]["okayama"]["mushiage"].nil?
+		8.times do |t|
+			self[:oysters]["okayama"]["mushiage"][t.to_s] = Hash.new if self[:oysters]["okayama"]["mushiage"][t.to_s].nil?
+			self[:oysters]["okayama"]["mushiage"][t.to_s]["volume"] = 0 if self[:oysters]["okayama"]["mushiage"][t.to_s]["volume"].nil?
+			self[:oysters]["okayama"]["mushiage"][t.to_s]["price"] = 0 if self[:oysters]["okayama"]["mushiage"][t.to_s]["price"].nil?
 		end
+		self[:oysters]["okayama"]["mushiage"]["subtotal"] = 0 if self[:oysters]["okayama"]["mushiage"]["subtotal"].nil?
+		self[:oysters]["okayama"]["mushiage"]["invoice"] = 0 if self[:oysters]["okayama"]["mushiage"]["invoice"].nil?
+	end
+
+	def parsed_date
+		DateTime.strptime(self.supply_date, "%Y年%m月%d日")
 	end
 
 	def year_to_date_range
 		#Season starts over (fiscal year) in October
-		if Date.today.month.to_i >= 10
-			start_year = Date.today.year
-			end_year = (Date.today + 1.year).year
-		else Date.today.month.to_i <= 10
-			start_year = (Date.today - 1.year).year
-			end_year = Date.today.year
+		if self.supply_date
+			parsed_date = self.parsed_date
+			self_month = parsed_date.month
+			if self_month >= 10
+				start_year = parsed_date.year
+				end_year = (parsed_date + 1.year).year
+			else
+				start_year = (parsed_date - 1.year).year
+				end_year = parsed_date.year
+			end
+		else
+			if Date.today.month.to_i >= 10
+				start_year = Date.today.year
+				end_year = (Date.today + 1.year).year
+			else
+				start_year = (Date.today - 1.year).year
+				end_year = Date.today.year
+			end
 		end
 		season_start_date = Date.new(start_year, 10, 1)
 		season_end_date = Date.new(end_year, 9, 30)

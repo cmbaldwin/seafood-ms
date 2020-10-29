@@ -304,37 +304,37 @@
 <% end %>	
 
 <% if current_user.admin? %>
-<hr>
-<h3>InfoMart</h3>
-	<div class="card">
-		<% @manifest.infomart_orders.each do |k, v| %>
-		<div class="card-header">
-			<a class="btn btn-small btn-secondary" data-toggle="collapse" href="#infomart<%= k.upcase %>hash" role="button" aria-expanded="false" aria-controls="infomart<%= k.upcase %>hash">
-				<%= k.upcase %>  ハッシュ データ:
-			</a>
-		</div>
-		<div class="collapse" id="infomart<%= k.upcase %>hash">
-			<div class="card-body">
-				<%= ap(v, plain: true, indent: 1).html_safe %>
+	<hr>
+	<h3>InfoMart</h3>
+		<div class="card">
+			<% @manifest.infomart_orders.each do |k, v| %>
+			<div class="card-header">
+				<a class="btn btn-small btn-secondary" data-toggle="collapse" href="#infomart<%= k.upcase %>hash" role="button" aria-expanded="false" aria-controls="infomart<%= k.upcase %>hash">
+					<%= k.upcase %>  ハッシュ データ:
+				</a>
 			</div>
-		</div>
-		<% end %>
-	</div>
-<h3>Online Shop</h3>
-	<div class="card">
-		<% @manifest.online_shop_orders.each do |k, v| %>
-		<div class="card-header">
-			<a class="btn btn-small btn-secondary" data-toggle="collapse" href="#online_shop<%= k.upcase %>hash" role="button" aria-expanded="false" aria-controls="online_shop<%= k.upcase %>hash">
-				<%= k.upcase %> ハッシュ データ:
-			</a>
-		</div>
-		<div class="collapse" id="online_shop<%= k.upcase %>hash">
-			<div class="card-body">
-				<%= ap(v, plain: true, indent: 1).html_safe %>
+			<div class="collapse" id="infomart<%= k.upcase %>hash">
+				<div class="card-body">
+					<%= ap(v, plain: true, indent: 1).html_safe %>
+				</div>
 			</div>
+			<% end %>
 		</div>
-		<% end %>
-	</div>
+	<h3>Online Shop</h3>
+		<div class="card">
+			<% @manifest.online_shop_orders.each do |k, v| %>
+			<div class="card-header">
+				<a class="btn btn-small btn-secondary" data-toggle="collapse" href="#online_shop<%= k.upcase %>hash" role="button" aria-expanded="false" aria-controls="online_shop<%= k.upcase %>hash">
+					<%= k.upcase %> ハッシュ データ:
+				</a>
+			</div>
+			<div class="collapse" id="online_shop<%= k.upcase %>hash">
+				<div class="card-body">
+					<%= ap(v, plain: true, indent: 1).html_safe %>
+				</div>
+			</div>
+			<% end %>
+		</div>
 <% end %>
 
 </div>

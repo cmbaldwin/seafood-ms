@@ -17,11 +17,13 @@
 /* Current out of use, uncomment to use */
 // @import '@fullcalendar/bootstrap/main';
 // @import '@fullcalendar/timegrid/main';
-//@import '@fullcalendar/list/main';
+// @import '@fullcalendar/list/main';
 //There's no bootstrap datetimepicker with bootstrap icons yet, so FA with the beta tempusdominus for now
 @import 'tempusdominus-bootstrap-4/src/sass/_tempusdominus-bootstrap-4';
 @import '@fortawesome/fontawesome-free/scss/fontawesome';
 @import 'bootstrap-datepicker/dist/css/bootstrap-datepicker.standalone.min';
+//https://animate.style/
+@import 'animate.css/animate.min.css';
 
 /* Individual page imports */
 @import "stylesheets/articles";
@@ -307,8 +309,8 @@ input[type=number]::-webkit-outer-spin-button {
 }
 
 #front_sidebar, #sidebar_spacer {
-	min-width: 225px;
-	max-width: 225px;
+	min-width: 18vw;
+	width: 18vw;
 	margin-right: 0px;
 	transition: all 0.3s;
 	transform: translateX(0%);
@@ -325,7 +327,7 @@ input[type=number]::-webkit-outer-spin-button {
 }
 
 #front_sidebar.active, #sidebar_spacer.active {
-	margin-right: -225px;
+	margin-right: -18vw;
 	transform: translateX(100%);
 	-webkit-transform: translateX(100%);
 	animation: slide-out 0.3s forwards;

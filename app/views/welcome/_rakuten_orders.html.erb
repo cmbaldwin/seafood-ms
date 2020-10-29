@@ -106,26 +106,26 @@
 				<div class="btn-group w-100" role="group">
 					<div class="btn col-3 btn-light d-block mb-1 strong">
 						<h6>むき身</h6>
-						<span class="badge badge-<%= counts[:mizukiri] > 0 ? 'info' : 'light' %> w-100">
+						<span class="badge badge-<%= counts[:mizukiri] > 0 ? 'primary' : 'light' %> p-2">
 							<%= if counts[:mizukiri] > 0 then ('<b>').html_safe + counts[:mizukiri].to_s + ('<small>パック</small></b>').html_safe else ('　') end %>
 						</span>
 					</div>
 					<div class="btn col-3 btn-light d-block mb-1 strong">
 						<h6>セル／カード</h6>
-						<span class="badge badge-<%= counts[:shells] > 0 ? 'info' : 'light' %> w-100">
+						<span class="badge badge-<%= counts[:shells] > 0 ? 'primary' : 'light' %> p-2">
 							<%= if counts[:shells] > 0 then ('<b>').html_safe + counts[:shells].to_s + ('<small>個</small></b> ・ ').html_safe else ('　') end %> 
 							<%= (('<b>').html_safe + work_totals[:shell_cards] + ('<small>枚</small></b>').html_safe) if (work_totals[:shell_cards] > 0) %>
 						</span>
 					</div>
 					<div class="btn col-3 btn-light d-block mb-1 strong">
 						<h6>デカプリ</h6>
-						<span class="badge badge-<%= counts[:dekapuri] > 0 ? 'info' : 'light' %> w-100">
+						<span class="badge badge-<%= counts[:dekapuri] > 0 ? 'primary' : 'light' %> p-2">
 							<%= if counts[:dekapuri] > 0 then ('<b>').html_safe + counts[:dekapuri].to_s + ('<small>パック</small></b>').html_safe else ('　') end %>
 						</span>
 					</div>
 					<div class="btn col-3 btn-light d-block mb-1 strong">
 						<h6>冷凍セル</h6>
-						<span class="badge badge-<%= counts[:reitou_shells] > 0 ? 'info' : 'light' %> w-100">
+						<span class="badge badge-<%= counts[:reitou_shells] > 0 ? 'primary' : 'light' %> p-2">
 							<%= if counts[:reitou_shells] > 0 then ('<b>').html_safe + counts[:reitou_shells].to_s + ('<small>個</small></b>').html_safe else ('　') end %> 
 						</span>
 					</div>
@@ -133,25 +133,25 @@
 				<div class="btn-group w-100" role="group">
 					<div class="btn col-3 btn-light d-block mb-1 strong">
 						<h6>穴子</h6>
-						<span class="badge badge-<%= counts[:tako] > 0 ? 'info' : 'light' %> w-100">
-							<%= if counts[:tako] > 0 then ('<b>').html_safe + counts[:tako].to_s + ('<small>件</small></b>').html_safe else ('　') end %>
-						</span>
-					</div>
-					<div class="btn col-3 btn-light d-block mb-1 strong">
-						<h6>タコ</h6>
-						<span class="badge badge-<%= counts[:anago] > 0 ? 'info' : 'light' %> w-100">
+						<span class="badge badge-<%= counts[:anago] > 0 ? 'primary' : 'light' %> p-2">
 							<%= if counts[:anago] > 0 then ('<b>').html_safe + counts[:anago].to_s + ('<small>件</small></b>').html_safe else ('　') end %>
 						</span>
 					</div>
 					<div class="btn col-3 btn-light d-block mb-1 strong">
+						<h6>タコ</h6>
+						<span class="badge badge-<%= counts[:tako] > 0 ? 'primary' : 'light' %> p-2">
+							<%= if counts[:tako] > 0 then ('<b>').html_safe + counts[:tako].to_s + ('<small>件</small></b>').html_safe else ('　') end %>
+						</span>
+					</div>
+					<div class="btn col-3 btn-light d-block mb-1 strong">
 						<h6>干しエビ</h6>
-						<span class="badge badge-<%= counts[:ebi] > 0 ? 'info' : 'light' %> w-100">
+						<span class="badge badge-<%= counts[:ebi] > 0 ? 'primary' : 'light' %> p-2">
 							<%= if counts[:ebi] > 0 then ('<b>').html_safe + counts[:ebi].to_s + ('<small>件</small></b>').html_safe else ('　') end %>
 						</span>
 					</div>
 					<div class="btn col-3 btn-light d-block mb-1 strong">
 						<h6>ナイフ</h6>
-						<span class="badge badge-<%= work_totals[:knife_count] > 0 ? 'info' : 'light' %> w-100">
+						<span class="badge badge-<%= work_totals[:knife_count] > 0 ? 'primary' : 'light' %> p-2">
 							<%= if work_totals[:knife_count] > 0 then ('<b>').html_safe + work_totals[:knife_count].to_s + ('<small>個</small></b>').html_safe else ('　') end %>
 						</span>
 					</div>

@@ -1,6 +1,7 @@
+<% unless @profit.subtotals[:extra_costs].empty? %>
 			<% type_rank_hash = @profit.get_type_rankings %>
 			<% @profit.figures.each do |type_id, product_hash| %>
-			<div class="col-12" data-spy="scroll" data-target="#sidebar" data-offset="0">
+			<div class="col-12">
 				<div id="type_<%= type_id %>" class="card mb-2">
 					<div class="card-header">
 						<h4>
@@ -205,3 +206,4 @@
 				</div>
 			</div>
 			<% end %>
+<% end %>

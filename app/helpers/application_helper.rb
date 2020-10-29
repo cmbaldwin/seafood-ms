@@ -1,5 +1,52 @@
 module ApplicationHelper
 
+	def get_messages
+		Message.where(user: current_user.id).order(:created_at).reverse.last(10)
+	end
+
+	def print_model(model)
+		{'oyster_supply' => '牡蠣原料', 'profit' => '計算表', 'oyster_invoice' => '牡蠣原料仕切り'}[model]
+	end
+
+	def print_message_data(message)
+		def invoice_location(location)
+			location == "sakoshi" ? ('坂越') : ('相生')
+		end
+		def invoice_format(eformat)
+			eformat == "all" ? ('生産者まとめ') : ('各生産者')
+		end
+		data = message.data
+		if message.model == 'oyster_invoice'
+			if message.state
+				unless data[:invoice_id] == 0 
+					begin 
+						invoice = OysterInvoice.find(data[:invoice_id])
+						start_nengapi = Date.parse(invoice.start_date).strftime("%Y年%m月%d日")
+						end_nengapi = Date.parse(invoice.end_date).strftime("%Y年%m月%d日")
+						render html: (link_to("#{start_nengapi}~#{end_nengapi}仕切り", invoice, class: 'card-link small')).html_safe
+					rescue ActiveRecord::RecordNotFound
+						render html: ("<p class='small text-warning'>エラー:　仕切り##{data[:invoice_id]}をみつけられませんでした。</p>").html_safe
+					end
+				else
+					render html: (link_to("#{data[:invoice_preview][:start_date]}~の#{data[:invoice_preview][:end_date]}
+						(#{invoice_location(data[:invoice_preview][:location])}-#{invoice_format(data[:invoice_preview][:export_format])})
+						仕切りプレビュー", message.document.url, class: 'card-link small', target: '_blank')).html_safe
+				end
+			end
+		elsif message.model == 'oyster_supply'
+			if message.state
+				begin 
+					oyster_supply = OysterSupply.find(data[:oyster_supply_id])
+					render html: (link_to("#{oyster_supply.supply_date}原料受入れチェック表", message.document.url, class: 'card-link small', target: '_blank')).html_safe
+				rescue
+					render html: ("<p class='small text-warning'>エラー:　原料受入れ##{data[:oyster_supply_id]}をみつけられませんでした。</p>").html_safe
+				end
+			end
+		else
+			ap data.to_s
+		end
+	end
+
 	def title(page_title)
 		content_for(:title) { page_title }
 	end
@@ -36,6 +83,10 @@ module ApplicationHelper
 		svg = doc.at_css 'svg'
 		if options[:class].present?
 			svg['class'] += " " + options[:class]
+		end
+		if options[:tooltip].present?
+			#data-toggle="tooltip" data-placement="top" title="Tooltip on top"
+			svg['data-toggle'] += "tooltip"
 		end
 		doc.to_html.html_safe
 	end

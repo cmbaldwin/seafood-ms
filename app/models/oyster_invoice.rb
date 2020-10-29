@@ -1,6 +1,7 @@
 class OysterInvoice < ApplicationRecord
 	has_many :oyster_invoices_supply
 	has_many :oyster_supplies, through: :oyster_invoices_supply, validate: false
+	after_destroy :destroy_message
 
 	mount_uploader :aioi_all_pdf, OysterInvoiceUploader
 	mount_uploader :aioi_seperated_pdf, OysterInvoiceUploader
@@ -20,6 +21,11 @@ class OysterInvoice < ApplicationRecord
 	attr_accessor :end_date_str
 	attr_accessor :export_format
 	attr_accessor :emails
+
+	def destroy_message
+		msg_id = self.data[:message]
+		msg_id ? (Message.find(msg_id).destroy) : ()
+	end
 
 	def supply_uniqueness_and_completion
 		used_supply_ids = OysterInvoice.all.map {|i| i.oyster_supplies.ids }.flatten

@@ -2,12 +2,16 @@ module YahooOrdersHelper
 
 	def status_color(order)
 		s = order.order_status(false)
-		if s == 1 || s ==  2 || s ==  3
-			"info"
-		elsif s == 5
-			"success"
+		unless order.ship_date == nil
+			if s == 1 || s ==  2 || s ==  3
+				"info"
+			elsif s == 5
+				"success"
+			else
+				"danger"
+			end
 		else
-			"danger"
+			"warning"
 		end
 	end
 

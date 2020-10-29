@@ -3,14 +3,23 @@ Rails.application.routes.draw do
 	
 	get 'welcome/index'
 	root 'welcome#index'
+
 	get '/insert_receipt_data' => 'welcome#insert_receipt_data', as: 'insert_receipt_data'
 	get '/load_rakuten_order/:id' => 'welcome#load_rakuten_order', as: 'load_rakuten_order'
 	get '/load_online_order/:id' => 'welcome#load_online_order', as: 'load_online_order'
 	get '/load_yahoo_orders/:date' => 'welcome#load_yahoo_orders', as: 'load_yahoo_orders'
 	get '/update_rakuten_order/:id' => 'welcome#update_rakuten_order', as: 'update_rakuten_order'
+	get '/profit_figures_chart' => 'welcome#profit_figures_chart', as: 'profit_figures_chart'
+	get :daily_expiration_cards, controller: :welcome
+	get :online_orders, controller: :welcome
+	get :yahoo_orders_partial, controller: :welcome
 
 	get 'analysis' => 'analysis#index', as: 'analysis'
 	get '/fetch_analysis' => 'analysis#fetch_analysis', as: 'fetch_analysis'
+
+	resources :messages
+	get '/print_message' => 'messages#print_message', as: 'print_message'
+	get 'oyster_supplies/print_message' => 'messages#print_message', as: 'print_supply_message'
 
 	resources :frozen_oysters
 	get '/insert_frozen_data' => 'frozen_oysters#insert_frozen_data', as: 'insert_frozen_data'
@@ -71,12 +80,14 @@ Rails.application.routes.draw do
 			get 'new_tabs'
 		end
 	end
+	get 'profits/new/:sales_date' => 'profits#new_by_date', as: 'new_by_date'
 	get '/profits/:id/tab_edit' => 'profits#tab_edit', as: 'tab_edit'
 	get '/fetch_market' => 'profits#fetch_market', as: 'fetch_market'
+	get '/profits/:id/next_market' => 'profits#next_market', as: 'next_market'
 	patch 'profits/:id/autosave', as: :autosave_profit, to: 'profits#autosave'
 	patch 'profits/:id/autosave_tab', as: :autosave_tab, to: 'profits#autosave_tab'
-	post '/initital_save' => 'profits#initital_save', as: 'initital_save'
 	patch 'profits/:id/tab_keisan' => 'profits#tab_keisan', as: 'tab_keisan'
+	get 'profits/:id/fetch_volumes' => 'profits#fetch_volumes', as: 'fetch_volumes'
 
 	get 'products/associations' => 'products#associations', as: 'associations'
 	post 'products/set_associations' => 'products#set_associations', as: 'set_associations'

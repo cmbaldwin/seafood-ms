@@ -1,10 +1,8 @@
 json.array!(@oyster_supply) do |supply|
 	if @place == "supply_index"
-		json.title '大　' + supply.large_shucked_total.to_s + '
-		小　' + supply.small_shucked_total.to_s + '
-		殻付き　' + supply.shells_total.to_s
+		json.title "大　#{supply.large_shucked_total.to_s}\n小　#{supply.small_shucked_total.to_s}\n殻付き　#{supply.shells_total.to_s}"
 	elsif @place == "supply_show"
-		json.title ''
+		json.title ""
 	else
 	end
 	json.start DateTime.strptime(supply.supply_date, '%Y年%m月%d日')
@@ -28,6 +26,6 @@ if @place == "supply_index"
 		json.backgroundColor 'rgba(0, 84, 0, 1)'
 		json.textColor 'white'
 		json.borderColor 'rgba(255, 255, 255, 0)'
-		json.url '#'
+		json.url oyster_invoice_url(invoice)
 	end
 end

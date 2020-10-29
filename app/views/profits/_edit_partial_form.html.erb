@@ -42,8 +42,13 @@
 					selectableWarns.eq(0).focus();
 				}
 			} else {
-				var index = partialInputs.index(this) + 1;
-				partialInputs.eq(index).focus();
+				$.ajax({
+					type: "GET",
+					url: 'next_market',
+					success: function() {
+						//console.log('success')
+					}
+				});
 			}
 		}
 	});
@@ -79,9 +84,17 @@
     	});
 	});
 
-
 	// re-init tooltips
-	$('[data-toggle="tooltip"]').tooltip()
+	// this is broken with webpacker
+	//$('[data-toggle="tooltip"]').tooltip()
+ 
+	// Focus on first text box that needs filling
+	$(document).ready(function(){
+		var toFocus = $('input[type=text].floatTextBox.bg-warning').first()
+		if (toFocus) {
+			toFocus.focus()
+		};
+	});
 
 </script>
 

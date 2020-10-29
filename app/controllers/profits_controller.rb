@@ -44,9 +44,16 @@ class ProfitsController < ApplicationController
 		@types_hash = {"1"=>"トレイ", "2"=>"チューブ", "3"=>"水切り", "4"=>"殻付き", "5"=>"冷凍", "6"=>"単品"}
 	end
 
+	def calendar_profits
+		start_date = calendar_params["start"] ? (Date.strptime(calendar_params["start"].to_s, '%Y-%m-%d').strftime("%Y年%m月%d日")) : ((Date.today.at_beginning_of_month - 14.days).strftime(""))
+		end_date = calendar_params["end"] ? (Date.strptime(calendar_params["end"].to_s, '%Y-%m-%d').strftime("%Y年%m月%d日")) : ((Date.today.end_of_month + 14.days).strftime(""))
+		@calendar_profits = Profit.where(:sales_date => start_date..end_date)
+	end
+
 	# GET /profits
 	# GET /profits.json
 	def index
+		calendar_profits
 		days = Time.days_in_month(Time.now.month, Time.now.year)
 		@profits = Profit.order(sales_date: :desc, ampm: :asc).paginate(:page => params[:page], :per_page => days)
 		@profits.each do |profit|
@@ -55,6 +62,7 @@ class ProfitsController < ApplicationController
 				profit.save
 			end
 		end
+		@profit = @profits.first
 	end
 
 	# GET /profits/1
@@ -65,12 +73,22 @@ class ProfitsController < ApplicationController
 	# GET /profits/new
 	def new
 		@market = Market.order('mjsnumber').all.first
-		@profit = Profit.new
+		@profit = Profit.new(profit_params)
 	end
 
 	def new_tabs
 		@market = Market.order('mjsnumber').all.first
 		@profit = Profit.new
+	end
+
+	def next_market
+		@profit = Profit.find(params[:id])
+		unfinished = @profit.check_completion
+		unfinished.delete(0)
+		@market = Market.find_by(mjsnumber: unfinished.sort.first[0].to_s)
+		respond_to do |format|
+			format.js { render 'fetch_market', layout: false }
+		end
 	end
 
 	def fetch_market
@@ -84,9 +102,31 @@ class ProfitsController < ApplicationController
 		end
 	end
 
+	def fetch_volumes
+		@profit = Profit.find(params[:id])
+		respond_to do |format|
+			format.js { render 'fetch_volumes', layout: false }
+		end
+	end
+
 	# GET /profits/1/edit
 	def edit
 		@market = Market.order('mjsnumber').all.first
+	end
+
+	def new_by_date
+		@profit = Profit.new(sales_date: params[:sales_date])
+		@profit.figures = Hash.new
+		@profit.figures[0] = 0
+		@profit.totals = Hash.new
+		respond_to do |format|
+			if @profit.save
+				format.html { redirect_to edit_profit_path(@profit), notice: '計算表を作成されました。'}
+			else
+				format.html { render :new_tabs, notice: @profit.errors }
+				format.json { render json: @profit.errors, status: :unprocessable_entity }
+			end
+		end
 	end
 
 	# POST /profits
@@ -158,4 +198,9 @@ class ProfitsController < ApplicationController
 		def profit_params
 			params.require(:profit).permit(:sales_date, :totals, :debug_figures, :split, :ampm, { :figures => {} }, { :subtotals => {} }, :notes, market_ids: [], product_ids: [])
 		end
+
+		def calendar_params
+			params.permit(:start, :end, :_, :format)
+		end
+
 end

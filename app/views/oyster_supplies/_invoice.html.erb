@@ -48,34 +48,34 @@
 						</tbody>
 					</table>
 				<% end %>
-				<%= form_for @invoice do |f| %>
+				<%= form_for(@invoice, remote: (@invoice.id ? false : true)) do |f| %>
 					<p class="card-text">
-							<%= hidden_field :oyster_invoice, :start_date, :value => @invoice.start_date %>
-							<%= hidden_field :oyster_invoice, :end_date, :value => @invoice.end_date %>
-							<%= f.label :sakoshi_emails, "坂越へのメール", class: 'pr-0' %>
-							<%= f.text_field :sakoshi_emails, class: 'form-control form-control-sm' %>
-							<%= f.label :aioi_emails, "相生へのメール", class: 'pr-0' %>
-							<%= f.text_field :aioi_emails, class: 'form-control form-control-sm' %>
+						<%= hidden_field :oyster_invoice, :start_date, :value => @invoice.start_date %>
+						<%= hidden_field :oyster_invoice, :end_date, :value => @invoice.end_date %>
+						<%= f.label :sakoshi_emails, "坂越へのメール", class: 'pr-0' %>
+						<%= f.text_field :sakoshi_emails, class: 'form-control form-control-sm' %>
+						<%= f.label :aioi_emails, "相生へのメール", class: 'pr-0' %>
+						<%= f.text_field :aioi_emails, class: 'form-control form-control-sm' %>
+						<hr>
+						<%= f.label :send_at, "送信予約日時", class: 'pr-0' %>
+						<div class="input-group date datetimepicker" id="<%= @invoice.id ? @invoice.id : 'new' %>" data-target-input="nearest">
+							<%= f.text_field :send_at, 'data-target' => "##{@invoice.id ? @invoice.id : 'new'}", class: 'datetimepicker-input form-control', value: (@invoice.send_at.nil? ? (DateTime.now.monday + 1.week + 9.hours) : (@invoice.send_at)) %>
 							<hr>
-							<%= f.label :send_at, "送信予約日時", class: 'pr-0' %>
-							<div class="input-group date datetimepicker" id="<%= @invoice.id ? @invoice.id : 'new' %>" data-target-input="nearest">
-								<%= f.text_field :send_at, 'data-target' => "##{@invoice.id ? @invoice.id : 'new'}", class: 'datetimepicker-input form-control', value: (@invoice.send_at.nil? ? (DateTime.now.monday + 1.week + 9.hours) : (@invoice.send_at)) %>
-								<hr>
-								<div class="input-group-append" data-target="#<%= @invoice.id ? @invoice.id : 'new' %>" data-toggle="datetimepicker">
-									<div class="input-group-text"><%= icon('calendar-event') %></div>
-								</div>
+							<div class="input-group-append" data-target="#<%= @invoice.id ? @invoice.id : 'new' %>" data-toggle="datetimepicker">
+								<div class="input-group-text"><%= icon('calendar-event') %></div>
 							</div>
-							<hr>
-							<span class="float-left">
-								<%= f.label :completed, '送信済？', class: 'pr-0' %>
-								<%= f.check_box :completed, class: 'ml-1' %>
-							</span>
+						</div>
+						<hr>
+						<span class="float-left">
+							<%= f.label :completed, '送信済？', class: 'pr-0' %>
+							<%= f.check_box :completed, class: 'ml-1' %>
+						</span>
 					</p>
 					<% if @invoice.id %>
 						<%= link_to (invoice.data[:processing] ? '<i class="fas fa-spinner"></i>' : '削除').html_safe, @invoice, method: :delete, data: { confirm: '削除?' }, class: 'btn btn-sm btn-danger float-right m-2 ' + (invoice.data[:processing] ? 'disabled' : '') %>
 						<%= f.submit '更新', class: 'btn btn-success btn-sm float-right m-2' %>
 					<% else %>
-						<%= f.submit '作成・送信予約', class: 'btn btn-success float-right m-2' %>
+						<%= f.submit '作成・送信予約', id: '#new_invoice_submit', class: 'btn btn-success float-right m-2'%>
 					<% end %>
 				<% end %>
 			</div>

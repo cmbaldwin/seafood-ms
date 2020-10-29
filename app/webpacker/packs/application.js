@@ -32,14 +32,43 @@ require("fullcalendar/fullcalendar.js")
 
 //Setup Bootstrap
 import 'bootstrap'
-document.addEventListener("turbolinks:load", () => {
-	$('[data-toggle="tooltip"]').tooltip()
-	$('[data-toggle="popover"]').popover()
-})
 require('bootstrap-datepicker')
-//Temporary usage of beta-ish tempusdominus /w FA
+//Tempusdominus
 import "@fortawesome/fontawesome-free/js/all";
 require('tempusdominus-bootstrap-4')
+
+// Bootstrap Tooltips, Popovers, and Datepickers
+$(document).on('turbolinks:load', function () {
+	$('[data-toggle="tooltip"]').tooltip()
+	$('[data-toggle="popover"]').popover({container: 'body'})
+	$.fn.datetimepicker.Constructor.Default = $.extend({}, $.fn.datetimepicker.Constructor.Default, {
+		icons: {
+			time: 'far fa-clock',
+			date: 'far fa-calendar',
+			up: 'fas fa-arrow-up',
+			down: 'fas fa-arrow-down',
+			previous: 'fas fa-chevron-left',
+			next: 'fas fa-chevron-right',
+			today: 'far fa-calendar-check-o',
+			clear: 'far fa-trash',
+			close: 'far fa-times'
+		},
+		allowInputToggle: true,
+		showClose: true
+	 });
+	$('.datetimepicker').datetimepicker({});
+	var datepicker = require('bootstrap-datepicker')
+	$('.datepicker').datepicker({
+		maxViewMode: 2,
+		format: "yyyy年mm月dd日",
+		todayBtn: "linked",
+		language: "ja",
+		daysOfWeekHighlighted: "0,3",
+		todayHighlight: true,
+		orientation: "bottom auto",
+		toggleActive: true
+		});
+});
 
 //Chartkick init
 require("chartkick/chartkick.js")
