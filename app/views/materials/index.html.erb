@@ -40,23 +40,21 @@
 
 		<hr/>
 
-		<div id="freewall" class="materials_index">
+		<div class="materials_index card-columns">
 			<% materials_by_type.each do |type_id, type_hash| %>
-				<div class="brick">
-					<div class="card">
-						<div class="card-header">
-							<strong><%= type_hash[:type_name] %></strong>
-						</div>
-						<div class="card-body small">
-							<ul class="material_list">
-							<% type_hash[:material_ids].each do |material_id| %>
-								<li>
-								<% current_record = get_material_by_id(material_id) %>
-							<%= link_to ((current_record.namae.to_s + ' | <strong>' + (current_record.cost * current_record.divisor).round(1).to_s) + is_per_product(current_record) + '</strong> ' + icon("box-arrow-in-up-right")).html_safe, insert_material_data_path(id: material_id), 'data-toggle' => 'tooltip', 'data-html' => 'true', :title => ( current_record.cost.to_s + ' * ' + current_record.divisor.to_s), remote: true, class: 'product_relation_selection_link', 'data-toggle' => 'modal', 'data-target' => '#materialModal' %><br />
-								</li>
-							<% end %>	
-							</ul>
-						</div>
+				<div class="card">
+					<div class="card-header">
+						<strong><%= type_hash[:type_name] %></strong>
+					</div>
+					<div class="card-body small">
+						<ul class="material_list">
+						<% type_hash[:material_ids].each do |material_id| %>
+							<li>
+							<% current_record = get_material_by_id(material_id) %>
+						<%= link_to ((current_record.namae.to_s + ' | <strong>' + (current_record.cost * current_record.divisor).round(1).to_s) + is_per_product(current_record) + '</strong> ' + icon("box-arrow-in-up-right")).html_safe, insert_material_data_path(id: material_id), 'data-toggle' => 'tooltip', 'data-html' => 'true', :title => ( current_record.cost.to_s + ' * ' + current_record.divisor.to_s), remote: true, class: 'product_relation_selection_link', 'data-toggle' => 'modal', 'data-target' => '#materialModal' %><br />
+							</li>
+						<% end %>	
+						</ul>
 					</div>
 				</div>
 			<% end %>

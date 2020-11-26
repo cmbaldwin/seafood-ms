@@ -1,6 +1,7 @@
 Rails.application.routes.draw do
   # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
 	
+	# WELCOME/INDEX
 	get 'welcome/index'
 	root 'welcome#index'
 
@@ -9,24 +10,36 @@ Rails.application.routes.draw do
 	get '/load_online_order/:id' => 'welcome#load_online_order', as: 'load_online_order'
 	get '/load_yahoo_orders/:date' => 'welcome#load_yahoo_orders', as: 'load_yahoo_orders'
 	get '/update_rakuten_order/:id' => 'welcome#update_rakuten_order', as: 'update_rakuten_order'
+		# charts
+	get '/fetch_chart/:chart_params' => 'application#fetch_chart', as: 'fetch_chart'
 	get '/profit_figures_chart' => 'welcome#profit_figures_chart', as: 'profit_figures_chart'
+	get '/kilo_sales_estimate_chart' => 'welcome#kilo_sales_estimate_chart', as: 'kilo_sales_estimate_chart'
+	get '/farmer_kilo_costs_chart' => 'welcome#farmer_kilo_costs_chart', as: 'farmer_kilo_costs_chart'
+	get '/daily_volumes_chart' => 'welcome#daily_volumes_chart', as: 'daily_volumes_chart'
+		# render_async
 	get :daily_expiration_cards, controller: :welcome
 	get :online_orders, controller: :welcome
 	get :yahoo_orders_partial, controller: :welcome
 
+	# ANALYSIS
 	get 'analysis' => 'analysis#index', as: 'analysis'
 	get '/fetch_analysis' => 'analysis#fetch_analysis', as: 'fetch_analysis'
 
+	# MESSAGES
 	resources :messages
 	get '/print_message' => 'messages#print_message', as: 'print_message'
 	get 'oyster_supplies/print_message' => 'messages#print_message', as: 'print_supply_message'
+	post '/messages/clear_expired_messages' => 'messages#clear_expired_messages', as: 'clear_expired_messages'
 
+	# FROZEN OYSTERS
 	resources :frozen_oysters
 	get '/insert_frozen_data' => 'frozen_oysters#insert_frozen_data', as: 'insert_frozen_data'
 
+	# EXPIRATION CARDS
 	resources :expiration_cards
 	get 'expiration_cards/new/:product_name/:ingredient_source/:consumption_restrictions/:manufactuered_date/:expiration_date/:made_on/:shomiorhi', as: 'new', to: 'expiration_cards#new'
 
+	# OYSTER SUPPLIES
 	resources :oyster_supplies
 	get '/oyster_supplies/payment_pdf/:format/:start_date/:end_date/:location(.:format)', as: :payment_pdf, to: 'oyster_supplies#payment_pdf'
 	get '/oyster_supplies/new_by/:supply_date(.:format)', as: :new_by, to: 'oyster_supplies#new_by'
@@ -34,11 +47,18 @@ Rails.application.routes.draw do
 	get '/oyster_supplies/fetch_supplies/:start/:end(.:format)', as: :fetch_supplies, to: 'oyster_supplies#fetch_supplies'
 	get '/oyster_supplies/fetch_invoice/:id(.:format)', as: 'fetch_invoice', to: 'oyster_supplies#fetch_invoice'
 	get '/oyster_supplies/new_invoice/:start_date/:end_date(.:format)', as: 'new_invoice', to: 'oyster_supplies#new_invoice'
+
+	# OYSTER INVOICES
+	resources :oyster_invoices
+	get '/oyster_invoices/search/:id(.:format)', as: :oyster_invoice_search, to: 'oyster_invoices#index'
+	get '/oyster_invoices/create/:start_date/:end_date(.:format)', as: :create, to: 'oyster_invoices#create'
 	
+	# SUPPLIERS
 	resources :suppliers
 	devise_for :users, controllers: { sessions: 'users/sessions', registrations: 'users/registrations' }
 	get '/login', to: 'sessions#new'
 	
+	# USERS
 	match '/users/approveUser',   to: 'users#approveUser',   via: 'get'
 	match '/users/unapproveUser',   to: 'users#unapproveUser',   via: 'get'
 	match 'users/:id' => 'users#destroy', :via => :delete, :as => :admin_destroy_user
@@ -50,28 +70,15 @@ Rails.application.routes.draw do
 		end
 	end
 
+	# NOSHIS
 	resources :noshis do
 		collection do
 			delete 'destroy_multiple'
 		end
 	end
 	get 'noshis/new/:ntype/:namae', as: :new_noshi_with_params, to: 'noshis#new'
-
-	resources :categories do
-		collection do
-			delete 'destroy_multiple'
-		end
-	end
 	
-	resources :articles do
-		resources :comments
-		resources :categories
-		collection do
-			delete 'destroy_multiple'
-		end
-	end
-	get '/fetch_articles' => 'articles#from_category', as: 'fetch_articles'
-
+	# PROFITS
 	resources :profits do
 		resources :markets
 		resources :products
@@ -100,22 +107,26 @@ Rails.application.routes.draw do
 	get '/fetch_products_by_type' => 'products#fetch_products_by_type', as: 'fetch_products_by_type'
 	get '/insert_product_data' => 'products#insert_product_data', as: 'insert_product_data'
 	
+	# MARKETS
 	resources :markets do
 		resources :products
 	end
 
+	# MATERIALS
 	resources :materials do
 		resources :products
 	end
 	post 'materials/:id(.:format)' => 'materials#update'
 	get '/insert_material_data' => 'materials#insert_material_data', as: 'insert_material_data'
 
+	# RAKUTEN DATA
 	resources :r_manifests
 	get '/r_manifests/:id/pdf', as: :r_manifest_pdf, to: 'r_manifests#pdf'
 	get '/r_manifests/:id/new_pdf', as: :r_manifest_new_pdf, to: 'r_manifests#new_pdf'
 	get '/r_manifests/:id/seperated_pdf', as: :r_manifest_seperated_pdf, to: 'r_manifests#seperated_pdf'
 	get '/r_manifests/:id/reciept/:order_id/:purchaser/:expense_name/:sales_date(.:format)', as: 'reciept', to: 'r_manifests#reciept'
 	
+	# ONLINE SHOP AND INFOMART
 	get '/manifests/csv' => 'manifests#csv', as: :csv
 	get '/manifests/csv_result/(.:format)' => 'manifests#csv_result', as: :csv_result
 	post '/manifests/csv_upload/(.:format)', as: :csv_upload, to: 'manifests#csv_upload'
@@ -126,10 +137,7 @@ Rails.application.routes.draw do
 	resources :restaurants
 	get '/insert_restaurant_data' => 'restaurants#insert_restaurant_data', as: 'insert_restaurant_data'
 
-	resources :oyster_invoices
-	get '/oyster_invoices/search/:id(.:format)', as: :oyster_invoice_search, to: 'oyster_invoices#index'
-	get '/oyster_invoices/create/:start_date/:end_date(.:format)', as: :create, to: 'oyster_invoices#create'
-
+	# YAHOO ORDERS
   	resources :yahoo_orders, only: [:index, :show]
   	get 'yahoo', as: :yahoo_response_auth_code, to: 'yahoo_orders#yahoo_response_auth_code'
   	get '/fetch_yahoo_list/:date', as: :fetch_yahoo_list, to: 'yahoo_orders#fetch_yahoo_list'
@@ -137,5 +145,21 @@ Rails.application.routes.draw do
   	get 'yahoo_spreadsheet/:ship_date', as: :yahoo_spreadsheet, to: 'yahoo_orders#yahoo_spreadsheet', defaults: { format: :xls }
   	get 'yahoo_csv/:ship_date', as: :yahoo_csv, to: 'yahoo_orders#yahoo_csv', defaults: { format: :csv }
   	get 'yahoo_shipping_list/:ship_date', as: :yahoo_shipping_list, to: 'yahoo_orders#yahoo_shipping_list'
+
+	# ARTICLES
+	resources :articles do
+		resources :comments
+		resources :categories
+		collection do
+			delete 'destroy_multiple'
+		end
+	end
+	get '/fetch_articles' => 'articles#from_category', as: 'fetch_articles'
+
+	resources :categories do
+		collection do
+			delete 'destroy_multiple'
+		end
+	end
 
 end

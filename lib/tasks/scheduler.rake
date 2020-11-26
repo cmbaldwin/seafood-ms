@@ -581,6 +581,11 @@ namespace :pull_order_data do
 
 	end
 
+	desc "Process Rakuten Shinki"
+	task :process_rakuten_shinki => :environment do
+		RakutenAPI.new.set_details(RakutenAPI.new.get_details_by_ids(RakutenAPI.new.get_unprocessed_shinki))
+	end
+
 end
 
 desc "Pull all recent order data for today and tomorrow"

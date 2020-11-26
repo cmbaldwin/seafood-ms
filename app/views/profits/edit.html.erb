@@ -46,20 +46,20 @@
 	<div class="row align-middle m-3">
 		<div class="col clearfix">
 			<div class="btn-group float-right" role="group" aria-label="Basic">
-				<span class="btn btn-info" data-toggle="tooltip" data-placement="bottom" title="牡蠣の量予算" data-trigger="hover">
+				<span class="btn btn-info" data-tippy-content="牡蠣の量予算">
 					<%= link_to icon('bar-chart-line'), fetch_volumes_path(@profit.id), class: "text-primary", "data-toggle" => "modal", "data-target" => "#volumesModal", remote: true %>
 				</span>
-				<span class="btn btn-info" data-toggle="tooltip" data-placement="bottom" title="計算表を追加" data-trigger="hover">
+				<span class="btn btn-info" data-tippy-content="計算表を追加">
 					<button id="newProfitModalButton" type="button" class="btn btn-info m-0 p-0" data-toggle="modal" data-target="#newProfitModal">
 							<%= icon('plus-circle-fill', class: 'text-success') %>
 					</button>
 				</span>
-				<span class="btn btn-info" data-toggle="tooltip" data-placement="bottom" title="計算表をカレンダーで調べる" data-trigger="hover">
+				<span class="btn btn-info" data-tippy-content="計算表をカレンダーで調べる">
 					<button id="ProfitModalButton" type="button" class="btn btn-info m-0 p-0" data-toggle="modal" data-target="#ProfitModal">
 							<%= icon('calendar3', class: 'text-white') %>
 					</button>
 				</span>
-				<span class="btn btn-info" data-toggle="tooltip" data-placement="bottom" title="計算表トップへ">
+				<span class="btn btn-info" data-tippy-content="計算表トップへ">
 					<%= link_to icon('arrow-90deg-up', class: 'text-white'), profits_path %>
 				</span>
 			</div>

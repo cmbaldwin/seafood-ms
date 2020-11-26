@@ -204,13 +204,20 @@ $( document ).on('turbolinks:load', function() {
 		var hinase_subtotal_input = $('#hinase_subtotal');
 		var hinase_price = parseFloat($('#hinase_price').val());
 		var hinase_invoice_input = $('#hinase_invoice');
+		var iri_tanka_type = $('#iri_tanka_type');
 		var iri_volumes = $('.iri_volume');
 		var iri_subtotal_input = $('#iri_subtotal');
-		var iri_price = parseFloat($('#iri_price').val());
+		var iri_avg_price = $('#iri_avg_price')
+		var iri_prices = $('.iri_price');
 		var iri_invoice_input = $('#iri_invoice');
+		var iri_tanka_type = $('#iri_tanka_type');
+		var tamatsu_tanka_type = $('#tamatsu_tanka_type');
 		var tamatsu_volumes = $('.tamatsu_volume');
+		var tamatsu_small_volumes = $('.tamatsu_small_volume')
+		var tamatsu_small_price = $('#tamatsu_small_price')
 		var tamatsu_subtotal_input = $('#tamatsu_subtotal');
-		var tamatsu_price = parseFloat($('#tamatsu_price').val());
+		var tamatsu_prices = $('.tamatsu_price');
+		var tamatsu_avg_price = $('#tamatsu_avg_price')
 		var tamatsu_invoice_input = $('#tamatsu_invoice');
 		var mushiage_volumes = $('.mushiage_volume');
 		var mushiage_subtotal_input = $('#mushiage_subtotal');
@@ -218,34 +225,117 @@ $( document ).on('turbolinks:load', function() {
 		var mushiage_invoice_input = $('#mushiage_invoice');
 
 		// Subtotal/Price Calculations
+		// HINASE
 		hinase_subtotal = 0
 		hinase_volumes.each( function() {
 			hinase_subtotal += parseFloat($(this).val())
 		});
-		hinase_subtotal_input.val(hinase_subtotal)
+		hinase_subtotal_input.val(Math.round(hinase_subtotal))
 		hinase_invoice_input.val(Math.round(parseFloat(hinase_price * hinase_subtotal * tax)))
 
-		iri_subtotal = 0
+		// IRI
+		iri_tanka_type.on('click', function() {
+			iri_prices.each( function() { 
+				if ($(this).attr('disabled') === 'disabled') {
+					$(this).removeAttr('disabled')
+					iri_avg_price.attr('disabled', 'disabled')	
+				} else {
+					$(this).attr('disabled', 'disabled')	
+					iri_avg_price.removeAttr('disabled')
+				}
+			});
+		})
+		if (iri_prices.first().attr('disabled') === 'disabled') {
+			iri_prices.each( function() {
+				$(this).val(iri_avg_price.val())
+			})
+		}
+		var iri_volume_subtotal = 0
+		var iri_invoice_total = 0
 		iri_volumes.each( function() {
-			iri_subtotal += parseFloat($(this).val())
+			this_vol = parseFloat($(this).val())
+			this_id = $(this).attr('id').match(/\d+/)[0]
+			this_price = parseFloat($('#iri_' + this_id + '_price').val())
+			iri_volume_subtotal += this_vol
+			iri_invoice_total += (this_vol * this_price)
+			$('#iri_' + this_id + '_invoice_subtotal').html(Math.round(this_vol * this_price * tax))
 		});
-		iri_subtotal_input.val(iri_subtotal)
-		iri_invoice_input.val(Math.round(parseFloat(iri_price * iri_subtotal * tax)))
+		if (iri_avg_price.attr('disabled') === 'disabled') {
+			if ((iri_invoice_total != 0) && (iri_volume_subtotal != 0)) {
+				iri_avg_price.val((iri_invoice_total / iri_volume_subtotal).toFixed(2))
+			} else {
+				iri_avg_price.val(0)
+			}
+			iri_prices.each( function() { 
+				$(this).removeAttr('disabled')
+				iri_avg_price.attr('disabled', 'disabled')	
+			})
+		}
+		iri_subtotal_input.val(iri_volume_subtotal);
+		iri_invoice_input.val(Math.round(iri_volume_subtotal * iri_avg_price.val() * tax))
 
-		tamatsu_subtotal = 0
+		// TAMATSU
+		tamatsu_tanka_type.on('click', function() {
+			tamatsu_prices.each( function() { 
+				if ($(this).attr('disabled') === 'disabled') {
+					$(this).removeAttr('disabled')
+					tamatsu_avg_price.attr('disabled', 'disabled')	
+				} else {
+					$(this).attr('disabled', 'disabled')	
+					tamatsu_avg_price.removeAttr('disabled')
+				}
+			});
+		})
+		if (tamatsu_prices.first().attr('disabled') === 'disabled') {
+			tamatsu_prices.each( function() {
+				$(this).val(tamatsu_avg_price.val())
+			})
+		}
+		var tamatsu_volume_subtotal = 0
+		var tamatsu_invoice_total = 0
 		tamatsu_volumes.each( function() {
-			tamatsu_subtotal += parseFloat($(this).val())
+			this_vol = parseFloat($(this).val())
+			this_id = $(this).attr('id').match(/\d+/)[0]
+			this_price = parseFloat($('#tamatsu_' + this_id + '_price').val())
+			tamatsu_volume_subtotal += this_vol
+			tamatsu_invoice_total += (this_vol * this_price)
+			$('#tamatsu_' + this_id + '_invoice_subtotal').html(Math.round(this_vol * this_price * tax))
 		});
-		tamatsu_subtotal_input.val(tamatsu_subtotal)
-		tamatsu_invoice_input.val(Math.round(parseFloat(tamatsu_price * tamatsu_subtotal * tax)))
+		if (tamatsu_avg_price.attr('disabled') === 'disabled') {
+			if ((tamatsu_invoice_total != 0) && (tamatsu_volume_subtotal != 0)) {
+				tamatsu_avg_price.val((tamatsu_invoice_total / tamatsu_volume_subtotal).toFixed(2))
+			} else {
+				tamatsu_avg_price.val(0)
+			}
+			tamatsu_prices.each( function() { 
+				$(this).removeAttr('disabled')
+				tamatsu_avg_price.attr('disabled', 'disabled')	
+			})
+		}
+		tamatsu_subtotal_input.val(tamatsu_volume_subtotal);
+		tamatsu_small_volume_subtotal = 0
+		tamatsu_small_volumes.each( function() {
+			tamatsu_small_volume_subtotal += parseFloat($(this).val())
+		})
+		tamatsu_large_invoice_subtotal = tamatsu_volume_subtotal * parseFloat(tamatsu_avg_price.val())
+		tamatsu_small_invoice_subtotal = tamatsu_small_volume_subtotal * parseFloat(tamatsu_small_price.val())
+		tamatsu_invoice_input.val(Math.round((tamatsu_large_invoice_subtotal + tamatsu_small_invoice_subtotal) * tax))
 
-		var mushiage_subtotal = 0
+		// MUSHIAGE
+		var mushiage_invoice_subtotal = 0
+		var mushiage_volume_subtotal = 0
 		Array.from({ length: 7 }, (x, i) => {
 			volume = parseFloat($("#mushiage_" + i + "_volume").val());
 			price = parseFloat($("#mushiage_" + i + "_price").val());
-			mushiage_subtotal += (volume * price)
+			this_subtotal = (volume * price)
+			mushiage_invoice_subtotal += this_subtotal
+			mushiage_volume_subtotal += volume
+			$(`#mushiage_${i}_invoice_subtotal`).html(this_subtotal)
 		});
-		mushiage_invoice_input.val(Math.round(parseFloat(mushiage_subtotal * tax)))
+		$('#mushiage_volume_subtotal').val(mushiage_volume_subtotal)
+		$('#mushiage_per_kilo_price').html(Math.round(mushiage_invoice_subtotal / mushiage_volume_subtotal))
+		$('#mushiage_pre_tax_subtotal').html(Math.round(mushiage_invoice_subtotal))
+		mushiage_invoice_input.val(Math.round(parseFloat(mushiage_invoice_subtotal * tax)))
 
 	};
 

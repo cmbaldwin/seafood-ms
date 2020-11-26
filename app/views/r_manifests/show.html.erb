@@ -108,14 +108,12 @@
 <div class="container">
 	<div class="row align-middle d-print-none">
 		<div class="col">
-<% if current_user.admin? or current_user.vip? %>
 			<div class="btn-group float-right d-print-none" role="group" aria-label="Basic">
-				<%= link_to icon("arrow-left-circle"), @r_manifest.r_manifest_query.previous, class: 'btn btn-info' %>
-				<%= link_to icon("arrow-right-circle"), @r_manifest.r_manifest_query.next, class: 'btn btn-info' %>
-				<%= link_to icon("arrow-counterclockwise", class: "text-success"), edit_r_manifest_path(@r_manifest), class: 'btn btn-info' %>
-				<%= link_to icon('arrow-90deg-up'), r_manifests_path, class: 'btn btn-info' %>
+				<%= link_to icon("arrow-left-circle"), @r_manifest.r_manifest_query.previous, class: 'btn btn-info', "data-tippy-content" => "<center>#{@r_manifest.r_manifest_query.previous.sales_date}の<br>データを見る</center>" %>
+				<%= link_to icon("arrow-right-circle"), @r_manifest.r_manifest_query.next, class: 'btn btn-info', "data-tippy-content" => "<center>#{@r_manifest.r_manifest_query.next.sales_date}の<br>データを見る</center>" %>
+				<%= link_to icon("arrow-counterclockwise", class: "text-success"), edit_r_manifest_path(@r_manifest), class: 'btn btn-info', "data-tippy-content" => "<center>#{@r_manifest.sales_date}の<br>データを取込む</center>" %>
+				<%= link_to icon('arrow-90deg-up'), r_manifests_path, class: 'btn btn-info', "data-tippy-content" => "楽天出荷表トップへ" %>
 			</div>
-<% end %>
 		<hr/>
 
 			<h1 class="d-print-none"><%= @r_manifest.sales_date %></h1>
@@ -123,12 +121,12 @@
 	</div>
 	<div class="btn-group float-right d-print-none" role="group" aria-label="Basic">
 		<% if @rakuten_shinki %>
-			<button type="button" class="btn btn-info mb-2" data-toggle="modal" data-target="#rakuten_shinki_modal">
+			<button type="button" class="btn btn-info mb-2" data-toggle="modal" data-target="#rakuten_shinki_modal" data-tippy-content="楽天新規注文">
 				<%= icon("asterisk") %><span class="badge badge-warning ml-1"><%= @rakuten_shinki.length %></span>
 			</button>
 		<% end %>
-		<%= link_to icon("file-earmark-arrow-down"), r_manifest_new_pdf_path(@r_manifest), method: :get, class: 'btn btn-info mb-2', target: "_blank"  %>
-		<%= link_to icon("file-earmark-ruled"), r_manifest_seperated_pdf_path(@r_manifest), method: :get, class: 'btn btn-info mb-2', target: "_blank" %>
+		<%= link_to icon("file-earmark-arrow-down"), r_manifest_new_pdf_path(@r_manifest), method: :get, class: 'btn btn-info mb-2', target: "_blank", "data-tippy-content" => "<center>#{@r_manifest.sales_date}の<br>出荷表PDFを開く</center>"  %>
+		<%= link_to icon("file-earmark-ruled"), r_manifest_seperated_pdf_path(@r_manifest), method: :get, class: 'btn btn-info mb-2', target: "_blank", "data-tippy-content" => "<center>#{@r_manifest.sales_date}の<br>商品分別した<br>出荷表PDFを開く</center>" %>
 	</div>
 
 	<hr/><br>
@@ -144,11 +142,12 @@
 						<%= if counts[:mizukiri] > 0 then ('<b>').html_safe + counts[:mizukiri].to_s + ('<small>パック</small></b>').html_safe else ('　') end %>
 					</span>
 				</div>
-				<div class="btn col btn-light d-block mb-1 strong">
-					<h6>セル／カード</h6>
+				<div class="btn col btn-light d-block mb-1 strong"  data-tippy-content="大セル・小セル・セルカード">
+					<h6>セル</h6>
 					<span class="badge badge-<%= counts[:shells] > 0 ? 'info' : 'light' %> w-100">
-						<%= if counts[:shells] > 0 then ('<b>').html_safe + counts[:shells].to_s + ('<small>個</small></b> ・ ').html_safe else ('　') end %> 
-						<%= (('<b>').html_safe + work_totals[:shell_cards] + ('<small>枚</small></b>').html_safe) if (work_totals[:shell_cards] > 0) %>
+						<%=  ("<b>#{counts[:shells].to_s}<small>個</small></b> ・ ").html_safe if (counts[:shells] > 0) %> 
+						<%=  ("<b>#{counts[:barakara].to_s}<small>㎏</small></b> ・ ").html_safe if (counts[:barakara] > 0) %> 
+						<%= (('<b>').html_safe + work_totals[:shell_cards].to_s + ('<small>枚</small></b>').html_safe) if (work_totals[:shell_cards] > 0) %>
 					</span>
 				</div>
 				<div class="btn col btn-light d-block mb-1 strong">
@@ -160,7 +159,7 @@
 				<div class="btn col btn-light d-block mb-1 strong">
 					<h6>冷凍セル</h6>
 					<span class="badge badge-<%= counts[:reitou_shells] > 0 ? 'info' : 'light' %> w-100">
-						<%= if counts[:reitou_shells] > 0 then ('<b>').html_safe + counts[:reitou_shells].to_s + ('<small>個</small></b> ・ ').html_safe else ('　') end %> 
+						<%= if counts[:reitou_shells] > 0 then ('<b>').html_safe + counts[:reitou_shells].to_s + ('<small>個</small></b>').html_safe else ('　') end %> 
 					</span>
 				</div>
 				<div class="btn col btn-light d-block mb-1 strong">
@@ -184,14 +183,14 @@
 				<div class="btn col btn-light d-block mb-1 strong">
 					<h6>ナイフ</h6>
 					<span class="badge badge-<%= work_totals[:knife_count] > 0 ? 'info' : 'light' %> w-100">
-						<%= if work_totals[:knife_count] > 0 then ('<b>').html_safe + counts[:ebi].to_s + ('<small>個</small></b>').html_safe else ('　') end %>
+						<%= if work_totals[:knife_count] > 0 then ('<b>').html_safe + work_totals[:knife_count].to_s + ('<small>個</small></b>').html_safe else ('　') end %>
 					</span>
 				</div>
 			</div>
 		</div>
 		<% if rakuten_raw_oysters?(work_totals) %>
 			<div class="row mb-3">
-				<div class="col-xl-2 col-lg-12 text-center border">
+				<div class="col-xl-5 col-lg-12 text-center border">
 					<div class="col-12">
 						<b>むき身牡蠣500g</b>
 					</div>
@@ -224,7 +223,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="col-xl-5 col-lg-12 text-center border">
+				<div class="col-xl-7 col-lg-12 text-center border">
 					<div class="col-12">
 						<b>むき身牡蠣500g + 殻付き</b>
 					</div>
@@ -264,6 +263,39 @@
 					</div>
 				</div>
 				<div class="col-xl-5 col-lg-12 text-center border">
+					<div class="col-12">
+						<b>小 殻付き</b>
+					</div>
+					<div class="row border-bottom small font-weight-light font-italic">
+						<div class="col-3">
+							1㎏
+						</div>
+						<div class="col-3">
+							2㎏
+						</div>
+						<div class="col-3">
+							3㎏
+						</div>
+						<div class="col-3">
+							4㎏
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-3">
+							<%= work_totals[:product_counts][:barakara][1] %>
+						</div>
+						<div class="col-3">
+							<%= work_totals[:product_counts][:barakara][2] %>
+						</div>
+						<div class="col-3">
+							<%= work_totals[:product_counts][:barakara][3] %>
+						</div>
+						<div class="col-3">
+							<%= work_totals[:product_counts][:barakara][4] %>
+						</div>
+					</div>
+				</div>
+				<div class="col-xl-7 col-lg-12 text-center border">
 					<div class="col-12">
 						<b>殻付き牡蠣</b>
 					</div>
@@ -336,7 +368,7 @@
 						<% @r_manifest.new_orders_hash.reverse.each_with_index do |order, i| %>
 							<% recipients = order_shipping_numbers_link(order) %>
 							<% alert = recipients_alert(recipients) %>
-							<tr class="<%= alert ? ('alert-danger') : () %>" data-toggle="<%= alert ? ('tooltip') : () %>" data-placement="<%= alert ? ('left') : () %>" title="<%= alert ? ('伝票番号がない') : () %>">
+							<% if alert %><tr class="alert-danger" data-tippy-placement="left" data-tippy-content="伝票番号がない"><% else %><tr><% end %>
 								<th scope="row">
 									<%= i + 1 %>
 									<div class="float-right">
@@ -378,6 +410,17 @@
 											<% if count > 1 %>
 												<%= '× ' + count.to_s %>
 											<% end %>
+											<%= ("<br>").html_safe if !order[:barakara][:amount].nil? %>
+										<% end %>
+									<% end %>
+									<% if !order[:barakara][:amount].nil? %>
+										<% order[:barakara][:amount].each_with_index do |amount, i| %>
+											<% if i > 0 %> <br> <% end %>
+											<%= amount %>㎏
+											<% count = order[:barakara][:count].shift %>
+											<% if count > 1 %>
+												<%= '× ' + count.to_s %>
+											<% end %>
 										<% end %>
 									<% end %>
 								</td>
@@ -394,7 +437,7 @@
 									<% end %>
 								</td>
 								<td scope="col">
-									<% if !order[:tako][:amount].nil? %>
+									<% unless order[:tako].nil? || order[:tako][:amount].nil? %>
 										<% order[:tako][:amount].each_with_index do |amount, i| %>
 											<% if i > 0 %> <br> <% end %>
 											ボイルたこ (~1㎏) × <%= amount %>

@@ -2,7 +2,7 @@ class ProfitsController < ApplicationController
 	before_action :set_profit, only: [:show, :edit, :update, :destroy, :autosave_tab]
 	before_action :check_status
 	before_action :check_subtotals, only: [:show]
-	before_action :set_types_markets_products, only: [:show, :new, :edit]
+	before_action :set_types_markets_products, only: [:new, :edit]
 
 	def check_status
 		return unless !current_user.admin?
@@ -57,8 +57,9 @@ class ProfitsController < ApplicationController
 		days = Time.days_in_month(Time.now.month, Time.now.year)
 		@profits = Profit.order(sales_date: :desc, ampm: :asc).paginate(:page => params[:page], :per_page => days)
 		@profits.each do |profit|
-			if profit.subtotals.nil?
+			if profit.subtotals.nil? || profit.volumes.nil?
 				profit.subtotals = profit.get_subtotals
+				profit.volumes = profit.calculate_volumes unless profit.figures[0].zero?
 				profit.save
 			end
 		end
@@ -68,6 +69,14 @@ class ProfitsController < ApplicationController
 	# GET /profits/1
 	# GET /profits/1.json
 	def show
+		@profit.products.select(:id, :grams, :count, :multiplier, :namae, :cost, :average_price).as_json.each do |product_array|
+			@product_data = Hash.new if @product_data.nil?
+			@product_data[product_array["id"]] = product_array
+		end
+		@profit.markets.select(:id, :namae, :nick, :color, :handling, :brokerage, :cost, :block_cost).as_json.each.each do |market_array|
+			@market_data = Hash.new if @market_data.nil?
+			@market_data[market_array["id"]] = market_array
+		end
 	end
 
 	# GET /profits/new
@@ -152,6 +161,7 @@ class ProfitsController < ApplicationController
 		@profit.calculate_tab
 		@profit.sanbyaku_extra_cost_fix
 		@profit.subtotals = @profit.get_subtotals
+		@profit.volumes = @profit.calculate_volumes
 
 		respond_to do |format|
 			if @profit.save

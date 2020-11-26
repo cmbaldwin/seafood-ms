@@ -10,6 +10,13 @@ class MessagesController < ApplicationController
 		end
 	end
 
+	def clear_expired_messages
+		Message.where(user: message_params[:user]).each do |message|
+			exp = message.data[:expiration]
+			message.destroy if exp < DateTime.now if exp
+		end
+	end
+
 	# DELETE /message/1
 	def destroy
         @message.destroy

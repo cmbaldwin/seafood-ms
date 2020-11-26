@@ -21,8 +21,9 @@ class WCAPI
 		if @endpoint == 'orders'
 			shinki = Array.new
 			@response.each do |order|
-				if ((order["meta_data"].map { |h| h["value"] if (h["key"] == "ywot_tracking_code") }.compact.first == ""))
-					shinki << order
+				tracking_number = order["meta_data"].map { |h| h["value"] if (h["key"] == "ywot_tracking_code") }.compact.first
+				if (tracking_number == "") || (tracking_number.nil?)
+					shinki << order unless order["status"] == "cancelled"
 				end
 			end
 			shinki

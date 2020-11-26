@@ -1,6 +1,9 @@
 json.array!(@oyster_supply) do |supply|
 	if @place == "supply_index"
-		json.title "大　#{supply.large_shucked_total.to_s}\n小　#{supply.small_shucked_total.to_s}\n殻付き　#{supply.shells_total.to_s}"
+		json.title "兵庫 #{supply.totals[:sakoshi_total].round(0).to_s}#{current_user.admin? ? "  @#{supply.totals[:sakoshi_avg_kilo].round(0).to_s}" : ""}
+		岡山 #{supply.totals[:okayama_total].round(0).to_s}#{current_user.admin? ? " @#{supply.totals[:okayama_avg_kilo].round(0).to_s}" : ""}
+		殻付 #{supply.totals[:shell_total].round(0).to_s}" + (current_user.admin? ? " @#{supply.totals[:big_shell_avg_cost].round(0).to_s}
+			合計 #{supply.totals[:mukimi_total].round(0).to_s} @#{supply.totals[:total_kilo_avg].round(0).to_s}" : "")
 	elsif @place == "supply_show"
 		json.title ""
 	else

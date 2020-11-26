@@ -18,6 +18,205 @@ class RManifest < ApplicationRecord
 	order_query :r_manifest_query,
 		[:sales_date] # Sort :sales_date in :desc order
 	
+	def order_addresses(order)
+		order[:raw_data]["PackageModelList"].map do |pkg| 
+			{zip: pkg["SenderModel"].values[0..1].join, 
+			prefecture: pkg["SenderModel"].values[2],
+			city: pkg["SenderModel"].values[3],
+			address: pkg["SenderModel"].values[4],
+			last_name: pkg["SenderModel"].values[5],
+			first_name: pkg["SenderModel"].values[6], 
+			katakana_last_name: pkg["SenderModel"].values[7],
+			katakana_first_name: pkg["SenderModel"].values[8],
+			phone: pkg["SenderModel"].values[9..12].join,
+			item_id: pkg["ItemModelList"].map{ |item| item["itemId"]}}
+		end
+	end
+
+	def item_id_to_yamato_box_size(item_id)
+		{
+			'10000018' => 80, #m1
+			'10000001' => 80, #m2
+			'10000035' => 80, #tm2
+			'10000002' => 100, #m3
+			'10000003' => 100, #m4
+			'10000027' => 80, #p1
+			'10000030' => 80, #p2
+			'10000028' => 80, #p3
+			'10000029' => 100, #p4
+			'10000015' => 60, #k10
+			'10000004' => 80, #k20
+			'10000005' => 80, #k30
+			'10000025' => 80, #k40
+			'10000006' => 100, #k50
+			'10000040' => 100, #k100
+			'10000031' => 60, #pk10
+			'10000037' => 80, #pk20
+			'10000038' => 80, #pk30
+			'10000039' => 80, #pk40
+			'10000041' => 100, #pk50
+			'10000042' => 100, #pk100
+			'10000007' => 80, #s110
+			'10000008' => 80, #s120
+			'10000022' => 100, #s130
+			'10000009' => 100, #s220
+			'10000023' => 100, #s230
+			'boiltako800-1k' => 80, #tako
+			'10000012' => 60, #a350
+			'10000013' => 60, #a480
+			'10000014' => 60, #a560
+			'10000017' => 60, #em1
+			'10000016' => 60, #em2
+			'10000010' => 60, #kem1
+			'10000011' => 60, #kem2
+			'barakaki_1k' => 60, #bkar1
+			'barakaki_2k' => 80, #bkar1
+			'barakaki_3k' => 80, #bkar1
+			'barakaki_5k' => 80 #bkar1
+		}[item_id]
+	end
+
+	def rakuten_rate
+		0.12
+	end
+
+	def item_expenses(item_id)
+		{
+			'10000018' => 250, #m1
+			'10000001' => 310, #m2
+			'10000035' => 310, #tm2
+			'10000002' => 425, #m3
+			'10000003' => 490, #m4
+			'10000027' => 205, #p1
+			'10000030' => 230, #p2
+			'10000028' => 255, #p3
+			'10000029' => 330, #p4
+			'10000015' => 150, #k10
+			'10000004' => 180, #k20
+			'10000005' => 180, #k30
+			'10000025' => 230, #k40
+			'10000006' => 250, #k50
+			'10000040' => 280, #k100
+			'10000031' => 150, #pk10
+			'10000037' => 180, #pk20
+			'10000038' => 180, #pk30
+			'10000039' => 230, #pk40
+			'10000041' => 250, #pk50
+			'10000042' => 280, #pk100
+			'10000007' => 250, #s110
+			'10000008' => 250, #s120
+			'10000022' => 300, #s130
+			'10000009' => 360, #s220
+			'10000023' => 360, #s230
+			'boiltako800-1k' => 180, #tako
+			'10000012' => 300, #a350
+			'10000013' => 300, #a480
+			'10000014' => 400, #a560
+			'10000017' => 300, #em1
+			'10000016' => 300, #em2
+			'10000010' => 300, #kem1
+			'10000011' => 300, #kem2
+			'barakaki_1k' => 150, #bkar1
+			'barakaki_2k' => 150, #bkar1
+			'barakaki_3k' => 200, #bkar1
+			'barakaki_5k' => 200 #bkar1
+		}[item_id]
+	end
+
+	def item_raw_usage(item_id)
+		{ # [nama_muki, nama_kara, p_muki, p_kara, anago, mebi, kebi, tako, barakara ]
+			'10000018' => [1, 0, 0, 0, 0, 0, 0, 0, 0], #m1
+			'10000001' => [2, 0, 0, 0, 0, 0, 0, 0, 0], #m2
+			'10000035' => [2, 0, 0, 0, 0, 0, 0, 0, 0], #tm2
+			'10000002' => [3, 0, 0, 0, 0, 0, 0, 0, 0], #m3
+			'10000003' => [4, 0, 0, 0, 0, 0, 0, 0, 0], #m4
+			'10000027' => [0, 0, 1, 0, 0, 0, 0, 0, 0], #p1
+			'10000030' => [0, 0, 2, 0, 0, 0, 0, 0, 0], #p2
+			'10000028' => [0, 0, 3, 0, 0, 0, 0, 0, 0], #p3
+			'10000029' => [0, 0, 4, 0, 0, 0, 0, 0, 0], #p4
+			'10000026' => [0, 10, 0, 0, 0, 0, 0, 0, 0], #k10
+			'10000015' => [0, 10, 0, 0, 0, 0, 0, 0, 0], #k10
+			'10000004' => [0, 20, 0, 0, 0, 0, 0, 0, 0], #k20
+			'10000005' => [0, 30, 0, 0, 0, 0, 0, 0, 0], #k30
+			'10000025' => [0, 40, 0, 0, 0, 0, 0, 0, 0], #k40
+			'10000006' => [0, 50, 0, 0, 0, 0, 0, 0, 0], #k50
+			'10000040' => [0, 100, 0, 0, 0, 0, 0, 0, 0], #k100
+			'10000031' => [0, 0, 0, 10, 0, 0, 0, 0, 0], #pk10
+			'10000037' => [0, 0, 0, 20, 0, 0, 0, 0, 0], #pk20
+			'10000038' => [0, 0, 0, 30, 0, 0, 0, 0, 0], #pk30
+			'10000039' => [0, 0, 0, 40, 0, 0, 0, 0, 0], #pk40
+			'10000041' => [0, 0, 0, 50, 0, 0, 0, 0, 0], #pk50
+			'10000042' => [0, 0, 0, 100, 0, 0, 0, 0, 0], #pk100
+			'10000007' => [1, 10, 0, 0, 0, 0, 0, 0, 0], #s110
+			'10000008' => [1, 20, 0, 0, 0, 0, 0, 0, 0], #s120
+			'10000022' => [1, 30, 0, 0, 0, 0, 0, 0, 0], #s130
+			'10000009' => [2, 20, 0, 0, 0, 0, 0, 0, 0], #s220
+			'10000023' => [2, 30, 0, 0, 0, 0, 0, 0, 0], #s230
+			'10000012' => [0, 0, 0, 0, 0.350, 0, 0, 0, 0], #a350
+			'10000013' => [0, 0, 0, 0, 0.480, 0, 0, 0, 0], #a480
+			'10000014' => [0, 0, 0, 0, 0.560, 0, 0, 0, 0], #a560
+			'10000017' => [0, 0, 0, 0, 0, 0.400, 0, 0, 0], #em1
+			'10000016' => [0, 0, 0, 0, 0, 0.240, 0, 0, 0], #em2
+			'10000010' => [0, 0, 0, 0, 0, 0, 0.400, 0, 0], #kem1
+			'10000011' => [0, 0, 0, 0, 0, 0, 0.800, 0, 0], #kem2
+			'barakaki_1k' => [0, 0, 0, 0, 0, 0, 0, 0, 1], #bkar1
+			'barakaki_2k' => [0, 0, 0, 0, 0, 0, 0, 0, 2], #bkar1
+			'barakaki_3k' => [0, 0, 0, 0, 0, 0, 0, 0, 3], #bkar1
+			'barakaki_5k' => [0, 0, 0, 0, 0, 0, 0, 0, 5], #bkar1
+			'boiltako800-1k' => [0, 0, 0, 0, 0, 0, 0, 1, 0] #tako
+		}[item_id]
+	end
+
+	def raw_oyster_costs
+		supply = OysterSupply.find_by(supply_date: self.sales_date)
+		if supply
+			mukimi_avg_cost = supply.totals[:sakoshi_avg_kilo].to_i
+			shell_avg_cost = supply.totals[:big_shell_avg_cost].to_i
+		else
+			mukimi_avg_cost = 1000 #default kilo cost
+			shell_avg_cost = 45 #default shell cost
+		end
+		#hard coding a lot of the raw material cost estimates. shufunomise anago is about 4600 ffr
+		{nama_muki: mukimi_avg_cost, nama_kara: shell_avg_cost, p_muki: 500, p_kara: 45, anago: 6000, mebi: 4600, kebi: 2200, tako: 2200, bara: 400 }
+	end
+
+	def get_raw_costs(order)
+		cost = 0
+		costs = raw_oyster_costs.values
+		order_addresses(order).map{|pkg| pkg[:item_id].flatten }.flatten.compact.each do |item_id|
+			item_raw_usage(item_id.to_s).each_with_index do |count, i|
+				cost += (count * costs[i]) unless costs[i].nil?
+			end
+		end
+		cost
+	end
+
+	def get_profits(order)
+		get_sales(order) - get_total_costs(order) - get_raw_costs(order)
+	end
+
+	def total_profits
+		self.new_orders_hash.inject(0){|memo, order| memo += get_profits(order) }
+	end
+
+	def get_sales(order)
+		order[:raw_data]["totalPrice"]
+	end
+
+	def get_shipping(order)
+		order_addresses(order).inject(0) do |memo, address_hash|
+			memo += calculate_shipping(address_hash[:prefecture], address_hash[:city], address_hash[:item_id].map{|id| item_id_to_yamato_box_size(id.to_s)})
+		end
+	end
+
+	def get_expenses(order)
+		order_addresses(order).map{|address_hash| address_hash[:item_id] }.flatten.map{|item_id| item_expenses(item_id.to_s) }.compact.inject(0, :+)
+	end
+
+	def get_total_costs(order)
+		get_shipping(order) + get_expenses(order)
+	end
+
 	def do_reciept
 		self.options[:oysis].to_i.zero? ? oysis = false : oysis = true
 		self.options[:order_id].empty? ? order = nil : order = self.new_orders_hash.reverse[options[:order_id].to_i]
@@ -117,6 +316,8 @@ class RManifest < ApplicationRecord
 		require 'httparty'
 		require 'json'
 
+		# https://webservice.rms.rakuten.co.jp/merchant-portal/view?contents=/ja/common/1-1_service_index/rmsWebServiceAuthentication
+		# serviceSecret=aaa, licenseKey=bbb　の場合、aaa:bbbをBase64エンコードした値(YWFhOmJiYg==)を利用して、以下の情報を認証情報に設定します。 ESA YWFhOmJiYg==
 		# Base64.encode64(x + ":"  + y) then remove the \n (there should be two)
 		authorization = 'ESA ' + ENV['RAKUTEN_API']
 		sales_date = self.sales_date
@@ -179,7 +380,7 @@ class RManifest < ApplicationRecord
 						orders_hash[i][:items] << item
 					end
 				end
-				types = ['mizukiri', 'shells', 'sets', 'karaebi80g', 'mukiebi80g', 'anago', 'dekapuri', 'reitou_shell', 'kakita', 'tako', 'knife']
+				types = ['mizukiri', 'shells', 'barakara', 'sets', 'karaebi80g', 'mukiebi80g', 'anago', 'dekapuri', 'reitou_shell', 'kakita', 'tako', 'knife']
 				types.each do |type|
 					orders_hash[i][type.to_sym] = Hash.new
 					orders_hash[i][type.to_sym][:amount] = Array.new
@@ -193,7 +394,8 @@ class RManifest < ApplicationRecord
 					anago: { '10000012' => 350, '10000013' => 480, '10000014' => 600 },
 					dekapuri: { '10000027' => 1, '10000030' => 2, '10000028' => 3, '10000029' => 4 },
 					tako: { 'boiltako800-1k' => 1},
-					reitou_shell: { '10000042' => 100, '10000041' => 50, '10000039' => 40, '10000038' => 30, '10000037' => 20, '10000031' => 10 }
+					reitou_shell: { '10000042' => 100, '10000041' => 50, '10000039' => 40, '10000038' => 30, '10000037' => 20, '10000031' => 10 },
+					barakara: { 'barakaki_1k' => 1, 'barakaki_2k' => 2, 'barakaki_3k' => 3, 'barakaki_5k' => 5 }
 					}
 				orders_hash[i][:items].each do |item_details_hash|
 					products.each do |type, id_hash|
@@ -265,7 +467,7 @@ class RManifest < ApplicationRecord
 		data = Hash.new
 		knife_data = Hash.new
 		order_types = [:mizukiri, :shells, :sets]
-		other_types = [:dekapuri, :karaebi80g, :mukiebi80g, :anago, :reitou_shell, :tako, :kakita]
+		other_types = [:dekapuri, :karaebi80g, :mukiebi80g, :anago, :reitou_shell, :tako, :kakita, :barakara]
 		all_types = order_types.push(*other_types)
 		intital_data.each_with_index do |order, i|
 			(i == 0) ? data[:knife] = Hash.new : ()
@@ -334,7 +536,7 @@ class RManifest < ApplicationRecord
 			#set utf-8 japanese font
 			pdf.font "SourceHan", :style => :normal
 			header_data_row = ['#', '注文者', '送付先', '500g', 'セル', 'セット', 'その他', 'お届け日', '時間', 'ナイフ', 'のし', '領収書', '備考']
-			translation_hash = {:mizukiri => "水切り", :shells => "セル", :sets => "セット", :dekapuri => "デカプリオイスター", :karaebi80g => "干しエビ（殻付き）80g", :mukiebi80g => "干しエビ（むき身）80g", :anago => "穴子", :reitou_shell => "冷凍せ", :tako => "ボイルたこ (~1㎏)", :kakita => "カキータ"}
+			translation_hash = {:mizukiri => "水切り", :shells => "セル", :sets => "セット", :dekapuri => "デカプリオイスター", :karaebi80g => "干しエビ（殻付き）80g", :mukiebi80g => "干しエビ（むき身）80g", :anago => "穴子", :reitou_shell => "冷凍せ", :tako => "ボイルたこ (~1㎏)", :kakita => "カキータ", barakara: "小殻付き"}
 			[final, final_knife].each_with_index do |data_set, mi|
 				all_types.each_with_index do |type, i|
 					if !data_set[type].empty? && !data_set[type].nil?
@@ -551,6 +753,7 @@ class RManifest < ApplicationRecord
 		reitou_shell_count = 0
 		anago_count = 0
 		ebi_count = 0
+		bara_count = 0
 		tako_count = 0
 		if !self.new_orders_hash.nil?
 			self.new_orders_hash.each do |order|
@@ -565,6 +768,11 @@ class RManifest < ApplicationRecord
 					if !order[:shells].empty?
 						order[:shells][:amount].each_with_index do |amount, i|
 							shells_count += (amount * order[:shells][:count][i])
+						end
+					end
+					if !order[:barakara].empty?
+						order[:barakara][:amount].each_with_index do |amount, i|
+							bara_count += (amount * order[:barakara][:count][i])
 						end
 					end
 					if !order[:sets].empty?
@@ -598,9 +806,12 @@ class RManifest < ApplicationRecord
 							ebi_count += 1
 						end
 					end
-					if !order[:tako].empty?
-						order[:tako][:amount].each_with_index do |amount, i|
-							tako_count += 1
+					unless order[:tako].nil?
+						if !order[:tako].empty?
+							order[:tako][:amount].each_with_index do |amount, i|
+								tako_count += 1
+							end
+
 						end
 					end
 				end
@@ -613,31 +824,33 @@ class RManifest < ApplicationRecord
 		counts[:anago] = anago_count
 		counts[:ebi] = ebi_count
 		counts[:tako] = tako_count
+		counts[:barakara] = bara_count
 		counts
 	end
 
 	def prep_work_totals
-		products = { mizukiri: { 10000003 => 4, 10000002 => 3, 10000001 => 2, 10000018 => 1, 10000035 => 2 },
-			sets: { 10000007 => 101, 10000008 => 201, 10000022 => 301, 10000009 => 202, 10000023 => 302 },
-			shells: { 10000040 => 100, 10000006 => 50, 10000025 => 40, 10000005 => 30, 10000004 => 20, 10000015 => 10 },
-			karaebi80g: { 10000011 => 10, 10000010 => 5 },
-			mukiebi80g: { 10000016 => 3, 10000010 => 5 },
-			anago: { 10000012 => 350, 10000013 => 480, 10000014 => 600 },
-			dekapuri: { 10000027 => 1, 10000030 => 2, 10000028 => 3, 10000029 => 4 },
+		products = { mizukiri: { '10000003' => 4, '10000002' => 3, '10000001' => 2, '10000018' => 1, '10000035' => 2 },
+			sets: { '10000007' => 101, '10000008' => 201, '10000022' => 301, '10000009' => 202, '10000023' => 302 },
+			shells: { '10000040' => 100, '10000006' => 50, '10000025' => 40, '10000005' => 30, '10000004' => 20, '10000015' => 10 },
+			karaebi80g: { '10000011' => 10, '10000010' => 5 },
+			mukiebi80g: { '10000016' => 3, '10000010' => 5 },
+			anago: { '10000012' => 350, '10000013' => 480, '10000014' => 600 },
+			dekapuri: { '10000027' => 1, '10000030' => 2, '10000028' => 3, '10000029' => 4 },
 			tako: { 'boiltako800-1k' => 1},
-			reitou_shell: { 10000042 => 100, 10000041 => 50, 10000039 => 40, 10000038 => 30, 10000037 => 20, 10000031 => 10 }
+			reitou_shell: { '10000042' => 100, '10000041' => 50, '10000039' => 40, '10000038' => 30, '10000037' => 20, '10000031' => 10 },
+			barakara: { 'barakaki_1k' => 1, 'barakaki_2k' => 2, 'barakaki_3k' => 3, 'barakaki_5k' => 5 }
 		}
 		work_totals = Hash.new
 		work_totals[:knife_count] = 0
-		self.new_orders_hash.reverse.each do |order|
+				self.new_orders_hash.reverse.each do |order|
 			order[:raw_data]["PackageModelList"].each do |package|
 				package["ItemModelList"].each do |item|
 					if item["selectedChoice"]
 						item["selectedChoice"].include?('牡蠣ナイフ・軍手片方セット:希望する') ? (work_totals[:knife_count] += 1) : ()
 					end
 					products.each do |type, check_hash|
-						work_totals[type] ? () : (work_totals[type] = Array.new)
-						check_hash[item["manageNumber"].to_i] ? (work_totals[type] << check_hash[item["manageNumber"].to_i]) : ()
+						work_totals[type] = Array.new if work_totals[type].nil?
+						check_hash[item["manageNumber"]] ? (work_totals[type] << check_hash[item["manageNumber"]]) : ()
 					end
 				end
 			end
@@ -653,6 +866,7 @@ class RManifest < ApplicationRecord
 		work_totals[:shell_cards] = 0
 		work_totals[:shell_cards] += work_totals[:sets] ? work_totals[:sets].length : 0
 		work_totals[:shell_cards] += work_totals[:shells] ? work_totals[:shells].length : 0
+		work_totals[:shell_cards] += work_totals[:barakara] ? work_totals[:barakara].length : 0
 		work_totals
 	end
 
@@ -676,7 +890,7 @@ class RManifest < ApplicationRecord
 			counts_table = Array.new
 			counts_table << ['むき身', 'セル', 'デカプリ', '冷凍セル', '穴子', 'タコ', '干しエビ', 'ナイフ']
 			counts_table << [counts[:mizukiri].to_s + '　<font size="6">パック</font>', 
-							counts[:shells].to_s + '　<font size="6">個</font>', 
+							"#{counts[:shells].to_s}　<font size='6'>個</font>　・　#{counts[:barakara].to_s}　<font size='6'>㎏</font>", 
 							counts[:dekapuri].to_s + '　<font size="6">パック</font>', 
 							counts[:reitou_shells].to_s + '　<font size="6">個</font>', 
 							counts[:anago].to_s + '　<font size="6">件</font>', 
@@ -725,13 +939,19 @@ class RManifest < ApplicationRecord
 						order_data_row << text
 					end
 					#shells
-					if !order[:shells][:amount].nil?
+					if !order[:shells][:amount].nil? && !order[:barakara][:amount].nil?
 						text = ''
 						order[:shells][:amount].each_with_index do |amount, i|
 							if i > 0 then text += '
 								' end
-							text += amount.to_s
+							text += "#{amount.to_s}#{'個' if !order[:barakara][:amount].nil?} "
 							if order[:shells][:count][i] > 1 then text += '× ' + order[:shells][:count][i].to_s + '!' end
+						end
+						order[:barakara][:amount].each_with_index do |amount, i|
+							if i > 0 then text += '
+								' end
+							text += "#{amount.to_s}㎏ "
+							if order[:barakara][:count][i] > 1 then text += '× ' + order[:barakara][:count][i].to_s + '!' end
 						end
 						order_data_row << text
 					end

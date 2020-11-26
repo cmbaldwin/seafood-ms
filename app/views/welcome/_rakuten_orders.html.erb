@@ -1,3 +1,4 @@
+<script> tippy('[data-tippy-content]', {allowHTML: true, animation: 'scale', duration: [300,0] }); </script>
 <!-- Modal -->
 <% if @rakuten_shinki %>
 	<div class="modal fade" id="rakuten_shinki_modal" tabindex="-1" aria-labelledby="rakuten_shinki_modal_label" aria-hidden="true">
@@ -34,7 +35,7 @@
 						<div class="row ml-1 mr-1 <%= cycle_table_rows %>">
 							<div class="col-lg-2 col-md-6 col-sm-12 small">
 								<% id = order["orderNumber"].gsub('274763-', '') %>
-								<a href="<%= rakuten_order_link(id) %>"><%= id %></a>
+								<a href="<%= rakuten_order_link(order['orderNumber']) %>"><%= id %></a>
 							</div>
 							<div class="col-lg-2 col-md-6 col-sm-12">
 								<%= order["OrdererModel"]["familyName"] + order["OrdererModel"]["firstName"] %> ・ 
@@ -81,22 +82,31 @@
 <% end %>
 
 <div class="card m-0 p-0 border-white">
-	<div class="card-header bg-white">
+	<div class="card-header p-3">
 		<h4 class="card-title float-left">
 			<%= @rakuten.sales_date %>
 		</h4>
-		<div class="float-right">
-			<div class="btn-group float-right d-print-none" role="group" aria-label="Basic">
-				<% if @rakuten_shinki %>
-					<button type="button" class="btn btn-sm btn-info" data-toggle="modal" data-target="#rakuten_shinki_modal">
-						<%= icon("asterisk") %><span class="badge badge-warning ml-1"><%= @rakuten_shinki.length %></span>
+		<span class="mb-3">&nbsp</span>
+		<div class="btn-group float-right mt-n2" role="group" aria-label="Basic">
+			<% if @rakuten_shinki %>
+				<span class="btn btn-sm btn-info m-0 p-0" data-tippy-content="楽天新規注文">
+					<button type="button" class="btn btn-info" data-toggle="modal" data-target="#rakuten_shinki_modal">
+						<%= icon("asterisk", class: 'text-white') %><span class="badge badge-warning ml-1"><%= @rakuten_shinki.length %></span>
 					</button>
-				<% end %>
-				<%= link_to icon("card-list"), @rakuten, :alt => "個別ページ", class: 'btn btn-info' %>
+				</span>
+			<% end %>
+			<span class="btn btn-sm btn-info m-0 p-0" data-tippy-content="<center><%= @rakuten.sales_date %>の<br>出荷個別ページ</center>">
+				<%= link_to icon("card-list", class: 'text-white'), @rakuten, :alt => "個別ページ", class: 'btn btn-info' %>
+			</span>
+			<span class="btn btn-sm btn-info m-0 p-0" data-tippy-content="<center><%= @rakuten.sales_date %>の<br>楽天データを取込む</center>">
 				<%= link_to icon("arrow-counterclockwise", class: "text-success"), edit_r_manifest_path(@rakuten), :alt => "データ更新", class: 'btn btn-info' %>
-				<%= link_to icon("file-earmark-arrow-down"), r_manifest_new_pdf_path(@rakuten), class: 'btn btn-info', target: '_blank' %>
-				<%= link_to icon("file-earmark-ruled"), r_manifest_seperated_pdf_path(@rakuten), :method => :get, class: 'btn btn-info', target: "_blank" %>
-			</div>
+			</span>
+			<span class="btn btn-sm btn-info m-0 p-0" data-tippy-content="<center><%= @rakuten.sales_date %>の<br>出荷表PDFを開く</center>">
+				<%= link_to icon("file-earmark-arrow-down", class: 'text-white'), r_manifest_new_pdf_path(@rakuten), class: 'btn btn-info', target: '_blank' %>
+			</span>
+			<span class="btn btn-sm btn-info m-0 p-0" data-tippy-content="<center><%= @rakuten.sales_date %>の<br>商品分別した<br>出荷表PDFを開く</center>">
+				<%= link_to icon("file-earmark-ruled", class: 'text-white'), r_manifest_seperated_pdf_path(@rakuten), :method => :get, class: 'btn btn-info', target: "_blank" %>
+			</span>
 		</div>
 	</div>
 		<div class="card-text text-center">
@@ -111,10 +121,11 @@
 						</span>
 					</div>
 					<div class="btn col-3 btn-light d-block mb-1 strong">
-						<h6>セル／カード</h6>
+						<h6>セル 大・小・カード</h6>
 						<span class="badge badge-<%= counts[:shells] > 0 ? 'primary' : 'light' %> p-2">
-							<%= if counts[:shells] > 0 then ('<b>').html_safe + counts[:shells].to_s + ('<small>個</small></b> ・ ').html_safe else ('　') end %> 
-							<%= (('<b>').html_safe + work_totals[:shell_cards] + ('<small>枚</small></b>').html_safe) if (work_totals[:shell_cards] > 0) %>
+							<%=  ("<b>#{counts[:shells].to_s}<small>個</small></b> ・ ").html_safe if (counts[:shells] > 0) %> 
+							<%=  ("<b>#{counts[:barakara].to_s}<small>㎏</small></b> ・ ").html_safe if (counts[:barakara] > 0) %> 
+							<%= (('<b>').html_safe + work_totals[:shell_cards].to_s + ('<small>枚</small></b>').html_safe) if (work_totals[:shell_cards] > 0) %>
 						</span>
 					</div>
 					<div class="btn col-3 btn-light d-block mb-1 strong">
@@ -237,24 +248,57 @@
 						</div>
 					</div>
 				</div>
-				<div class="col-xl-12 col-lg-12 text-center border p-0 m-0">
+				<div class="col-xl-5 col-lg-12 text-center border-top border-left border-bottom p-0 m-0">
+					<div class="col-12 bg-light p-1 m-0">
+						<b>小　殻付き</b>
+					</div>
+					<div class="row border-bottom small font-weight-light font-italic p-0 m-0">
+						<div class="col-3 p-1">
+							1㎏
+						</div>
+						<div class="col-3 p-1">
+							2㎏
+						</div>
+						<div class="col-3 p-1">
+							3㎏
+						</div>
+						<div class="col-3 p-1">
+							4㎏
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-3 p-1">
+							<%= work_totals[:product_counts][:barakara][1] %>
+						</div>
+						<div class="col-3 p-1">
+							<%= work_totals[:product_counts][:barakara][2] %>
+						</div>
+						<div class="col-3 p-1">
+							<%= work_totals[:product_counts][:barakara][3] %>
+						</div>
+						<div class="col-3 p-1">
+							<%= work_totals[:product_counts][:barakara][4] %>
+						</div>
+					</div>
+				</div>
+				<div class="col-xl-7 col-lg-12 text-center border p-0 m-0">
 					<div class="col-12 bg-light p-1 m-0">
 						<b>むき身牡蠣500g + 殻付き</b>
 					</div>
 					<div class="row border-bottom small font-weight-light font-italic d-flex justify-content-center p-0 m-0">
-						<div class="col">
+						<div class="col p-1">
 							10個＋１p
 						</div>
-						<div class="col">
+						<div class="col p-1">
 							20個＋１p
 						</div>
-						<div class="col">
+						<div class="col p-1">
 							30個＋１p
 						</div>
-						<div class="col">
+						<div class="col p-1">
 							20個＋2p
 						</div>
-						<div class="col">
+						<div class="col p-1">
 							30個＋2p
 						</div>
 					</div>
@@ -307,9 +351,11 @@
 		</div>
 	<div class="card-footer bg-white">
 		<small class="text-muted float-left">(<%= @rakuten.updated_at.in_time_zone('Tokyo') %>)に更新された</small>
-		<div class="btn-group float-right d-print-none" role="group" aria-label="Basic">
-			<%= link_to icon("arrow-left-circle"), load_rakuten_order_path(@rakuten.r_manifest_query.previous.id), :alt => "前", class: 'btn btn-sm btn-secondary', remote: true %>
-			<%= link_to icon("arrow-right-circle"), load_rakuten_order_path(@rakuten.r_manifest_query.next.id), :alt => "次", class: 'btn btn-sm btn-secondary', remote: true %>
+		<div class="btn-group float-right mt-n2 mb-1" role="group" aria-label="Basic">
+			<% previous_day = @rakuten.r_manifest_query.previous %>
+			<% next_day = @rakuten.r_manifest_query.next %>
+			<%= link_to icon("arrow-left-circle"), load_rakuten_order_path(previous_day.id), :alt => "前", class: 'btn btn-sm btn-secondary', remote: true, "data-tippy-content" => "<center>#{previous_day.sales_date}の<br>データを見る</center>" %>
+			<%= link_to icon("arrow-right-circle"), load_rakuten_order_path(next_day.id), :alt => "次", class: 'btn btn-sm btn-secondary', remote: true, "data-tippy-content" => "<center>#{next_day.sales_date}の<br>データを見る</center>" %>
 		</div>
 	</div>
 </div>

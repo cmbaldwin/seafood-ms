@@ -16,9 +16,11 @@ class YahooOrder < ApplicationRecord
 	end
 
 	def shipping_status(for_print = true)
-		status = self.details["ShipStatus"]
-		print_status = { 1 => "決済申込", 2 => "支払待ち", 3 => "支払完了", 4 => "入金待ち", 5 => "決済完了", 6 => "キャンセル", 7 => "返金", 8 => "有効期限切れ", 9 => "決済申込中", 10 => "オーソリエラー", 11 => "売上取消", 12 => "Suicaアドレスエラー"}
-		for_print ? print_status[status.to_i] : status
+		if self.details["Ship"]
+			status = self.details["Ship"]["ShipStatus"]
+			print_status = { 1 => "決済申込", 2 => "支払待ち", 3 => "支払完了", 4 => "入金待ち", 5 => "決済完了", 6 => "キャンセル", 7 => "返金", 8 => "有効期限切れ", 9 => "決済申込中", 10 => "オーソリエラー", 11 => "売上取消", 12 => "Suicaアドレスエラー"}
+			for_print ? print_status[status.to_i] : status
+		end
 	end
 
 	def url
@@ -26,15 +28,15 @@ class YahooOrder < ApplicationRecord
 	end
 
 	def yahoo_id
-		yahoo_id = self.details["OrderId"] && yahoo_id
+		self.details["OrderId"]
 	end
 
 	def billing_name
-		self.details["BillLastName"] + " " + self.details["BillFirstName"]
+		self.details["Pay"]["BillLastName"] + " " + self.details["Pay"]["BillFirstName"] if self.details["Pay"]
 	end
 
 	def billing_name_kana
-		self.details["BillLastNameKana"] + " " + self.details["BillFirstNameKana"]
+		self.details["Pay"]["BillLastNameKana"] + " " + self.details["Pay"]["BillFirstNameKana"]
 	end
 
 	def billing_phone
@@ -46,15 +48,15 @@ class YahooOrder < ApplicationRecord
 	end
 
 	def shipping_name
-		self.details["ShipLastName"] + " " + self.details["ShipFirstName"]
+		self.shipping_details["ShipLastName"] + " " + self.shipping_details["ShipFirstName"]
 	end
 
 	def shipping_name_kana
-		self.details["ShipLastNameKana"] + " " + self.details["ShipFirstNameKana"]
+		self.shipping_details["ShipLastNameKana"] + " " + self.shipping_details["ShipFirstNameKana"]
 	end
 
 	def shipping_details
-		self.details["ResultSet"]["Result"]["OrderInfo"]["Ship"]
+		self.details["Ship"]
 	end
 
 	def shipping_phone
@@ -62,15 +64,15 @@ class YahooOrder < ApplicationRecord
 	end
 
 	def billing_details
-		self.details["ResultSet"]["Result"]["OrderInfo"]["Pay"]
+		self.details["Pay"]
 	end
 
 	def item_details
-		self.details["ResultSet"]["Result"]["OrderInfo"]["Item"]
+		self.details["Item"]
 	end
 
 	def item_id
-		self.item_details["ItemId"]
+		self.item_details["ItemId"] if self.item_details
 	end
 
 	def item_name
@@ -107,12 +109,16 @@ class YahooOrder < ApplicationRecord
 			"hebi80x5" => "干えび(殻付) 80g×5袋 ",
 			"anago600" => "焼穴子 600g入",
 			"anago480" => "焼穴子 480g入",
-			"anago350" => "焼穴子 350g入" }
+			"anago350" => "焼穴子 350g入",
+			"syoukara1kg" => "小殻付き 1㎏",
+			"syoukara2kg" => "小殻付き 2㎏",
+			"syoukara3kg" => "小殻付き 3㎏",
+			"syoukara5kg" => "小殻付き 5㎏" }
 		item_names[self.item_id]
 	end
 
 	def payment_type
-		pay_method = self.details["PayMethod"]
+		pay_method = self.billing_details["PayMethod"]
 		method_hash = {
 			"payment_a1" => "クレジットカード決済",
 			"payment_a17" => "PayPay残高払い",
@@ -128,7 +134,7 @@ class YahooOrder < ApplicationRecord
 	end
 
 	def quantity
-		self.item_details["Quantity"]
+		self.item_details["Quantity"] if self.item_details
 	end
 
 	def print_quantity
@@ -147,7 +153,7 @@ class YahooOrder < ApplicationRecord
 
 	def shipping_type
 		#if it's collect set to 2
-		"0"
+		self.billing_details["PayMethod"] == "payment_d1" ? "2" : "0"
 	end
 
 	def shipping_temperature

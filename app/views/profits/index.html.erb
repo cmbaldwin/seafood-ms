@@ -48,12 +48,12 @@
 
 			<div class="btn-group float-right" role="group" aria-label="Basic">
 				<button id="newProfitModalButton" type="button" class="btn btn-info" data-toggle="modal" data-target="#newProfitModal">
-					<span data-toggle="tooltip" data-placement="bottom" title="計算表を追加" data-trigger="hover">
+					<span data-tippy-content="計算表を追加">
 						<%= icon('plus-circle-fill', class: 'text-success') %>
 					</span>
 				</button>
 				<button id="ProfitModalButton" type="button" class="btn btn-info" data-toggle="modal" data-target="#ProfitModal">
-					<span data-toggle="tooltip" data-placement="bottom" title="計算表をカレンダーで調べる" data-trigger="hover">
+					<span data-tippy-content="計算表をカレンダーで調べる">
 						<%= icon('calendar3') %>
 					</span>
 				</button>
@@ -87,12 +87,12 @@
 			<div class="container m-0 p-0">
 				<div class="row m-0 p-0">
 					<div class="col-6 m-0 p-0">
-						<span class="ml-3" data-toggle="tooltip" data-html="true" data-placement="top" title="@<b><%= figs[:gohyaku_tanka]%></b> /㎏">
+						<span class="ml-3" data-tippy-content="@<b><%= figs[:gohyaku_tanka]%></b> /㎏">
 							<i>500g</i>: <b><%= figs[:gohyaku_total] %>p</b>
 						</span>
 					</div>
 					<div class="col-6 m-0 p-0">
-						<span class="ml-3" data-toggle="tooltip" data-html="true" data-placement="top" title="@<b><%= figs[:kilo_tanka]%></b> /㎏">
+						<span class="ml-3" data-tippy-content="@<b><%= figs[:kilo_tanka]%></b> /㎏">
 							<i>1k</i>: <b><%= figs[:kilo_total] %>枚</b>
 						</span>
 					</div>
@@ -101,17 +101,17 @@
 		</div>
 		<div class="col-md-4 col-sm-12" >
 			<div class="btn-group float-right mt-1" role="group">
-				<span class='btn btn-info m-0 p-0' data-toggle="tooltip" data-placement="top" title="個別ページを見る" data-trigger="hover">
+				<span class='btn btn-info m-0 p-0' data-tippy-content="個別ページを見る">
 					<%= link_to icon("card-list", class: 'text-white'), profit, class: 'btn btn-info' %>
 				</span>
-				<span class='btn btn-info m-0 p-0' data-toggle="tooltip" data-placement="top" title="編集する" data-trigger="hover">
+				<span class='btn btn-info m-0 p-0' data-tippy-content="編集する">
 					<%= link_to icon("pencil-square", class: "text-success"), edit_profit_path(profit), :alt => "今日の利益計算を編集", class: 'btn btn-info' %>
 				</span>
-				<span class='btn btn-info m-0 p-0' data-toggle="tooltip" data-placement="top" title="削除する" data-trigger="hover">
+				<span class='btn btn-info m-0 p-0' data-tippy-content="削除する">
 					<%= link_to icon("trash-fill", class: "text-danger"), profit, :alt => "この利益計算を取り消す", method: :delete, data: { confirm: '削除してもいい?' }, class: 'btn btn-info' %>
 				</span>
 			</div>
-			<span class="mt-1 mr-1 float-right" data-toggle="tooltip" data-html="true" data-placement="top" title="牡蠣の量予算" data-trigger="hover">
+			<span class="mt-1 mr-1 float-right" data-tippy-content="牡蠣の量予算">
 				<%= link_to icon('bar-chart-line'), fetch_volumes_path(profit.id), class: "btn btn-primary", "data-toggle" => "modal", "data-target" => "#volumesModal", remote: true %>
 			</span>
 		</div>

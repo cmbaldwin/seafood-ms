@@ -37,10 +37,16 @@ require('bootstrap-datepicker')
 import "@fortawesome/fontawesome-free/js/all";
 require('tempusdominus-bootstrap-4')
 
-// Bootstrap Tooltips, Popovers, and Datepickers
+//Tippy.js for tooltips
+import tippy from 'tippy.js';
+import 'tippy.js/dist/tippy.css'; // optional for styling
+window.tippy = tippy;
+import 'tippy.js/animations/scale.css';
+
+// Bootstrap Popovers, Datepickers, and Tippy.js intialization
 $(document).on('turbolinks:load', function () {
-	$('[data-toggle="tooltip"]').tooltip()
-	$('[data-toggle="popover"]').popover({container: 'body'})
+	tippy('[data-tippy-content]', {allowHTML: true, animation: 'scale', duration: [300,0] });
+	$('[data-toggle="popover"]').popover()
 	$.fn.datetimepicker.Constructor.Default = $.extend({}, $.fn.datetimepicker.Constructor.Default, {
 		icons: {
 			time: 'far fa-clock',

@@ -22,11 +22,12 @@
 		<% @expiration_cards.each do |expiration_card| %>
 			<div class="col-md-6 col-sm-12">
 				<div class="float-right btn-group mb-1">
-					<%= link_to icon("card-heading"), expiration_card.download.url, class: 'btn btn-info', target: "_blank" %>
+					<%= link_to icon("card-heading"), expiration_card.download.url, class: 'btn btn-info popover-focus-top', target: "_blank", "data-tippy-content" => exp_card_popover(expiration_card) %>
 					<%= link_to icon("pencil-square", class: "text-success"), edit_expiration_card_path(expiration_card), class: 'btn btn-info' %>
 					<%= link_to icon("trash-fill", class: "text-danger"), expiration_card, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-info' %>
 				</div>
-				<table class="table table-sm table-bordered border rounded">
+
+				<table class="table table-sm table-bordered">
 					<tr>
 						<th>名称</th>
 						<td><%= expiration_card.product_name %></td>
@@ -51,10 +52,12 @@
 						<th>保存温度</th>
 						<td><%= expiration_card.storage_recommendation %></td>
 					</tr>
-					<tr>
-						<th>製造年月日</th>
-						<td><%= expiration_card.manufactuered_date %></td>
-					</tr>
+					<% if expiration_card.made_on %>
+						<tr>
+							<th>製造年月日</th>
+							<td><%= expiration_card.manufactuered_date %></td>
+						</tr>
+					<% end %>
 					<tr>
 						<th><%= expiration_card.print_shomiorhi %></th>
 						<td><%= expiration_card.expiration_date %></td>

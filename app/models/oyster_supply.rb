@@ -3,6 +3,7 @@ class OysterSupply < ApplicationRecord
 	validates_presence_of :supply_date
 	validates_uniqueness_of :supply_date
 	serialize :oysters, Hash
+	serialize :totals, Hash
 
 	attr_accessor :location
 	attr_accessor :start_date
@@ -52,12 +53,24 @@ class OysterSupply < ApplicationRecord
 		conversion[am_or_pm] ? conversion[am_or_pm] : ()
 	end
 
+	def mukimi_total
+		large_shucked_total + small_shucked_total + small_shucked_eggy_total + okayama_total
+	end
+
+	def okayama_total
+		total = 0
+		["hinase", "tamatsu", "iri", "mushiage"].each do |location|
+			total += self.oysters["okayama"][location]["subtotal"].to_f unless self.oysters["okayama"].nil?
+		end
+		total
+	end
+
 	def large_shucked_total
 		total = 0
 		self.oysters['large'].each do |supplier, amounts|
 			total += amounts["volume"].to_f
 		end
-		return total
+		total
 	end
 
 	def small_shucked_total
@@ -65,7 +78,15 @@ class OysterSupply < ApplicationRecord
 		self.oysters['small'].each do |supplier, amounts|
 			total += amounts["volume"].to_f
 		end
-		return total
+		total
+	end
+
+	def small_shucked_eggy_total
+		total = 0
+		self.oysters['eggy'].each do |supplier, amounts|
+			total += amounts["volume"].to_f
+		end
+		total
 	end
 
 	def shells_total
@@ -76,7 +97,7 @@ class OysterSupply < ApplicationRecord
 		self.oysters['small_shells'].each do |supplier, amounts|
 			total += amounts["volume"].to_f
 		end
-		return total
+		total
 	end
 
 	def set_variables
@@ -89,12 +110,60 @@ class OysterSupply < ApplicationRecord
 		@supplier_numbers += @aioi_suppliers.pluck(:id).map(&:to_s)
 	end
 
-	def set_suppliers
-		
-	end
-
 	def set_types
 		@types = ["large", "small", "eggy", "large_shells", "small_shells", "thin_shells"]
+	end
+
+
+	def cost_total
+		sakoshi_mukimi_cost_total + okayama_mukimi_cost_total
+	end
+
+	def big_shell_avg_cost
+		cost_total = 0
+		shells_count = 0
+		self.oysters['large_shells'].each do |supplier, amounts|
+			cost_total += amounts["invoice"].to_f
+			shells_count += amounts["volume"].to_f
+		end
+		shells_count == 0 ? 0.0 : cost_total / shells_count
+	end
+
+	def sakoshi_mukimi_cost_total
+		set_variables
+		total = 0
+		["large", "small", "eggy"].each do |type|
+			@supplier_numbers.each do |id|
+				total += self.oysters[type][id]["invoice"].to_f
+			end
+		end
+		total
+	end
+
+	def okayama_mukimi_cost_total
+		total = 0
+		["hinase", "tamatsu", "iri", "mushiage"].each do |location|
+			total += self.oysters["okayama"][location]["invoice"].to_f unless self.oysters["okayama"].nil?
+		end
+		total
+	end
+
+	def set_totals
+		unless self.oysters.empty?
+			totals = Hash.new
+			totals[:okayama_total] = okayama_total
+			totals[:shell_total] = shells_total
+			totals[:big_shell_avg_cost] = big_shell_avg_cost
+			totals[:sakoshi_total] = large_shucked_total + small_shucked_total + small_shucked_eggy_total
+			totals[:sakoshi_mukimi_cost_total] = sakoshi_mukimi_cost_total
+			totals[:sakoshi_avg_kilo] = (totals[:sakoshi_total] == 0) ? 0.0 : (totals[:sakoshi_mukimi_cost_total] / totals[:sakoshi_total])
+			totals[:okayama_mukimi_cost_total] = okayama_mukimi_cost_total
+			totals[:okayama_avg_kilo] = ((totals[:okayama_total] == 0) ? 0.0 : (totals[:okayama_mukimi_cost_total] / totals[:okayama_total]))
+			totals[:mukimi_total] = totals[:sakoshi_total] + okayama_total
+			totals[:cost_total] = cost_total
+			totals[:total_kilo_avg] = (totals[:mukimi_total] == 0) ? 0.0 : (totals[:cost_total] / totals[:mukimi_total])
+			self.totals = totals
+		end
 	end
 
 	def check_completion
@@ -107,6 +176,24 @@ class OysterSupply < ApplicationRecord
 				end
 			end
 		end
+		completion["okayama"] = Array.new if completion["okayama"].nil?
+		((completion["okayama"] << "hinase") if self.oysters[:okayama]["hinase"]["price"].to_s == "0") if self.oysters[:okayama]["hinase"]["subtotal"].to_s != "0"
+		((completion["okayama"] << "iri") if self.oysters[:okayama]["iri"]["price"].to_s == "0" ) if self.oysters[:okayama]["iri"]["subtotal"].to_s != "0"
+		self.oysters[:okayama]["tamatsu"].each do |sup_num, sup_hash|
+			if sup_hash.is_a?(Hash)
+				if (sup_hash["小"] != "0") || (sup_hash["小"] != "0")
+					(completion["okayama"].to_s << "tamatsu") if sup_hash["price"].to_s == "0" 
+				end
+			end
+		end
+		self.oysters[:okayama]["mushiage"].each do |sup_num, sup_hash|
+			if sup_hash.is_a?(Hash)
+				if sup_hash["volume"].to_s != "0"
+					(completion["okayama"].to_s << "mushiage") if sup_hash["price"].to_s == "0" 
+				end
+			end
+		end
+		completion.delete('okayama') if (!completion["okayama"].nil? && completion["okayama"].empty?)
 		completion
 	end
 
@@ -146,7 +233,7 @@ class OysterSupply < ApplicationRecord
 
 	def do_setup
 		set_variables
-		self[:oysters] = Hash.new
+		self[:oysters] = Hash.new if !self[:oysters].is_a?(Hash)
 		self[:oysters]["tax"] = "1.08" if self[:oysters]["tax"].nil?
 		@receiving_times.each do |time|
 			self[:oysters][time] = Hash.new if self[:oysters][time].nil?
@@ -175,32 +262,35 @@ class OysterSupply < ApplicationRecord
 	end
 
 	def okayama_setup
-		self[:oysters]["tax"] = "1.08" if self[:oysters]["tax"].nil?
 		# Hinase by size, single daily price
 		self[:oysters]["okayama"] = Hash.new if self[:oysters]["okayama"].nil?
 		self[:oysters]["okayama"]["hinase"] = Hash.new if self[:oysters]["okayama"]["hinase"].nil?
-		self[:oysters]["okayama"]["hinase"]["大"] = 0 if self[:oysters]["okayama"]["hinase"]["大"].nil?
-		self[:oysters]["okayama"]["hinase"]["中"] = 0 if self[:oysters]["okayama"]["hinase"]["中"].nil?
-		self[:oysters]["okayama"]["hinase"]["小"] = 0 if self[:oysters]["okayama"]["hinase"]["小"].nil?
+		["大", "中", "小"].each do |type|
+			self[:oysters]["okayama"]["hinase"][type] = 0 if self[:oysters]["okayama"]["hinase"][type].nil?
+		end
 		self[:oysters]["okayama"]["hinase"]["subtotal"] = 0 if self[:oysters]["okayama"]["hinase"]["subtotal"].nil?
 		self[:oysters]["okayama"]["hinase"]["price"] = 0 if self[:oysters]["okayama"]["hinase"]["price"].nil?
 		self[:oysters]["okayama"]["hinase"]["invoice"] = 0 if self[:oysters]["okayama"]["hinase"]["invoice"].nil?
 		# Iri by supplier number, single daily price
 		self[:oysters]["okayama"]["iri"] = Hash.new if self[:oysters]["okayama"]["iri"].nil?
-		self[:oysters]["okayama"]["iri"]["1"] = 0 if self[:oysters]["okayama"]["iri"]["1"].nil?
-		self[:oysters]["okayama"]["iri"]["2"] = 0 if self[:oysters]["okayama"]["iri"]["2"].nil?
-		self[:oysters]["okayama"]["iri"]["5"] = 0 if self[:oysters]["okayama"]["iri"]["5"].nil?
-		self[:oysters]["okayama"]["iri"]["15"] = 0 if self[:oysters]["okayama"]["iri"]["15"].nil?
-		self[:oysters]["okayama"]["iri"]["38"] = 0 if self[:oysters]["okayama"]["iri"]["38"].nil?
+		["1", "2", "7", "15", "38"].each do |num|
+			self[:oysters]["okayama"]["iri"][num] = Hash.new if self[:oysters]["okayama"]["iri"][num].nil?
+			self[:oysters]["okayama"]["iri"][num]["volume"] = 0 if self[:oysters]["okayama"]["iri"][num]["volume"].nil?
+			self[:oysters]["okayama"]["iri"][num]["price"] = 0 if self[:oysters]["okayama"]["iri"][num]["price"].nil?
+		end
 		self[:oysters]["okayama"]["iri"]["subtotal"] = 0 if self[:oysters]["okayama"]["iri"]["subtotal"].nil?
 		self[:oysters]["okayama"]["iri"]["price"] = 0 if self[:oysters]["okayama"]["iri"]["price"].nil?
 		self[:oysters]["okayama"]["iri"]["invoice"] = 0 if self[:oysters]["okayama"]["iri"]["invoice"].nil?
 		# Tamatsu by supplier number, single daily price
 		self[:oysters]["okayama"]["tamatsu"] = Hash.new if self[:oysters]["okayama"]["tamatsu"].nil?
-		self[:oysters]["okayama"]["tamatsu"]["1"] = 0 if self[:oysters]["okayama"]["tamatsu"]["1"].nil?
-		self[:oysters]["okayama"]["tamatsu"]["2"] = 0 if self[:oysters]["okayama"]["tamatsu"]["2"].nil?
-		self[:oysters]["okayama"]["tamatsu"]["4"] = 0 if self[:oysters]["okayama"]["tamatsu"]["4"].nil?
-		self[:oysters]["okayama"]["tamatsu"]["5"] = 0 if self[:oysters]["okayama"]["tamatsu"]["5"].nil?
+		["1", "2", "4", "5"].each do |num|
+			self[:oysters]["okayama"]["tamatsu"][num] = Hash.new if self[:oysters]["okayama"]["tamatsu"][num].nil?
+			self[:oysters]["okayama"]["tamatsu"][num]["大"] = 0 if self[:oysters]["okayama"]["tamatsu"][num]["大"].nil?
+			self[:oysters]["okayama"]["tamatsu"][num]["小"] = 0 if self[:oysters]["okayama"]["tamatsu"][num]["小"].nil?
+			self[:oysters]["okayama"]["tamatsu"][num]["volume"] = 0 if self[:oysters]["okayama"]["tamatsu"][num]["volume"].nil?
+			self[:oysters]["okayama"]["tamatsu"][num]["price"] = 0 if self[:oysters]["okayama"]["tamatsu"][num]["price"].nil?
+		end
+		self[:oysters]["okayama"]["tamatsu"]["small_price"] = 0 if self[:oysters]["okayama"]["tamatsu"]["small_price"].nil?
 		self[:oysters]["okayama"]["tamatsu"]["subtotal"] = 0 if self[:oysters]["okayama"]["tamatsu"]["subtotal"].nil?
 		self[:oysters]["okayama"]["tamatsu"]["price"] = 0 if self[:oysters]["okayama"]["tamatsu"]["price"].nil?
 		self[:oysters]["okayama"]["tamatsu"]["invoice"] = 0 if self[:oysters]["okayama"]["tamatsu"]["invoice"].nil?

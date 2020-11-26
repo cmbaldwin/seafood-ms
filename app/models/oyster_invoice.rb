@@ -12,7 +12,7 @@ class OysterInvoice < ApplicationRecord
 	validates_uniqueness_of :start_date
 	validates_presence_of :end_date
 	validates_uniqueness_of :end_date
-	validate :supply_uniqueness_and_completion, on: :create
+	#validate :supply_uniqueness_and_completion, on: :create
 
 	serialize :data, Hash
 

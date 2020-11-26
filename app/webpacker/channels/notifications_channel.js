@@ -1,6 +1,6 @@
 import consumer from "./consumer"
 
-// Send messages like ActionCable.server.broadcast "notifications_channel", message: 'message'
+// Send messages like ActionCable.server.broadcast "notifications_channel_#{user_id}", message: 'message'
 
 document.addEventListener('turbolinks:load', () => {
 
@@ -11,6 +11,11 @@ document.addEventListener('turbolinks:load', () => {
 		connected() {
 			// Called when the subscription is ready for use on the server
 			// console.log("User with ID " + user_id + " connected to notifications...")
+			$.ajax({
+				type: "POST",
+				url: "/messages/clear_expired_messages",
+				data: {'user': user_id},
+			});
 		},
 
 		disconnected() {

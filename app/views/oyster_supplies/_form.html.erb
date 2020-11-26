@@ -389,90 +389,268 @@
 								<% end %>
 								<td><%= size %></td>
 								<td>
-									<%= oysters_form.input "okayama[hinase][#{size}]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { id: "hinase_#{size}_volume", :class => 'hinase_volume floatTextBox', :value => @oyster_supply.oysters["okayama"]["hinase"]["#{size}"] } %>
+									<div class="input-group">
+										<%= oysters_form.input "okayama[hinase][#{size}]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0 text-right", :input_html => { id: "hinase_#{size}_volume", :class => 'hinase_volume floatTextBox', :value => @oyster_supply.oysters["okayama"]["hinase"]["#{size}"] }, wrapper: false %>
+										<div class="input-group-append">
+											<span class="input-group-text"><i>㎏</i></span>
+										</div>
+									</div>
 								</td>
 								<% if i == 0 %>
 									<td rowspan="3" class="align-bottom">
-										<%= oysters_form.input "okayama[hinase][subtotal]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { :readonly => :readonly, id: "hinase_subtotal", :class => 'floatTextBox', :value => @oyster_supply.oysters["okayama"]["hinase"]["subtotal"] } %>
+										<div class="input-group w-75 float-left">
+											<%= oysters_form.input "okayama[hinase][subtotal]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0 text-right", :input_html => { :readonly => :readonly, id: "hinase_subtotal", :class => 'font-weight-bolder floatTextBox', :value => @oyster_supply.oysters["okayama"]["hinase"]["subtotal"] }, wrapper: false %>
+											<div class="input-group-append">
+												<span class="input-group-text"><i>㎏</i></span>
+											</div>
+										</div>
+										<span class="float-right w-25 text-center mt-2">×</span>
 									</td>
 									<td rowspan="3" class="align-bottom">
-										<%= oysters_form.input "okayama[hinase][price]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { id: "hinase_price", :class => 'floatTextBox', :value => @oyster_supply.oysters["okayama"]["hinase"]["price"] } %>
+										<div class="input-group w-75 float-left">
+											<div class="input-group-prepend">
+												<span class="input-group-text">￥</span>
+											</div>
+											<%= oysters_form.input "okayama[hinase][price]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { id: "hinase_price", :class => 'floatTextBox', :value => @oyster_supply.oysters["okayama"]["hinase"]["price"] }, wrapper: false %>
+										</div>
+										<div class="w-25 mt-2 float-right text-center">
+											<span class="small">×1.08</span>
+										</div>
 									</td>
 									<td rowspan="3" class="align-bottom">
-										<%= oysters_form.input "okayama[hinase][invoice]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { :readonly => :readonly, id: "hinase_invoice", :class => 'floatTextBox', :value => @oyster_supply.oysters["okayama"]["hinase"]["invoice"] } %>
+										<div class="input-group">
+											<div class="input-group-prepend">
+												<span class="input-group-text">￥</span>
+											</div>
+											<%= oysters_form.input "okayama[hinase][invoice]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { :readonly => :readonly, id: "hinase_invoice", :class => 'font-weight-bolder floatTextBox', :value => @oyster_supply.oysters["okayama"]["hinase"]["invoice"] }, wrapper: false %>
+										</div>
 									</td>
 								<% end %>
 							</tr>
 						<% end %>
 					<%# OKAYAMA-IRI %>
-						<% ["1", "2", "5", "15", "38"].each_with_index do |sup_num, i| %>
+						<% ["1", "2", "7", "15", "38"].each_with_index do |sup_num, i| %>
 							<tr class="iri_supply">
 							<% if i == 0 %>
-								<td rowspan="5" class="vertical align-middle text-center bg-light"><h5 class="p-0 m-3">伊里漁協</h5></td>
-								<td rowspan="5"><h6>伊里</h6></td>
+								<td rowspan="6" class="vertical align-middle text-center bg-light"><h5 class="p-0 m-3">伊里漁協</h5></td>
+								<td rowspan="6"><h6>伊里</h6></td>
 							<% end %>
 								<td><%= sup_num %></td>
-								<td><%= oysters_form.input "okayama[iri][#{sup_num}]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { id: "iri_#{sup_num}_volume", :class => 'iri_volume floatTextBox', :value => @oyster_supply.oysters["okayama"]["iri"]["#{sup_num}"] } %>
+								<td>
+									<div class="input-group">
+										<%= oysters_form.input "okayama[iri][#{sup_num}][volume]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0 text-right", :input_html => { id: "iri_#{sup_num}_volume", :class => 'iri_volume floatTextBox', :value => @oyster_supply.oysters["okayama"]["iri"]["#{sup_num}"]["volume"] }, wrapper: false %>
+										<div class="input-group-append">
+											<span class="input-group-text"><i>㎏</i></span>
+										</div>
+									</div>
 								</td>
-							<% if i == 0 %>
-								<td rowspan="5" class="align-bottom">
-									<%= oysters_form.input "okayama[iri][subtotal]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { :readonly => :readonly, id: "iri_subtotal", :class => 'floatTextBox', :value => @oyster_supply.oysters["okayama"]["iri"]["subtotal"] } %>
+								<td>
+									<span class="float-right w-25 text-center mt-2">×</span>
 								</td>
-								<td rowspan="5" class="align-bottom">
-									<%= oysters_form.input "okayama[iri][price]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { :class => 'floatTextBox', id: "iri_price", :value => @oyster_supply.oysters["okayama"]["iri"]["price"] } %>
+								<td>
+									<div class="input-group w-75 float-left">
+										<div class="input-group-prepend">
+											<span class="input-group-text">￥</span>
+										</div>
+										<%= oysters_form.input "okayama[iri][#{sup_num}][price]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { :class => 'floatTextBox iri_price', id: "iri_#{sup_num}_price", :value => @oyster_supply.oysters["okayama"]["iri"][sup_num]["price"], 'disabled' => 'disabled' }, wrapper: false %>
+									</div>
+									<div class="w-25 mt-2 float-right text-center">
+										<span class="small">×1.08</span>
+									</div>
 								</td>
-								<td rowspan="5" class="align-bottom">
-									<%= oysters_form.input "okayama[iri][invoice]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { :readonly => :readonly, id: "iri_invoice", :class => 'floatTextBox', :value => @oyster_supply.oysters["okayama"]["iri"]["invoice"] } %>
+								<td>
+									<div class="rounded bg-light p-2 m-0">
+										￥<span id="iri_<%= sup_num %>_invoice_subtotal"></span>
+									</div>
 								</td>
-							<% end %>
 							</tr>
 						<% end %>
+						<tr class="iri_totals">
+							<td colspan="2">
+								<button type="button" id="iri_tanka_type" class="btn btn-sm btn-secondary" data-toggle="button" aria-pressed="true">
+									<small>統一単価</small>
+								</button>
+							</td>
+							<td>
+								<div class="input-group w-75 float-left">
+									<%= oysters_form.input "okayama[iri][subtotal]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0 text-right", :input_html => { :readonly => :readonly, id: "iri_subtotal", :class => 'font-weight-bolder floatTextBox', :value => @oyster_supply.oysters["okayama"]["iri"]["subtotal"] }, wrapper: false %>
+									<div class="input-group-append">
+										<span class="input-group-text"><i>㎏</i></span>
+									</div>
+								</div>
+								<span class="float-right w-25 text-center mt-2">×</span>
+							</td>
+							<td>
+								<div class="input-group w-75 float-left">
+									<div class="input-group-prepend">
+										<span class="input-group-text">￥</span>
+									</div>
+									<%= oysters_form.input "okayama[iri][price]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { :class => 'floatTextBox', id: "iri_avg_price", :value => @oyster_supply.oysters["okayama"]["iri"]["price"] }, wrapper: false %>
+								</div>
+								<div class="w-25 mt-2 float-right text-center">
+									<span class="small">×1.08</span>
+								</div>
+							</td>
+							<td>
+								<div class="input-group">
+									<div class="input-group-prepend">
+										<span class="input-group-text">￥</span>
+									</div>
+									<%= oysters_form.input "okayama[iri][invoice]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { :readonly => :readonly, id: "iri_invoice", :class => 'font-weight-bolder floatTextBox', :value => @oyster_supply.oysters["okayama"]["iri"]["invoice"] }, wrapper: false %>
+								</div>
+							</td>
+						</tr>
 					<%# OKAYAMA-TAMATSU %>
 						<% ["1", "2", "4", "5"].each_with_index do |sup_num, i| %>
 							<tr class="tamatsu_supply">
 								<% if i == 0 %>
-									<td rowspan="12" class="vertical align-middle text-center bg-light"><h5 class="p-0 m-3">邑久町漁協</h5></td>
-									<td rowspan="4"><h6>玉津<br>（邑久）</h6></td>
+									<td rowspan="14" class="vertical align-middle text-center bg-light"><h5 class="p-0 m-3">邑久町漁協</h5></td>
+									<td rowspan="5"><h6>玉津<br>（邑久）</h6></td>
 								<% end %>
 								<td><%= sup_num %></td>
 								<td>
-									<%= oysters_form.input "okayama[tamatsu][#{sup_num}]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { id: "tamatsu_#{sup_num}_volume", :class => ' tamatsu_volume floatTextBox', :value => @oyster_supply.oysters["okayama"]["tamatsu"]["#{sup_num}"] } %>
+									<div class="input-group w-75 float-left">
+										<div class="input-group-prepend">
+											<span class="input-group-text">小</span>
+										</div>
+										<%= oysters_form.input "okayama[tamatsu][#{sup_num}][小]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0 text-right", :input_html => { id: "tamatsu_#{sup_num}_small_volume", :class => 'tamatsu_small_volume floatTextBox', :value => @oyster_supply.oysters["okayama"]["tamatsu"]["#{sup_num}"]["小"] }, wrapper: false %>
+										<div class="input-group-append">
+											<span class="input-group-text"><i>㎏</i></span>
+										</div>
+									</div>
 								</td>
-								<% if i == 0 %>
-									<td rowspan="4" class="align-bottom">
-										<%= oysters_form.input "okayama[tamatsu][subtotal]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { :readonly => :readonly, id: "tamatsu_subtotal", :class => 'floatTextBox', :value => @oyster_supply.oysters["okayama"]["iri"]["subtotal"] } %>
-									</td>
-									<td rowspan="4" class="align-bottom">
-										<%= oysters_form.input "okayama[tamatsu][price]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { id: "tamatsu_price", :class => 'floatTextBox', :value => @oyster_supply.oysters["okayama"]["iri"]["price"] } %>
-										</td>
-									<td rowspan="4" class="align-bottom">
-										<%= oysters_form.input "okayama[tamatsu][invoice]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { :readonly => :readonly, id: "tamatsu_invoice", :class => 'floatTextBox', :value => @oyster_supply.oysters["okayama"]["iri"]["invoice"] } %>
-									</td>
-								<% end %>
+								<td>
+									<div class="input-group">
+										<div class="input-group-prepend">
+											<span class="input-group-text">大</span>
+										</div>
+										<%= oysters_form.input "okayama[tamatsu][#{sup_num}][大]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0 text-right", :input_html => { id: "tamatsu_#{sup_num}_large_volume", :class => 'tamatsu_volume floatTextBox', :value => @oyster_supply.oysters["okayama"]["tamatsu"]["#{sup_num}"]["大"] }, wrapper: false %>
+										<div class="input-group-append">
+											<span class="input-group-text"><i>㎏</i></span>
+										</div>
+									</div>
+								</td>
+								<td>
+									<div class="input-group w-75 float-left">
+										<div class="input-group-prepend">
+											<span class="input-group-text">￥</span>
+										</div>
+										<%= oysters_form.input "okayama[tamatsu][#{sup_num}][price]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { id: "tamatsu_#{sup_num}_price", :class => 'tamatsu_price floatTextBox', :value => @oyster_supply.oysters["okayama"]["tamatsu"][sup_num]["price"], 'disabled' => 'disabled' }, wrapper: false %>
+									</div>
+									<div class="w-25 mt-2 float-right text-center">
+										<span class="small">×1.08</span>
+									</div>
+								</td>
+								<td>
+									<div class="rounded bg-light p-2 m-0">
+										￥<span id="tamatsu_<%= sup_num %>_invoice_subtotal"></span>
+									</div>
+								</td>
 							</tr>
 						<% end %>
+						<tr class="tamatsu_totals">
+							<td>
+								<button id="tamatsu_tanka_type" type="button" class="btn btn-sm btn-secondary p-1" data-toggle="button" aria-pressed="true">
+									<small>統一単価</small>
+								</button>
+							</td>
+							<td>
+								<div class="input-group w-75 float-left">
+									<div class="input-group-prepend">
+										<span class="input-group-text">￥</span>
+									</div>
+									<%= oysters_form.input "okayama[tamatsu][small_price]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { id: "tamatsu_small_price", :class => 'floatTextBox', :value => @oyster_supply.oysters["okayama"]["tamatsu"]["small_price"] }, wrapper: false %>
+								</div>
+							</td>
+							<td>
+								<div class="input-group w-75 float-left">
+									<%= oysters_form.input "okayama[tamatsu][subtotal]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0 text-right", :input_html => { :readonly => :readonly, id: "tamatsu_subtotal", :class => 'font-weight-bolder floatTextBox', :value => @oyster_supply.oysters["okayama"]["tamatsu"]["subtotal"] }, wrapper: false %>
+									<div class="input-group-append">
+										<span class="input-group-text"><i>㎏</i></span>
+									</div>
+								</div>
+								<span class="float-right w-25 text-center mt-2">×</span>
+							</td>
+							<td>
+								<div class="input-group w-75 float-left">
+									<div class="input-group-prepend">
+										<span class="input-group-text">￥</span>
+									</div>
+									<%= oysters_form.input "okayama[tamatsu][price]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { id: "tamatsu_avg_price", :class => 'floatTextBox', :value => @oyster_supply.oysters["okayama"]["tamatsu"]["price"] }, wrapper: false %>
+								</div>
+								<div class="w-25 mt-2 float-right text-center">
+									<span class="small">×1.08</span>
+								</div>
+							</td>
+							<td>
+								<div class="input-group">
+									<div class="input-group-prepend">
+										<span class="input-group-text">￥</span>
+									</div>
+									<%= oysters_form.input "okayama[tamatsu][invoice]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { :readonly => :readonly, id: "tamatsu_invoice", :class => 'font-weight-bolder floatTextBox', :value => @oyster_supply.oysters["okayama"]["tamatsu"]["invoice"] }, wrapper: false %>
+								</div>
+							</td>
+						</tr>
 					<%# OKAYAMA-MUSHIAGE %>
 						<% 7.times do |t| %>
 						<tr class="mushiage_supply">
 							<% if t == 0 %>
-								<td rowspan="8" colspan="2"><h6>虫明<br>（邑久）</h6></td>
+								<td rowspan="9" colspan="2"><h6>虫明<br>（邑久）</h6></td>
 							<% end %>
 							<td>
-								<%= oysters_form.input "okayama[mushiage][#{t}][volume]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { id: "mushiage_#{t}_volume", :class => 'mushiage_volume floatTextBox', :value => @oyster_supply.oysters["okayama"]["mushiage"]["#{t}"]["volume"] } %>
+								<div class="input-group">
+									<%= oysters_form.input "okayama[mushiage][#{t}][volume]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0 text-right", :input_html => { id: "mushiage_#{t}_volume", :class => 'mushiage_volume floatTextBox', :value => @oyster_supply.oysters["okayama"]["mushiage"]["#{t}"]["volume"] }, wrapper: false %>
+									<div class="input-group-append">
+										<span class="input-group-text"><i>㎏</i></span>
+									</div>
+								</div>
 							</td>
-							<% if t == 0 %>
-								<td rowspan="8" class="align-bottom">
-									<%= oysters_form.input "okayama[mushiage][subtotal]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { id: "mushiage_subtotal", :readonly => :readonly, :class => 'floatTextBox', :value => @oyster_supply.oysters["okayama"]["mushiage"]["subtotal"] } %>
-								</td>
-							<% end %>
-								<td><%= oysters_form.input "okayama[mushiage][#{t}][price]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { id: "mushiage_#{t}_price", :class => 'mushiage_price floatTextBox', :value => @oyster_supply.oysters["okayama"]["mushiage"]["#{t}"]["price"] } %></td>
-							<% if t == 0 %>
-								<td rowspan="8" class="align-bottom">
-									<%= oysters_form.input "okayama[mushiage][invoice]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { id: "mushiage_invoice", :readonly => :readonly, :class => 'floatTextBox', :value => @oyster_supply.oysters["okayama"]["mushiage"]["invoice"] } %>
-								</td>
-							<% end %>
+							<td>
+								<div class="w-25 float-right pt-2 text-center">×</div>
+							</td>
+							<td>
+								<div class="input-group">
+									<div class="input-group-prepend">
+										<span class="input-group-text">￥</span>
+									</div>
+									<%= oysters_form.input "okayama[mushiage][#{t}][price]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { id: "mushiage_#{t}_price", :class => 'mushiage_price floatTextBox', :value => @oyster_supply.oysters["okayama"]["mushiage"]["#{t}"]["price"] }, wrapper: false %>
+								</div>
+							</td>
+							<td>
+								<div class="rounded bg-light p-2 m-0">
+									￥<span id="mushiage_<%= t %>_invoice_subtotal"></span>
+								</div>
+							</td>
 						</tr>
 						<% end %>
+						<tr class="mushiage_totals">
+							<td>
+								<div class="input-group">
+									<%= oysters_form.input "okayama[mushiage][subtotal]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0 text-right", :input_html => { id: "mushiage_volume_subtotal", :readonly => :readonly, :class => 'font-weight-bolder floatTextBox', :value => @oyster_supply.oysters["okayama"]["mushiage"]["subtotal"] }, wrapper: false %>
+									<div class="input-group-append">
+										<span class="input-group-text"><i>㎏</i></span>
+									</div>
+								</div>
+							</td>
+							<td>
+								<div class="w-100 pt-2 text-center">
+									×（1キロ＠）￥<b><span id="mushiage_per_kilo_price"></span></b>
+								</div>
+							</td>
+							<td>
+								<div class="w-100 pt-2 text-center">
+									⇒￥<b><span id="mushiage_pre_tax_subtotal"></span></b>×<%= @oyster_supply[:oysters]["tax"] %>
+								</div>
+							</td>
+							<td>
+								<div class="input-group mb-3">
+									<div class="input-group-prepend">
+										<span class="input-group-text">￥</span>
+									</div>
+									<%= oysters_form.input "okayama[mushiage][invoice]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { id: "mushiage_invoice", :readonly => :readonly, :class => 'font-weight-bolder floatTextBox', :value => @oyster_supply.oysters["okayama"]["mushiage"]["invoice"] }, wrapper: false %>
+								</div>
+							</td>
+						</tr>
 					</table>
 				</div>
 				<div class="tab-pane fade" id="nav-price" role="tabpanel" aria-labelledby="nav-price-tab">

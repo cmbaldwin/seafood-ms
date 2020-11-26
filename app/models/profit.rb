@@ -8,6 +8,7 @@ class Profit < ApplicationRecord
 	serialize :figures
 	serialize :totals
 	serialize :subtotals
+	serialize :volumes
 
 	attr_accessor :new_figures
 
@@ -260,7 +261,7 @@ class Profit < ApplicationRecord
 		self.totals[:profits] = total_sales - total_expenses - extras
 	end
 
-	def volumes
+	def calculate_volumes
 		product_volumes = Hash.new
 		market_volumes = Hash.new
 		total_sold = 0

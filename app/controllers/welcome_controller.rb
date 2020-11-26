@@ -34,49 +34,136 @@ class WelcomeController < ApplicationController
 		end
 	end
 
-	def infographics_setup
-		# Set up the yearly chart with two recent seasons of data
-		# https://ankane.github.io/chartkick.js/examples/
-		@year_sales = Hash.new
-		@last_year_sales = Hash.new
-		# Consider swithc to Profit.where("sales_date like ?", "%2020%") in the future
-		# Or do a migration with a date to date string
-		Profit.all.order(:sales_date).each do |profit|
-			if profit.sales_date_to_datetime > @this_season_start && profit.sales_date_to_datetime < @this_season_end
-				if !profit.totals[:profits].nil?
-					@year_sales[profit.sales_date_to_datetime.strftime("%m月%d日")] = 0 if @year_sales[profit.sales_date_to_datetime.strftime("%m月%d日")].nil?
-					@year_sales[profit.sales_date_to_datetime.strftime("%m月%d日")] += (profit.totals[:profits] <= 0 ? 0 : profit.totals[:profits])
-				end
-			elsif profit.sales_date_to_datetime > @prior_season_start && profit.sales_date_to_datetime < @prior_season_end
-				if !profit.totals[:profits].nil?
-					@last_year_sales[profit.sales_date_to_datetime.strftime("%m月%d日")] = 0 if @last_year_sales[profit.sales_date_to_datetime.strftime("%m月%d日")].nil?
-					@last_year_sales[profit.sales_date_to_datetime.strftime("%m月%d日")] += (profit.totals[:profits] <= 0 ? 0 : profit.totals[:profits])
-				end
-			end
-		end 
-
-		ymax = @year_sales.merge(@last_year_sales).values.max
-		ymax.nil? ? (@yearly_max = ymax.round(-(ymax.to_i.to_s.length - 4))) : (@yearly_max = 0)
-
-		#Not used right now, but could be used
-		unless @year_sales.empty? || @last_year_sales.empty?
-			@this_year_daily_average = '￥' + helpers.yenify(@year_sales.values.sum / @year_sales.values.length)
-			@last_year_daily_average = '￥' + helpers.yenify(@last_year_sales.values.sum / @last_year_sales.values.length)
-			@two_year_daily_average = '￥' + helpers.yenify(@year_sales.merge(@last_year_sales).values.sum / @year_sales.merge(@last_year_sales).values.length)
-		end
-	end
-
 	def profit_figures_chart
 		if current_user.admin?
 			# Set up graphs for seasonal profit to date
 			time_setup
-			infographics_setup
+
+				# Set up the yearly chart with two recent seasons of data
+				# https://ankane.github.io/chartkick.js/examples/
+				@year_sales = Hash.new
+				@last_year_sales = Hash.new
+				# Consider swithc to Profit.where("sales_date like ?", "%2020%") in the future
+				# Or do a migration with a date to date string
+				Profit.all.order(:sales_date).each do |profit|
+					unless profit.totals[:profits].nil?
+						date = profit.sales_date_to_datetime.strftime("%m月%d日")
+						if profit.sales_date_to_datetime > @this_season_start && profit.sales_date_to_datetime < @this_season_end
+							@year_sales[date] = 0 if @year_sales[date].nil?
+							@year_sales[date] += (profit.totals[:profits] <= 0 ? 0 : (profit.totals[:profits] / 10000))
+						elsif profit.sales_date_to_datetime > @prior_season_start && profit.sales_date_to_datetime < @prior_season_end
+							@last_year_sales[date] = 0 if @last_year_sales[date].nil?
+							@last_year_sales[date] += (profit.totals[:profits] <= 0 ? 0 : (profit.totals[:profits] / 10000))
+						end
+					end
+				end 
+
+				ymax = @year_sales.merge(@last_year_sales).values.max
+				ymax.nil? ? (@yearly_max = ymax.round(-(ymax.to_i.to_s.length - 4))) : (@yearly_max = 0)
+
+				#Not used right now, but could be used
+				unless @year_sales.empty? || @last_year_sales.empty?
+					@this_year_daily_average = '万￥' + helpers.yenify(@year_sales.values.sum / @year_sales.values.length)
+					@last_year_daily_average = '万￥' + helpers.yenify(@last_year_sales.values.sum / @last_year_sales.values.length)
+					@two_year_daily_average = '万￥' + helpers.yenify(@year_sales.merge(@last_year_sales).values.sum / @year_sales.merge(@last_year_sales).values.length)
+				end
+
 			@data_array = [{name: '今年', data: @year_sales}, 
 						{name: '去年', data: @last_year_sales}, 
 				]
-			@averages_array = [ {name: '今年平均', data: {"10月01日" => (@this_year_daily_average ? @this_year_daily_average : 0)}},
-						{name: '去年平均', data: {"10月01日" => (@last_year_daily_average ? @last_year_daily_average : 0)}},
-						{name: '二年平均', data: {"10月01日" => (@two_year_daily_average ? @two_year_daily_average : 0)}},]
+		else
+			@data_array = [{name: 'Unauthorized', data: {}}]
+		end
+		render json: @data_array
+	end
+
+	def kilo_sales_estimate_chart
+		if current_user.admin?
+			# Set up graphs for seasonal profit to date
+			time_setup
+			@this_year_est = Hash.new
+			@last_year_est = Hash.new
+			Profit.all.order(:sales_date).each do |profit|
+				unless profit.totals[:profits].nil?
+					date = profit.sales_date_to_datetime.strftime("%m月%d日")
+					volumes = profit.volumes
+					kilo_price = (profit.totals[:profits] / (volumes[:total_volume] / 1000)).round(0)
+					if profit.sales_date_to_datetime > @this_season_start && profit.sales_date_to_datetime < @this_season_end
+						if @this_year_est[date].nil?
+							@this_year_est[date] = kilo_price
+						else
+							@this_year_est[date] = kilo_price if (kilo_price.to_i < @this_year_est[date].to_i)
+						end
+					elsif profit.sales_date_to_datetime > @prior_season_start && profit.sales_date_to_datetime < @prior_season_end
+						if @last_year_est[date].nil?
+							@last_year_est[date] = kilo_price
+						else
+							@last_year_est[date] = kilo_price if (kilo_price.to_i < @last_year_est[date].to_i)
+						end
+					end
+				end
+			end
+			@data_array = [{name: @this_season_start.year.to_s + ' ~ ' + @this_season_end.year.to_s, data: @this_year_est}, 
+						{name: @prior_season_start.year.to_s + ' ~ ' + @prior_season_end.year.to_s, data: @last_year_est}, 
+				]
+		else
+			@data_array = [{name: 'Unauthorized', data: {}}]
+		end
+		render json: @data_array
+	end
+
+	def farmer_kilo_costs_chart
+		if current_user.admin?
+			# Set up graphs for seasonal profit to date
+			time_setup
+			@this_year_costs = Hash.new
+			@last_year_costs = Hash.new
+			OysterSupply.all.order(:supply_date).each do |supply|
+				unless supply.oysters.empty?
+					date = supply.date.strftime("%m月%d日")
+					kilo_price = supply.totals[:cost_total]
+					volume = supply.totals[:mukimi_total]
+					unless kilo_price == 0 || volume == 0
+						kilo_price = (kilo_price / volume).round(0)
+					else
+						kilo_price = 0
+					end
+					if supply.date > @this_season_start && supply.date < @this_season_end
+						@this_year_costs[date] = kilo_price
+					elsif supply.date > @prior_season_start && supply.date < @prior_season_end
+						@last_year_costs[date] = kilo_price
+					end
+				end
+			end
+			@data_array = [{name: '今年', data: @this_year_costs}, 
+						{name: '去年', data: @last_year_costs}, 
+				]
+		else
+			@data_array = [{name: 'Unauthorized', data: {}}]
+		end
+		render json: @data_array
+	end
+
+	def daily_volumes_chart
+		if current_user.admin?
+			# Set up graphs for seasonal profit to date
+			time_setup
+			@this_year_volume = Hash.new
+			@last_year_volume = Hash.new
+			OysterSupply.all.order(:supply_date).each do |supply|
+				unless supply.oysters.empty?
+					date = supply.date.strftime("%m月%d日")
+					volume = supply.totals[:mukimi_total]
+					if supply.date > @this_season_start && supply.date < @this_season_end
+						@this_year_volume[date] = volume
+					elsif supply.date > @prior_season_start && supply.date < @prior_season_end
+						@last_year_volume[date] = volume
+					end
+				end
+			end
+			@data_array = [{name: '今年', data: @this_year_volume}, 
+						{name: '去年', data: @last_year_volume}, 
+				]
 		else
 			@data_array = [{name: 'Unauthorized', data: {}}]
 		end

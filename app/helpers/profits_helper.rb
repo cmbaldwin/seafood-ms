@@ -11,24 +11,28 @@ module ProfitsHelper
 		{"1"=>"トレイ", "2"=>"チューブ", "3"=>"水切り", "4"=>"殻付き", "5"=>"冷凍", "6"=>"単品"}[(type_str)]
 	end
 
+	def get_product_grams(product_id)
+		@product_data[product_id]["grams"].to_f
+	end
+
 	def get_product_name(product_id)
-		Product.find(product_id).namae
+		@product_data[product_id]["namae"]
 	end
 
 	def get_product_cost(product_id)
-		Product.find(product_id).cost
+		@product_data[product_id]["cost"].to_f
 	end
 
 	def get_product_box_count(product_id)
-		Product.find(product_id).multiplier
+		@product_data[product_id]["multiplier"].to_f
 	end
 
 	def get_product_product_per_box(product_id)
-		Product.find(product_id).count
+		@product_data[product_id]["count"].to_f
 	end
 
 	def get_product_average_price(product_id)
-		Product.find(product_id).average_price
+		@product_data[product_id]["average_price"].to_f
 	end
 
 	def strange_price_check(product_id, unit_price)

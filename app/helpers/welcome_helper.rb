@@ -9,7 +9,7 @@ module WelcomeHelper
 
 	def card_link(card, title, add_class)
 		if card
-			link_to title, card.download.url, class: 'btn ' + add_class, target: '_blank'
+			link_to title, card.download.url, class: 'btn ' + add_class, target: '_blank', "data-tippy-content" => exp_card_popover(card)
 		else
 			link_to title, new_expiration_card_path, class: 'btn disabled ' + add_class, target: '_blank'
 		end
@@ -66,7 +66,11 @@ module WelcomeHelper
 		"10000005" => "殻付き 牡蠣30ヶ",
 		"10000025" => "殻付き 牡蠣40ヶ",
 		"10000006" => "殻付き 牡蠣50ヶ",
-		"10000040" => "殻付き 牡蠣100ヶ"
+		"10000040" => "殻付き 牡蠣100ヶ",
+		'barakaki_1k' => '小　殻付き　1㎏', 
+		'barakaki_2k' => '小　殻付き　2㎏', 
+		'barakaki_3k' => '小　殻付き　3㎏', 
+		'barakaki_5k' => '小　殻付き　5㎏', 
 		}[manageNumber]
 	end
 

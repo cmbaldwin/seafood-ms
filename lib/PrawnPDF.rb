@@ -27,7 +27,7 @@ class PrawnPDF
 
 		def self.order_counts(orders)
 			counts = Hash.new
-			types_arr = %w{生むき身 生セル 冷凍むき身 冷凍セル 穴子(件) 穴子(g) 干しムキエビ(80g) 干し殻付エビ(80g) タコ}
+			types_arr = %w{生むき身 生セル 小殻付 セルカード 冷凍むき身 冷凍セル 穴子(件) 穴子(g) 干しムキエビ(80g) 干し殻付エビ(80g) タコ}
 			types_arr.each {|w| counts[w] = 0}
 			count_hash = { 
 				"kakiset302" => [2, 30, 0, 0, 0, 0, 0, 0, 0],
@@ -62,8 +62,12 @@ class PrawnPDF
 				"hebi80x5" => [0, 0, 0, 0, 0, 0, 0, 5, 0],
 				"anago600" => [0, 0, 0, 0, 1, 600, 0, 0, 0],
 				"anago480" => [0, 0, 0, 0, 1, 480, 0, 0, 0],
-				"anago350" => [0, 0, 0, 0, 1, 350, 0, 0, 0] }
-			orders.each do |order|
+				"anago350" => [0, 0, 0, 0, 1, 350, 0, 0, 0],
+				"syoukara1kg" => [0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+				"syoukara2kg" => [0, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0],
+				"syoukara3kg" => [0, 0, 3, 1, 0, 0, 0, 0, 0, 0, 0],
+				"syoukara5kg" => [0, 0, 5, 1, 0, 0, 0, 0, 0, 0, 0]}
+				orders.each do |order|
 				unless order.order_status(false) == 4
 					count_hash[order.item_id].each_with_index do |count, i|
 						counts[types_arr[i]] += count
@@ -86,6 +90,10 @@ class PrawnPDF
 				"karatsuki30" => ["", "30個", "", ""],
 				"karatsuki20" => ["", "20個", "", ""],
 				"karatsuki10" => ["", "10個", "", ""],
+				"syoukara1kg" => ["", "小1㎏", "", ""],
+				"syoukara2kg" => ["", "小2㎏", "", ""],
+				"syoukara3kg" => ["", "小3㎏", "", ""],
+				"syoukara5kg" => ["", "小5㎏", "", ""],
 				"mukimi04" => ["500g×4", "", "", ""],
 				"mukimi03" => ["500g×3", "", "", ""],
 				"mukimi02" => ["500g×2", "", "", ""],

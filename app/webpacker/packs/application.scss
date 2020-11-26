@@ -60,6 +60,21 @@ body {
 	overflow-x: hidden;
 }
 
+#index .card-columns {
+	@include media-breakpoint-only(sm) {
+		column-count: 1;
+	}
+	@include media-breakpoint-only(md) {
+		column-count: 1;
+	}
+	@include media-breakpoint-only(lg) {
+		column-count: 2;
+	}
+	@include media-breakpoint-only(xl) {
+		column-count: 2;
+	}
+}
+
 /* Notification */
 .notice_container {
 		display: block;
@@ -323,6 +338,8 @@ input[type=number]::-webkit-outer-spin-button {
 	overflow: hidden;
 	position: fixed;
 	right: 0;
+	top: 0;
+	z-index: 999;
 	height: 100vh;
 }
 

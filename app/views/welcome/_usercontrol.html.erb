@@ -11,11 +11,11 @@
 			<% else %>
 				border-dark
 		<% end %>">
-		<button id="userheader<%= user.id %>" class="card-header btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapse<%= user.id %>" aria-expanded="false" aria-controls="collapse<%= user.id %>">
-			<div class="float-left font-weight-bold">
+		<button id="userheader<%= user.id %>" class="card-header w-100 btn btn-link btn-sm collapsed m-0 p-1" type="button" data-toggle="collapse" data-target="#collapse<%= user.id %>" aria-expanded="false" aria-controls="collapse<%= user.id %>">
+			<div class="float-left font-weight-bold pl-2">
 				<%= user.username %>
 			</div>
-			<div class="float-right">
+			<div class="float-right pt-1 pr-1">
 				<% if user.admin? %>
 					<i class="fas fa-user-ninja text-info"></i>
 				<% elsif user.vip? %>

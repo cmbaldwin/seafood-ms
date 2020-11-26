@@ -8,7 +8,7 @@ environment.plugins.prepend('Provide',
     jQuery: 'jquery',
     Popper: ['popper.js', 'default'],
     action_cable: 'action_cable',
-    moment: 'moment'
+    moment: 'moment',
   }),
   new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/)
 )

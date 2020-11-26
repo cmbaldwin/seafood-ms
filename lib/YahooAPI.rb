@@ -130,7 +130,7 @@ class YahooAPI
 		end
 	end
 
-	def get_status
+	def get_status(acquire_new_details)
 		# https://developer.yahoo.co.jp/webapi/shopping/orderCount.html
 		if authorized?
 			begin
@@ -142,10 +142,16 @@ class YahooAPI
 				@user.data[:yahoo][:store_status][:status] = request.parsed_response
 				@user.data[:yahoo][:store_status][:acquired] = DateTime.now
 				@user.save
+				if acquire_new_details
+					stop_after = 0
+					stop_after += request.parsed_response["ResultSet"]["Result"]["Count"]["NewOrder"].to_i if request.parsed_response.dig("ResultSet", "Result", "Count", "NewOrder")
+					stop_after += request.parsed_response["ResultSet"]["Result"]["Count"]["AutoDone"].to_i if request.parsed_response.dig("ResultSet", "Result", "Count", "AutoDone")
+					(stop_after > 0) ? get_order_details_in_sequence(stop_after) : (ap request.parsed_response)
+				end
 				true
 			rescue TypeError
 				puts "Error with Yahoo API request:"
-				ap request.parsed_response if request
+				ap request if request
 				false
 			end
 		else
@@ -192,35 +198,32 @@ class YahooAPI
 								<OrderTimeFrom>" + (DateTime.now - period).strftime("%Y%m%d") + "000000" + "</OrderTimeFrom>
 								<OrderTimeTo>" + DateTime.now.strftime("%Y%m%d%H%M%S") + "</OrderTimeTo>
 								</Condition>
-								<Field>OrderTime,OrderId,DeviceType,IsRoyalty,IsAffiliate,OrderStatus,StoreStatus,IsReadOnly,IsActive,IsSeen,IsSplit,Suspect,IsRoyaltyFix,PayStatus,SettleStatus,PayType,PayMethod,NeedBillSlip,NeedDetailedSlip,NeedReceipt,BillFirstName,BillFirstNameKana,BillLastName,BillLastNameKana,BillPrefecture,ShipFirstName,ShipFirstNameKana,ShipLastName,ShipLastNameKana,ShipPrefecture,ShipStatus,ShipMethod,ShipRequestDateNo,ShipCompanyCode,BuyerCommentsFlag,ReleaseDateFrom,ReleaseDateTo,GetPointFixDateFrom,GetPointFixDateTo,UsePointFixDateFrom,UsePointFixDateTo,IsLogin,TotalPrice</Field>
+								<Field>OrderId,OrderStatus</Field>
 							</Search>
 							<SellerId>oystersisters</SellerId>
 						</Req>")
-				order_count = request.parsed_response["Result"]["Search"]["TotalCount"]
+				ap request
+				begin
+					order_count = request.parsed_response["Result"]["Search"]["TotalCount"]
+				rescue
+					ap request
+					order_count = "0"
+				end
 				response = request.parsed_response["Result"]["Search"]["OrderInfo"]
 				unless order_count.to_i == 0
-					order_ids = Hash.new
+					order_ids = Array.new
 					if response[0].is_a?(Hash)
 						response.each_with_index do |order_response, i|
-							order_ids[i] = order_response["OrderId"]
+							order_ids << order_response["OrderId"]
 						end
 					else
 						order_ids[0] = response["OrderId"]
 					end
-					puts 'Getting order item details.'
-					if order_details_response = get_order_details(order_ids.values)
-						puts 'Compiling and recording orders in the database.'
-						compiled_results = Hash.new
-						order_ids.each do |i, order_id|
-							compiled_results[order_id] = Hash.new
-							unless order_ids.length < 2
-								compiled_results[order_id] = response[i].merge(order_details_response[order_id])
-							else
-								compiled_results[order_id] = response.merge(order_details_response[order_id])
-							end
-						end
-						record_results(compiled_results)
+					puts 'Getting order item details and recording orders in the database.'
+					if order_ids
+						get_order_details(order_ids)
 						puts "Imported #{order_count} orders."
+						true
 					else
 						puts 'Error with acquiring order item details.'
 						false
@@ -240,17 +243,39 @@ class YahooAPI
 		end
 	end
 
-	def record_results(compiled_results)
-		compiled_results.each do |order_id, order_details|
-			unless YahooOrder.exists?(order_id: order_id)
-				@order = YahooOrder.create(order_id: order_id) 
-			else
-				@order = YahooOrder.find_by(order_id: order_id)
+	def refresh_single_order_details(order_id)
+		# https://developer.yahoo.co.jp/webapi/shopping/orderInfo.html
+		if authorized?
+			begin
+				order_details = self.class.post("https://circus.shopping.yahooapis.jp/ShoppingWebService/V1/orderInfo",
+					:headers => {"Content-Type" => 'text/xml;charset=UTF-8',
+						"Authorization" => 'Bearer ' + @user.data[:yahoo][:authorization]["access_token"]},
+					:body => 
+						"<Req>
+							<Target>
+								<OrderId>#{order_id}</OrderId>
+								<Field>OrderTime,OrderId,DeviceType,IsRoyalty,IsAffiliate,OrderStatus,StoreStatus,IsActive,IsSeen,IsSplit,Suspect,IsRoyaltyFix,PayStatus,SettleStatus,PayType,PayMethod,NeedBillSlip,NeedDetailedSlip,NeedReceipt,BillFirstName,BillFirstNameKana,BillLastName,BillLastNameKana,BillPrefecture,ShipFirstName,ShipFirstNameKana,ShipLastName,ShipLastNameKana,ShipPrefecture,ShipStatus,ShipMethod,ShipCompanyCode,IsLogin,TotalPrice,IsReadOnly,UsePointType,PayMethod,PayMethodName,BillZipCode,BillPrefecture,BillPrefectureKana,BillCity,BillCityKana,BillAddress1,BillAddress1Kana,BillAddress2,BillAddress2Kana,BillPhoneNumber,ShipMethod,ShipMethodName,ShipRequestDate,ShipRequestTime,ArriveType,ShipDate,ShipRequestTimeZoneCode,ShipZipCode,ShipPrefecture,ShipPrefectureKana,ShipCity,ShipCityKana,ShipAddress1,ShipAddress1Kana,ShipAddress2,ShipAddress2Kana,ShipPhoneNumber,ShipEmgPhoneNumber,ShipSection1Field,ShipSection1Value,ShipSection2Field,ShipSection2Value,LineId,ItemId,Title,SubCode,SubCodeOption,ItemOption,ProductId,Quantity</Field>
+								</Target>
+							<SellerId>oystersisters</SellerId>
+						</Req>").parsed_response
+				unless YahooOrder.exists?(order_id: order_id)
+					@order = YahooOrder.create(order_id: order_id) 
+				else
+					@order = YahooOrder.find_by(order_id: order_id)
+				end
+				ship_date = order_details["ResultSet"]["Result"]["OrderInfo"]["Ship"]["ShipDate"]
+				@order.ship_date = ship_date unless ship_date.nil?
+				(order_details["ResultSet"]["Result"]["Status"] == "OK") ? (@order.details = order_details["ResultSet"]["Result"]["OrderInfo"]) : (ap order_details)
+				@order.save
+				true
+			rescue TypeError
+				puts "Error with Yahoo API request:"
+				ap order_details if order_details
+				false
 			end
-			ship_date = order_details["ResultSet"]["Result"]["OrderInfo"]["Ship"]["ShipDate"]
-			@order.ship_date = ship_date unless ship_date.nil?
-			@order.details = order_details
-			@order.save
+		else
+			puts 'No authorization, login required.'
+			false
 		end
 	end
 
@@ -267,21 +292,119 @@ class YahooAPI
 							"<Req>
 								<Target>
 									<OrderId>#{order_id}</OrderId>
-									<Field>LineId,ItemId,Title,SubCode,SubCodeOption,ItemOption,ProductId,Quantity,BillPhoneNumber,BillZipCode,BillPrefecture,BillPrefectureKana,BillCity,BillCityKana,BillAddress1,BillAddress1Kana,BillAddress2,BillAddress2Kana,BillPhoneNumber,PayMethod,PayMethodName,ShipMethod,ShipMethodName,ShipRequestDate,ShipRequestTime,ShipRequestTimeZoneCode,ArriveType,ShipDate,ShipZipCode,ShipPrefecture,ShipPrefectureKana,ShipCity,ShipCityKana,ShipAddress1,ShipAddress1Kana,ShipAddress2,ShipAddress2Kana,ShipPhoneNumber,ShipEmgPhoneNumber,ShipSection1Field,ShipSection1Value,ShipSection2Field,ShipSection2Value</Field>
+									<Field>OrderTime,OrderId,DeviceType,IsRoyalty,IsAffiliate,OrderStatus,StoreStatus,IsActive,IsSeen,IsSplit,Suspect,IsRoyaltyFix,PayStatus,SettleStatus,PayType,PayMethod,NeedBillSlip,NeedDetailedSlip,NeedReceipt,BillFirstName,BillFirstNameKana,BillLastName,BillLastNameKana,BillPrefecture,ShipFirstName,ShipFirstNameKana,ShipLastName,ShipLastNameKana,ShipPrefecture,ShipStatus,ShipMethod,ShipCompanyCode,IsLogin,TotalPrice,IsReadOnly,UsePointType,PayMethod,PayMethodName,BillZipCode,BillPrefecture,BillPrefectureKana,BillCity,BillCityKana,BillAddress1,BillAddress1Kana,BillAddress2,BillAddress2Kana,BillPhoneNumber,ShipMethod,ShipMethodName,ShipRequestDate,ShipRequestTime,ArriveType,ShipDate,ShipRequestTimeZoneCode,ShipZipCode,ShipPrefecture,ShipPrefectureKana,ShipCity,ShipCityKana,ShipAddress1,ShipAddress1Kana,ShipAddress2,ShipAddress2Kana,ShipPhoneNumber,ShipEmgPhoneNumber,ShipSection1Field,ShipSection1Value,ShipSection2Field,ShipSection2Value,LineId,ItemId,Title,SubCode,SubCodeOption,ItemOption,ProductId,Quantity</Field>
 									</Target>
 								<SellerId>oystersisters</SellerId>
 							</Req>").parsed_response
-					all_order_details[order_id] = order_details
+					unless order_details["Error"]
+						all_order_details[order_id] = order_details["ResultSet"]["Result"]["OrderInfo"] if order_details["ResultSet"]["Result"]["Status"] == "OK"
+					else
+						ap order_details
+					end
 				end
-				all_order_details
+				unless all_order_details.empty?
+					record_sequenced_details(all_order_details)
+				end
+				true
 			rescue TypeError
 				puts "Error with Yahoo API request:"
-				ap request.parsed_response if request
+				ap request if request
 				false
 			end
 		else
 			puts 'No authorization, login required.'
 			false
+		end
+	end
+
+	def get_order_details_in_sequence(stop_after)
+		last_order_number = YahooOrder.all.order(:order_id).last.order_id[/\d+/].to_i
+		sequence = stop_after.times.map {|t| "oystersisters-" + (last_order_number + t).to_s }
+		if authorized?
+			begin
+				all_order_details = Hash.new
+				sequence.each do |order_id|
+					order_details = self.class.post("https://circus.shopping.yahooapis.jp/ShoppingWebService/V1/orderInfo",
+						:headers => {"Content-Type" => 'text/xml;charset=UTF-8',
+							"Authorization" => 'Bearer ' + @user.data[:yahoo][:authorization]["access_token"]},
+						:body => 
+							"<Req>
+								<Target>
+									<OrderId>#{order_id}</OrderId>
+									<Field>OrderTime,OrderId,DeviceType,IsRoyalty,IsAffiliate,OrderStatus,StoreStatus,IsActive,IsSeen,IsSplit,Suspect,IsRoyaltyFix,PayStatus,SettleStatus,PayType,PayMethod,NeedBillSlip,NeedDetailedSlip,NeedReceipt,BillFirstName,BillFirstNameKana,BillLastName,BillLastNameKana,BillPrefecture,ShipFirstName,ShipFirstNameKana,ShipLastName,ShipLastNameKana,ShipPrefecture,ShipStatus,ShipMethod,ShipCompanyCode,IsLogin,TotalPrice,IsReadOnly,UsePointType,PayMethod,PayMethodName,BillZipCode,BillPrefecture,BillPrefectureKana,BillCity,BillCityKana,BillAddress1,BillAddress1Kana,BillAddress2,BillAddress2Kana,BillPhoneNumber,ShipMethod,ShipMethodName,ShipRequestDate,ShipRequestTime,ArriveType,ShipDate,ShipRequestTimeZoneCode,ShipZipCode,ShipPrefecture,ShipPrefectureKana,ShipCity,ShipCityKana,ShipAddress1,ShipAddress1Kana,ShipAddress2,ShipAddress2Kana,ShipPhoneNumber,ShipEmgPhoneNumber,ShipSection1Field,ShipSection1Value,ShipSection2Field,ShipSection2Value,LineId,ItemId,Title,SubCode,SubCodeOption,ItemOption,ProductId,Quantity</Field>
+									</Target>
+								<SellerId>oystersisters</SellerId>
+							</Req>").parsed_response
+						# Example for no results
+						# {"Error"=>{"Code"=>"od91801", "Message"=>"Not Exists : oystersisters-10000050", "Detail"=>nil}}
+					unless order_details["Error"]
+						all_order_details[order_id] = order_details["ResultSet"]["Result"]["OrderInfo"] if order_details["ResultSet"]["Result"]["Status"] == "OK"
+					else
+						ap order_details
+						false
+					end
+				end
+				unless all_order_details.empty?
+					record_sequenced_details(all_order_details)
+				end
+				true
+			rescue TypeError
+				puts "Error with Yahoo API request:"
+				ap order_details if order_details
+				false
+			end
+		else
+			puts 'No authorization, login required.'
+			false
+		end
+	end
+
+	def record_sequenced_details(sequenced_details)
+		sequenced_details.each do |order_id, order_details|
+			unless YahooOrder.exists?(order_id: order_id)
+				@order = YahooOrder.create(order_id: order_id) 
+			else
+				@order = YahooOrder.find_by(order_id: order_id)
+			end
+			ap order_id
+			ap order_details
+			@order.details = order_details unless order_details.nil?
+			ship_date = order_details["Ship"]["ShipDate"] unless order_details.dig("Ship","ShipDate").nil?
+			@order.ship_date = ship_date unless ship_date.nil?
+			@order.save
+		end
+	end
+
+	def update_existing(period)
+		if authorized?
+			begin
+				all_order_details = Hash.new
+				YahooOrder.where(ship_date: [(Date.today - period)..(Date.today)]).pluck(:order_id).each do |order_id|
+					order_details = self.class.post("https://circus.shopping.yahooapis.jp/ShoppingWebService/V1/orderInfo",
+						:headers => {"Content-Type" => 'text/xml;charset=UTF-8',
+							"Authorization" => 'Bearer ' + @user.data[:yahoo][:authorization]["access_token"]},
+						:body => 
+							"<Req>
+								<Target>
+									<OrderId>#{order_id}</OrderId>
+									<Field>OrderTime,OrderId,DeviceType,IsRoyalty,IsAffiliate,OrderStatus,StoreStatus,IsActive,IsSeen,IsSplit,Suspect,IsRoyaltyFix,PayStatus,SettleStatus,PayType,PayMethod,NeedBillSlip,NeedDetailedSlip,NeedReceipt,BillFirstName,BillFirstNameKana,BillLastName,BillLastNameKana,BillPrefecture,ShipFirstName,ShipFirstNameKana,ShipLastName,ShipLastNameKana,ShipPrefecture,ShipStatus,ShipMethod,ShipCompanyCode,IsLogin,TotalPrice,IsReadOnly,UsePointType,PayMethod,PayMethodName,BillZipCode,BillPrefecture,BillPrefectureKana,BillCity,BillCityKana,BillAddress1,BillAddress1Kana,BillAddress2,BillAddress2Kana,BillPhoneNumber,ShipMethod,ShipMethodName,ShipRequestDate,ShipRequestTime,ArriveType,ShipDate,ShipRequestTimeZoneCode,ShipZipCode,ShipPrefecture,ShipPrefectureKana,ShipCity,ShipCityKana,ShipAddress1,ShipAddress1Kana,ShipAddress2,ShipAddress2Kana,ShipPhoneNumber,ShipEmgPhoneNumber,ShipSection1Field,ShipSection1Value,ShipSection2Field,ShipSection2Value,LineId,ItemId,Title,SubCode,SubCodeOption,ItemOption,ProductId,Quantity</Field>
+									</Target>
+								<SellerId>oystersisters</SellerId>
+							</Req>").parsed_response
+					unless order_details["Error"]
+						all_order_details[order_id] = order_details["ResultSet"]["Result"]["OrderInfo"] if order_details["ResultSet"]["Result"]["Status"] == "OK"
+						unless all_order_details.empty?
+							record_sequenced_details(all_order_details)
+						end
+					else
+						ap order_details
+					end
+				end
+			rescue TypeError
+				puts "Error with Yahoo API request:"
+				ap request.parsed_response if request
+				false
+			end
 		end
 	end
 

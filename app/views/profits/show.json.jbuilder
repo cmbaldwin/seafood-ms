@@ -1,1 +1,1 @@
-json.partial! "profits/profit", profit: @profit
+#json.partial! "profits/profit", profit: @profit

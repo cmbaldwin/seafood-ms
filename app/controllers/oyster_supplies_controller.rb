@@ -137,6 +137,7 @@ class OysterSuppliesController < ApplicationController
 	def create
 		@oyster_supply = OysterSupply.new(oyster_supply_params)
 		@oyster_supply[:oysters_last_update] = DateTime.now
+		@oyster_supply.set_totals
 		respond_to do |format|
 			if @oyster_supply.save
 				format.html { redirect_to @oyster_supply, notice: '牡蠣原料を更新しました' }
@@ -152,6 +153,7 @@ class OysterSuppliesController < ApplicationController
 	# PATCH/PUT /oyster_supplies/1.json
 	def update
 		(oyster_supply_params[:oysters] != @oyster_supply.oysters) ? (@oyster_supply[:oysters_last_update] = DateTime.now) :()
+		@oyster_supply.set_totals
 		respond_to do |format|
 			if @oyster_supply.update(oyster_supply_params)
 				format.html { redirect_to @oyster_supply, notice: '牡蠣原料を更新しました' }

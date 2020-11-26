@@ -1,3 +1,5 @@
+<script> tippy('[data-tippy-content]', {allowHTML: true, animation: 'scale', duration: [300,0] }); </script>
+
 <% shinki = @online_orders.shinki_im_orders %>
 
 <% if shinki[:total] > 0 || @wc_shinki %>
@@ -11,7 +13,7 @@
 					</button>
 				</div>
 				<div class="modal-body">
-					<% if @wc_shinki %>
+					<% if @wc_shinki && !@wc_shinki.empty? %>
 						<h4 class="mr-1">WooCommerce 新規注文</h4>
 						<div class="row bg-info text-white p-3 m-1 h5">
 							<div class="col-lg-1 col-md-12 small">
@@ -27,7 +29,7 @@
 						<% @wc_shinki.each do |order| %>
 							<div class="row ml-1 mr-1 <%= cycle_table_rows %>">
 								<div class="col-lg-1 col-md-6 col-sm-12 small">
-									<%= link_to order["id"], order["_links"]["self"][0]["href"], target: "_blank" %>
+									<%= link_to order["id"], "https://funabiki.info/wp-admin/post.php?post=#{order["number"]}&action=edit", target: "_blank" %>
 								</div>
 								<div class="col-lg-3 col-md-6 col-sm-12 small">
 									<%= order["billing"]["last_name"] + order["billing"]["first_name"] %>・<%= order["shipping"]["last_name"] + order["shipping"]["first_name"] %>
@@ -87,26 +89,33 @@
 <% end %>
 
 <div class="card m-0 p-0 border-white">
-	<div class="card-header bg-white">
+	<div class="card-header p-3">
 		<h4 class="card-title float-left"><%= @online_orders.sales_date %></h4>
-		<div class="float-right">
-			<div class="btn-group">
-				<% if shinki[:total] > 0 %>
-					<button type="button" class="btn btn-sm btn-info" data-toggle="modal" data-target="#manifest_shinki_modal">
-						<%= icon("asterisk") %><span class="badge badge-warning ml-1"><%= @wc_shinki ? (shinki[:total] + @wc_shinki.length) : shinki[:total] %></span>
+		<span class="mb-3">&nbsp</span>
+		<div class="btn-group float-right mt-n2">
+			<% if shinki[:total] > 0 %>
+				<span class="btn btn-sm btn-info m-0 p-0" data-tippy-content="<center>通販新規注文</center>">
+					<button type="button" class="btn btn-info" data-toggle="modal" data-target="#manifest_shinki_modal">
+						<%= icon("asterisk", class: 'text-white') %><span class="badge badge-warning ml-1"><%= @wc_shinki ? (shinki[:total] + @wc_shinki.length) : shinki[:total] %></span>
 					</button>
-				<% end %>
-				<%= link_to icon("card-list"), @online_orders, :alt => "個別ページ", class: 'btn btn-info' %>
+				</span>
+			<% end %>
+			<span class="btn btn-sm btn-info m-0 p-0" data-tippy-content="<center><%= @online_orders.sales_date %>の<br>出荷個別ページ</center>">
+				<%= link_to icon("card-list", class: 'text-white'), @online_orders, :alt => "個別ページ", class: 'btn btn-info' %>
+			</span>
+			<span class="btn btn-sm btn-info m-0 p-0" data-tippy-content="<center><%= @online_orders.sales_date %>の<br>データを取込む</center>">
 				<%= link_to icon("arrow-counterclockwise", class: "text-success"), edit_manifest_path(@online_orders), :alt => "データを編集", class: 'btn btn-info' %>
-				<%= link_to icon("file-earmark-arrow-down"), manifest_pdf_path(@online_orders), :method => :get, class: 'btn btn-info', target: "_blank" %>
-			</div>
+			</span>
+			<span class="btn btn-sm btn-info m-0 p-0" data-tippy-content="<center><%= @online_orders.sales_date %>の<br>出荷表PDFを開く</center>">
+				<%= link_to icon("file-earmark-arrow-down", class: 'text-white'), manifest_pdf_path(@online_orders), :method => :get, class: 'btn btn-info', target: "_blank" %>
+			</span>
 		</div>
 	</div>
 		<% infomart_count(@online_orders) %>
 		<% tsuhan_count(@online_orders) %>
 		<% counts = @online_orders.display_totals %>
 		<div class="card-text text-center">
-			<div class="row h5 text-center mb-1">
+			<div class="row h5 text-center mb-1 w-100">
 				<div class="col-md-4 col-sm-12 mb-2 pb-1">
 					<span class="d-block m-1 strong">むき身</span>
 					<%= counts[:gohyaku] %>
@@ -177,9 +186,11 @@
 		<small class="text-muted float-left">
 			(<%= @online_orders.updated_at.in_time_zone('Tokyo') %>)に更新された
 		</small>
-		<div class="btn-group float-right d-print-none" role="group" aria-label="Basic">
-			<%= link_to icon("arrow-left-circle"), load_online_order_path(@online_orders.manifest_query.previous.id), :alt => "前", class: 'btn btn-sm btn-secondary', remote: true %>
-			<%= link_to icon("arrow-right-circle"), load_online_order_path(@online_orders.manifest_query.next.id), :alt => "次", class: 'btn btn-sm btn-secondary', remote: true %>
+			<% previous_day = @online_orders.manifest_query.previous %>
+			<% next_day = @online_orders.manifest_query.next %>
+		<div class="btn-group float-right mt-n2 mb-1" role="group" aria-label="Basic">
+			<%= link_to icon("arrow-left-circle"), load_online_order_path(previous_day.id), :alt => "前", class: 'btn btn-sm btn-secondary', remote: true, "data-tippy-content" => "<center>#{previous_day.sales_date}の<br>データを見る</center>" %>
+			<%= link_to icon("arrow-right-circle"), load_online_order_path(next_day.id), :alt => "次", class: 'btn btn-sm btn-secondary', remote: true, "data-tippy-content" => "<center>#{next_day.sales_date}の<br>データを見る</center>" %>
 		</div>
 	</div>
 </div>

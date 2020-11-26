@@ -24,7 +24,7 @@ class YahooOrdersController < ApplicationController
 		User.find(current_user.id).reload
 		if client.login_code?
 			client.acquire_auth_token unless client.authorized?
-			if client.get_new_orders
+			if client.get_status(true) && client.update_existing(5.days)
 				flash[:notice] = 'ヤフーからデータを更新完了。'
 				redirect_to yahoo_orders_path
 			else
@@ -45,7 +45,7 @@ class YahooOrdersController < ApplicationController
 				flash[:notice] = 'コード取得出来ました。ヤフーからデータを更新開始。'
 				redirect_to refresh_yahoo_path
 			else
-				flash[:notice] = @code + 'のトークンコードを保存できませんでした'
+				flash[:notice] = @code + 'のトークンコードを保存できませんでした。アドミニストレータに連絡。'
 				redirect_to yahoo_orders_path
 			end
 		else

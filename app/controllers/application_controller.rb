@@ -8,6 +8,15 @@ class ApplicationController < ActionController::Base
 	    redirect_to :back, status: 401 unless current_user.admin
 	end
 
+	def fetch_chart
+		chart_params = Rack::Utils.parse_nested_query(params[:chart_params]).deep_symbolize_keys
+		chart_params[:init_params][:stacked] = (chart_params[:init_params][:stacked] == "true") if chart_params[:init_params][:stacked]
+		@chart_params = chart_params
+		respond_to do |format|
+			format.js { render layout: false }
+		end
+	end
+
 	def time_setup
 		@today = DateTime.now.strftime('%Y年%m月%d日')
 		@this_season_start = (Date.today.month < 10) ? Date.new((Date.today.year - 1), 10, 1) : Date.new(Date.today.year, 10, 1)
@@ -26,7 +35,7 @@ class ApplicationController < ActionController::Base
 
 	def rakuten_check
 		rakuten_api_client = RakutenAPI.new
-		@rakuten_shinki = rakuten_api_client.get_details_by_ids(rakuten_api_client.get_shinki_without_shipdate_ids)
+		@rakuten_shinki = rakuten_api_client.get_details_by_ids(rakuten_api_client.get_unprocessed_shinki)
 	end
 
 	def wc_check

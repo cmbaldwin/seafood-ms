@@ -5,10 +5,10 @@
 		<div class="col">
 <% if current_user.admin? or current_user.vip? %>
 			<div class="btn-group float-right d-print-none" role="group" aria-label="Basic">
-				<%= link_to icon("arrow-left-circle"), @manifest.manifest_query.previous, class: 'btn btn-info' %>
-				<%= link_to icon("arrow-right-circle"), @manifest.manifest_query.next, class: 'btn btn-info' %>
-				<%= link_to icon("arrow-counterclockwise", class: "text-success"), edit_manifest_path(@manifest), class: 'btn btn-info' %>
-				<%= link_to icon('arrow-90deg-up'), manifests_path, class: 'btn btn-info' %>
+				<%= link_to icon("arrow-left-circle"), @manifest.manifest_query.previous, class: 'btn btn-info', "data-tippy-content" => "#{@manifest.manifest_query.previous.sales_date}へ" %>
+				<%= link_to icon("arrow-right-circle"), @manifest.manifest_query.next, class: 'btn btn-info', "data-tippy-content" => "#{@manifest.manifest_query.next.sales_date}へ" %>
+				<%= link_to icon("arrow-counterclockwise", class: "text-success"), edit_manifest_path(@manifest), class: 'btn btn-info', "data-tippy-content" => "<center>#{@manifest.sales_date}の<br>データを取込む</center>" %>
+				<%= link_to icon('arrow-90deg-up'), manifests_path, class: 'btn btn-info', "data-tippy-content" => "IM・WC出荷表トップへ" %>
 			</div>
 <% end %>
 		<hr/>
@@ -17,7 +17,7 @@
 		</div>
 	</div>
 
-	<%= link_to icon("file-earmark-arrow-down"), manifest_pdf_path(@manifest), :method => :get, class: 'btn btn-info mb-2 float-right', target: "_blank" %>
+	<%= link_to icon("file-earmark-arrow-down"), manifest_pdf_path(@manifest), :method => :get, class: 'btn btn-info mb-2 float-right', target: "_blank", "data-tippy-content" => "<center>#{@manifest.sales_date}の<br>出荷表PDFを開く</center>" %>
 	<hr /><br>
 
 	<% counts = @manifest.display_totals %>
@@ -218,6 +218,7 @@
 								<td scope="col">
 									<% shells = print_count(count) %>
 									<%= if !shells.nil? then shells + '個' end %>
+									<%= "小 #{count[1].to_s}㎏" unless count[1].zero? %>
 								</td>
 								<td scope="col">
 									<%= slash_date(Moji.zen_to_han(wc_order[:arrival_date])) unless wc_order[:arrival_date].nil? %>
