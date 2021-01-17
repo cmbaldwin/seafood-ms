@@ -5,7 +5,9 @@
 		<div class="col">
 			<% if current_user.admin? || current_user.vip? %>
 				<div class="btn-group float-right" role="group" aria-label="Basic">
-					<%= link_to 'ヤフーからデータ更新', refresh_yahoo_path, :class => "btn btn-info" %>
+					<span class="btn btn-sm btn-info m-0 p-0 tippy" data-tippy-content="データ更新">
+						<%= link_to icon("arrow-counterclockwise", class: "text-success"), refresh_yahoo_path, :alt => "データ更新", class: 'btn btn-info' %>
+					</span>
 				</div>
 			<% end %> 
 		<hr/>

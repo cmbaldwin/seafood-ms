@@ -4,7 +4,7 @@ import consumer from "./consumer"
 
 document.addEventListener('turbolinks:load', () => {
 
-	const sidebar = document.getElementById('front_sidebar');
+	const sidebar = document.getElementById('sidebar_button');
 	const user_id = sidebar.getAttribute('data-user-id');
 
 	consumer.subscriptions.create({channel: "NotificationsChannel", user: user_id}, {
@@ -12,23 +12,25 @@ document.addEventListener('turbolinks:load', () => {
 			// Called when the subscription is ready for use on the server
 			// console.log("User with ID " + user_id + " connected to notifications...")
 			$.ajax({
-				type: "POST",
-				url: "/messages/clear_expired_messages",
+				type: "GET",
+				url: "/messages/display_messages",
 				data: {'user': user_id},
 			});
+			Turbolinks.clearCache()
 		},
 
 		disconnected() {
 			// Called when the subscription has been terminated by the server
 			// console.log("User with ID " + user_id + " disconnected from notifications...")
+			$.ajax({
+				type: "POST",
+				url: "/messages/clear_expired_messages",
+				data: {'user': user_id},
+			});
+			Turbolinks.clearCache()
 		},
 
 		received(data) {
-			if ($('#front_sidebar').hasClass("active")) {
-				$('#front_sidebar').toggleClass('active');
-				$('.sidebarCollapse').toggleClass('active');
-				$('#sidebar_spacer').toggleClass('active');
-			};
 			if (data.id) {
 				$.ajax({
 					type: "GET",

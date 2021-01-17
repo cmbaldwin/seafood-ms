@@ -5,7 +5,7 @@
 		<div class="col">
 <% if current_user.admin? || current_user.vip? %>
 			<div class="btn-group float-right" role="group" aria-label="Basic">
-				<%= link_to icon('plus-circle-fill', class: 'text-success'), new_r_manifest_path, :class => "btn btn-info", "data-tippy-content" => "<center>新しいデータを<br>取込む</center>" %>
+				<%= link_to icon('plus-circle-fill', class: 'text-success'), new_r_manifest_path, :class => "btn btn-info tippy", "data-tippy-content" => "<center>新しいデータを<br>取込む</center>" %>
 			</div>
 <% end %> 
 		<hr/>
@@ -69,10 +69,11 @@
 			</div>
 			<div class="col-md-4 col-sm-12 text-center">
 				<div class="btn-group">
-					<%= link_to icon("card-list"), r_manifest, :alt => "個別ページ", class: 'btn btn-info', "data-tippy-content" => "<center>#{r_manifest.sales_date}の<br>個別ページ</center>" %>
-					<%= link_to icon("file-earmark-arrow-down"), r_manifest_new_pdf_path(r_manifest), :method => :get, class: 'btn btn-info', target: "_blank", "data-tippy-content" => "<center>#{r_manifest.sales_date}の<br>出荷表PDFを開く</center>" %>
-					<%= link_to icon("file-earmark-ruled"), r_manifest_seperated_pdf_path(r_manifest), :method => :get, class: 'btn btn-info', target: "_blank", "data-tippy-content" => "<center>#{r_manifest.sales_date}の<br>商品分別した<br>出荷表PDFを開く</center>" %>
-					<%= link_to icon("arrow-counterclockwise", class: "text-success"), edit_r_manifest_path(r_manifest), :alt => "データを編集", class: 'btn btn-info', "data-tippy-content" => "<center>#{r_manifest.sales_date}の<br>データを取込む</center>" %>
+					<%= link_to icon("card-list"), r_manifest, :alt => "個別ページ", class: 'btn btn-info tippy', "data-tippy-content" => "<center>#{r_manifest.sales_date}の<br>個別ページ</center>" %>
+					<%= link_to icon("file-earmark-arrow-down"), generate_rakuten_pdf_path(id: r_manifest.id, seperated: 0, include_yahoo: 0), :method => :get, remote: true, class: 'btn btn-info tippy', "data-tippy-content" => "<center>#{r_manifest.sales_date}の<br>出荷表PDFを作成</center>" %>
+					<%= link_to icon("file-earmark-diff"), generate_rakuten_pdf_path(id: r_manifest.id, seperated: 0, include_yahoo: 1), :method => :get, remote: true, class: 'btn btn-info tippy', "data-tippy-content" => "<center>#{r_manifest.sales_date}の<br>楽天とヤフーの<br>出荷表PDFを作成</center>" %>
+					<%= link_to icon("file-earmark-ruled"), generate_rakuten_pdf_path(id: r_manifest.id, seperated: 1, include_yahoo: 0), :method => :get, remote: true, class: 'btn btn-info tippy', "data-tippy-content" => "<center>#{r_manifest.sales_date}の<br>商品分別した<br>出荷表PDFを作成</center>" %>
+					<%= link_to icon("arrow-counterclockwise", class: "text-success"), edit_r_manifest_path(r_manifest), :alt => "データを編集", class: 'btn btn-info tippy', "data-tippy-content" => "<center>#{r_manifest.sales_date}の<br>データを取込む</center>" %>
 				</div>
 			</div>
 		</div>

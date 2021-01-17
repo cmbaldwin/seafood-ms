@@ -1,0 +1,87 @@
+<% shinki = @online_orders.shinki_im_orders %>
+
+<% if shinki[:total] > 0 || @wc_shinki %>
+	<div class="modal fade" id="manifest_shinki_modal" tabindex="-1" aria-labelledby="manifest_shinki_modal_label" aria-hidden="true">
+		<div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="manifest_shinki_modal_label">InfoMart/Funabiki.infoの新規注文</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<% if @wc_shinki && !@wc_shinki.empty? %>
+						<h4 class="mr-1">WooCommerce 新規注文</h4>
+						<div class="row bg-info text-white p-3 m-1 h5">
+							<div class="col-lg-1 col-md-12 small">
+								注文番号
+							</div>
+							<div class="col-lg-3 col-md-12 small">
+								注文者・届け先
+							</div>
+							<div class="col-lg-8 col-md-12">
+								商品
+							</div>
+						</div>
+						<% @wc_shinki.each do |order| %>
+							<div class="row ml-1 mr-1 <%= cycle_table_rows %>">
+								<div class="col-lg-1 col-md-6 col-sm-12 small">
+									<%= link_to order["id"], "https://funabiki.info/wp-admin/post.php?post=#{order["number"]}&action=edit", target: "_blank" %>
+								</div>
+								<div class="col-lg-3 col-md-6 col-sm-12 small">
+									<%= order["billing"]["last_name"] + order["billing"]["first_name"] %>・<%= order["shipping"]["last_name"] + order["shipping"]["first_name"] %>
+								</div>
+								<div class="col-lg-8 col-md-6 col-sm-12">
+									<% order["line_items"].each_with_index do |item, i| %>
+										<b><%= item["name"] %></b><%= ("× #{item['quantity']}").html_safe if item['quantity'].to_i > 1 %><%= ("<br>").html_safe if i > 0 %>
+									<% end %>
+								</div>
+							</div>
+						<% end %>
+					<% end %>
+					<% if shinki[:total] > 0 %>
+					<% [:raw, :frozen].each do |key| %>
+						<% unless shinki[key].empty? %>
+							<h4 class="mr-1">InfoMart <%= key == :raw ? "生食" : "冷凍" %></h4>
+							<div class="row bg-info text-white p-3 m-1 h5">
+								<div class="col-lg-1 col-md-12 small">
+									注文番号
+								</div>
+								<div class="col-lg-3 col-md-12 small">
+									注文者・届け先
+								</div>
+								<div class="col-lg-8 col-md-12">
+									商品
+								</div>
+							</div>
+							<% shinki[key].each do |order_id, order_details| %>
+								<div class="row ml-1 mr-1 <%= cycle_table_rows %>">
+									<div class="col-lg-1 col-md-6 col-sm-12 small">
+										<%= link_to order_id, get_infomart_backend_link(order_details[:backend_id]), target: "_blank" %>
+									</div>
+									<div class="col-lg-3 col-md-6 col-sm-12 small">
+										<%= order_details[:client] %>
+									</div>
+									<div class="col-lg-8 col-md-6 col-sm-12">
+										<% order_details[:items].each do |item| %>
+											<% item.each_with_index do |item, i| %>
+												<% if item.is_a?(Hash) %>
+													<b><%= item[:item_name].gsub('軽減', '') %></b><%= ("× #{item[:item_count]}").html_safe if item[:item_count].to_i > 1 %><%= ("<br>").html_safe if i > 0 %>
+												<% end %>
+											<% end %>
+										<% end %>
+									</div>
+								</div>
+							<% end %>
+						<% end %>
+					<% end %>
+					<% end %>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">閉じる</button>
+				</div>
+			</div>
+		</div>
+	</div>
+<% end %>

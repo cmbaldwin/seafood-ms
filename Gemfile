@@ -109,6 +109,7 @@ gem 'sendgrid-ruby'
 gem 'will_paginate', '~> 3.1.1'
 
 ## PDF reader and writer
+gem 'pdf-reader'
 gem 'prawn-rails'
 
 ## On the fly Hankaku / Zenkaku Conversion (http://gimite.net/gimite/rubymess/moji.html)

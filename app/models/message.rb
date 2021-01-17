@@ -1,4 +1,5 @@
 class Message < ApplicationRecord
+	before_save :set_dismissed
 	after_save :notify
 
 	mount_uploader :document, MessageDocumentUploader
@@ -9,8 +10,18 @@ class Message < ApplicationRecord
 
 	serialize :data, Hash
 
+	def set_dismissed
+		(self.data[:dismissed] == false) if self.data[:dismissed].nil?
+	end
+
+	def dismissed
+		self.data[:dismissed]
+	end
+
 	def notify
-		ActionCable.server.broadcast "notifications_channel_#{self.user.to_s}", {id: self.id}
+		unless dismissed
+			ActionCable.server.broadcast "notifications_channel_#{self.user.to_s}", {id: self.id}
+		end
 	end
 
 	def status

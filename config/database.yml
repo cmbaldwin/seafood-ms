@@ -23,11 +23,11 @@ default: &default
 
 development:
   <<: *default
-  # To pull database from Heroku, run: 
+  # To pull database from Heroku, run:
   # https://dashboard.heroku.com/apps/funabiki-online get the name (i.e. "postgresql-contoured-13400")
   # rake db:drop
   # heroku pg:pull postgresql-contoured-13400 yyyymmdd_backup
-  database: 20201126_backup
+  database: 20210115_backup
   # The specified database role being used to connect to postgres.
   # To create additional roles in postgres see `$ createuser --help`.
   # When left blank, postgres will use the default role. This is

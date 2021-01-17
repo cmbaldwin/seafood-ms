@@ -1,0 +1,94 @@
+<% if @new_yahoo_orders %>
+	<div class="modal fade" id="yahoo_shinki_modal" tabindex="-1" aria-labelledby="yahoo_shinki_modal_label" aria-hidden="true">
+		<div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="yahoo_shinki_modal_label">Yahoo!ショッピング 新規注文</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<table class="table table-sm">
+						<thead>
+							<tr>
+								<th colspan="4">
+									<table class="table table-borderless">
+										<% counts = yahoo_order_counts(@new_yahoo_orders) %>
+										<tr>
+											<% counts[:headers].each_with_index do |header, i| %>
+												<%= ("</tr><tr>").html_safe if (i % 4 == 0) %>
+													<th class="text-center">
+														<b><%= header %><%= "{ｇ合計}" if (i == 4)%></b><br>
+														<i><%= counts[:values][i].to_s %><%= " {#{counts[:anago]}g}" if (i == 4)%></i>
+														<%= "(#{counts[:cards]}枚)" if (i == 1) %>
+													</th>
+											<% end %>
+										</tr>
+									</table>
+								</th>
+							</tr>
+							<tr class="table-dark">
+								<th>
+									<div class="btn btn-light mr-3">ヤフー注文ID</div><span class="badge badge-secondary">現在の注文ステータス</span>
+								</th>
+								<th>注文者</th>
+								<th>送り先</th>
+								<th>出荷ステータス</th>
+							</tr>
+							<tr class="table-dark">
+								<th class="pl-3">
+									商品×数量
+								</th>
+								<th>
+									届け日
+								</th>
+								<th>
+									届け時間帯
+								</th>
+								<th>
+									支払い方法
+								</th>
+							</tr>
+						</thead>
+						<tbody>
+							<% @new_yahoo_orders.each do |order| %>
+								<tr class="table-<%= status_color(order) %>">
+									<th>
+										<%= link_to(order.order_id[/\d.*/], order.url, class: "btn btn-primary mr-3", target: "_blank") %><span class="badge badge-<%= status_color(order) %>"><%= order.order_status %></span>
+									</th>
+									<th>
+										<%= order.billing_name %>
+									</th>
+									<th>
+										<%= print_shipping_name(order) %>
+									</th>
+									<th>
+										<span class="badge badge-primary"><%= order.shipping_status %></span>
+									</th>
+								</tr>
+								<tr>
+									<td class="pl-3">
+										<%= order.item_name %><%= order.print_quantity %>
+									</td>
+									<td>
+										<%= order.shipping_arrival_date.strftime("%m月%d日") %>
+									</td>
+									<td>
+										<%= order.arrival_time %>
+									</td>
+									<td>
+										<%= order.payment_type %>
+									</td>
+								</tr>
+							<% end %>
+						</tbody>
+					</table>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">閉じる</button>
+				</div>
+			</div>
+		</div>
+	</div>
+<% end %>

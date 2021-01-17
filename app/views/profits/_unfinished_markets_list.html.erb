@@ -1,0 +1,19 @@
+<script type="text/javascript">
+	<%= render partial: 'sharedjs', formats: [:js] %>
+</script>
+
+<a class="card-header" data-toggle="collapse" href="#unfinished" role="button" aria-expanded="true" aria-controls="unfinished"><b>未完成市場</b></a>
+<span class="card-body small collapse show container-fluid" id="unfinished">
+	<div class="row">
+		<% @profit.check_completion.sort.each do |mjsnumber, unfinished_products| %>
+			<% if mjsnumber != 0 %>
+				<div class="col-6 mb-2 <%= ('animate__animated animate__flash' if @fresh_completed.include?(mjsnumber)) if @fresh_completed %> ">
+					<% market = Market.find_by(mjsnumber: mjsnumber) %>
+					<%= link_to market.nick, fetch_market_path(:market_id => market.id, profit: @profit), :remote => 'true', :class => 'btn btn-sm align-content-center text-center tippy ' + profit_nav_font_color(market.color).to_s, "role" => "tab", "style" => "background-color: " + market.color.to_s + ";",
+					"data-tippy-content" => unfinished_products.map {|product_id| '→' + Product.find(product_id).namae + '<br>'}.join('') %>
+					<%= ('<h5 class="d-inline"><span class="badge badge-warning">' + (unfinished_products.length.to_s) + '</span></h5>').html_safe %>
+				</div>
+			<% end %>
+		<% end %>
+	</div>
+</span>

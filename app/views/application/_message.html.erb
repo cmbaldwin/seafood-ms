@@ -1,34 +1,65 @@
-<div id="m_<%= @message.id %>" class="card m-1 <%= @message.border %> animate__animated animate__flipInX">
-	<div class="card-header p-1">
-		<span class="float-left pl-2">
-			<%= print_model(@message.model) %>
-		</span>
-		<span class="float-right">
-			<% if @message.status == :processing %>
-				<div class="spinner-border spinner-border-sm text-warning mb-1" role="status">
-					<span class="sr-only">処理中…</span>
-				</div>
-			<% elsif @message.status == :completed %>
-				<%= icon('check2', class: 'text-success') %>
-			<% else %>
-				<%= icon('exclamation-diamond', class: 'text-danger') %>
-			<% end %>
-		</span>
-	</div>
-	<div class="card-body">
-		<p class="card-text small">
-			<%= @message.message %>
-		</p>
-		<% unless @message.data.empty? %>
-			<%= print_message_data(@message) %>
+<script type="text/javascript">
+
+	if ($('#<%= @message.id %>_countdown').text() == '') {
+		var x = setInterval(function() {
+
+		// Get today's date and time
+		var now = new Date().getTime();
+		var countDownDate = new Date("<%= @message.data[:expiration].to_s %>").getTime();
+
+		// Find the distance between now and the count down date
+		var distance = countDownDate - now;
+
+		// Time calculations for days, hours, minutes and seconds
+		var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+		var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+		var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+		var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+		// Display the result in the element
+		$('#<%= @message.id %>_countdown').text(days + "日 " + hours + "時間 "
+		+ minutes + "分 " + seconds + "秒 ");
+
+		// If the count down is finished, write some text
+		if (distance < 0) {
+		  clearInterval(x);
+		  $('#<%= @message.id %>_countdown').text("すぐ削除予約");
+		}
+		}, 1000);
+	}
+
+</script>
+
+<%= javascript_pack_tag 'partials', 'data-turbolinks-track': 'reload' %>
+
+<% refresh ||= false %>
+<div id="m_<%= @message.id %>" data-msg-id="<%= @message.id %>" class="message toast show <%= @message.border %> animate__animated <%= refresh ? 'animate__flash' : 'animate__slideInRight' %> m-3" role="alert" data-autohide="false" aria-live="assertive" aria-atomic="true" data-turbolinks="false">
+	<div class="toast-header">
+		<% unless @message.state %>
+			<div class="spinner-border spinner-border-sm text-warning mb-1 mr-3" role="status">
+				<span class="sr-only">処理中…</span>
+			</div>
+		<% end %>
+		<strong class="mr-auto w-50"><%= print_model(@message.model) %></strong>
+		<small class="text-muted"><%= @message.updated_at.to_formatted_s(:short) %></small>
+		<%= form_for(@message, url: set_dismissed_path(id: @message.id), method: 'post', remote: true) do |f| %>
+			<%= f.submit 'X', class: "btn btn-sm float-right bg-light m-0 ml-2 py-0 px-2 tippy close_message", 'data-tippy-content' => '閉じる' %>
 		<% end %>
 	</div>
-	<div class="card-footer p-1 small text-muted">
-		<div class="float-left pl-2">
-			<%= @message.updated_at %>
-		</div>
-		<div class="float-right">
-			<%= link_to icon("trash-fill", class: "text-danger"), @message, :alt => "取り消す", method: :delete, remote: true, data: { confirm: '削除してもいい?' }, class: 'btn btn-sm btn-light p-0' %>
-		</div>
+	<div class="toast-body">
+		<span>
+			<%= @message.message %>
+		</span><br>
+		<span>
+			<% unless @message.data.empty? %>
+				<%= print_message_data(@message) %>
+			<% end %>
+		</span>
+		<span class="w-100 d-block text-right mt-2">
+			<% if @message.state && @message.data[:expiration] %>
+				<small class="float-left">有効期限: <span id="<%= @message.id %>_countdown" class="expiration_countdown" data-expiration="<%= @message.data[:expiration].to_s(:number) %>"></span></small>
+			<% end %>
+			<%= link_to icon("trash-fill", class: "text-danger"), @message, :alt => "取り消す", method: :delete, remote: true, data: { confirm: '削除してもいい?' }, class: 'btn btn-sm btn-light p-0 mx-3 tippy', 'data-tippy-content' => '削除' %>
+		</span>
 	</div>
 </div>

@@ -4,20 +4,16 @@ class PrawnPDF
 	def self.fonts
 		require 'open-uri'
 		{
-			"SourceHan" => {
-				:normal => open(ENV["GBUCKET_PREFIX"] + "fonts/SourceHanSans-Normal.ttf"),
-				:bold => open(ENV["GBUCKET_PREFIX"] + "fonts/SourceHanSans-Bold.ttf"),
-				:light => open(ENV["GBUCKET_PREFIX"] + "fonts/SourceHanSans-Light.ttf"),
+			"MPLUS1p" => {
+				:normal => Rails.root.join(".fonts/MPLUS1p-Regular.ttf"),
+				:bold => Rails.root.join(".fonts/MPLUS1p-Bold.ttf"),
+				:light => Rails.root.join(".fonts/MPLUS1p-Light.ttf"),
 			},
-			"Takao" => {
-				:normal => open(ENV["GBUCKET_PREFIX"] + "fonts/TakaoPMincho.ttf"),
-				:bold => open(ENV["GBUCKET_PREFIX"] + "fonts/TakaoPMincho.ttf"),
-				:light => open(ENV["GBUCKET_PREFIX"] + "fonts/TakaoPMincho.ttf"),
+			"Sawarabi" => {
+				:normal => Rails.root.join(".fonts/SawarabiMincho-Regular.ttf"),
 			},
-			"Aozora" => {
-				:normal => open(ENV["GBUCKET_PREFIX"] + "fonts/AozoraMinchoRegular.ttf"),
-				:bold => open(ENV["GBUCKET_PREFIX"] + "fonts/AozoraMinchoRegular.ttf"),
-				:light => open(ENV["GBUCKET_PREFIX"] + "fonts/AozoraMinchoRegular.ttf"),
+			"TakaoPMincho" => {
+				:normal => Rails.root.join(".fonts/TakaoPMincho.ttf"),
 			}
 		}
 	end
@@ -29,7 +25,7 @@ class PrawnPDF
 			counts = Hash.new
 			types_arr = %w{生むき身 生セル 小殻付 セルカード 冷凍むき身 冷凍セル 穴子(件) 穴子(g) 干しムキエビ(80g) 干し殻付エビ(80g) タコ}
 			types_arr.each {|w| counts[w] = 0}
-			count_hash = { 
+			count_hash = {
 				"kakiset302" => [2, 30, 0, 0, 0, 0, 0, 0, 0],
 				"kakiset202" => [2, 20, 0, 0, 0, 0, 0, 0, 0],
 				"kakiset301" => [1, 30, 0, 0, 0, 0, 0, 0, 0],
@@ -78,7 +74,7 @@ class PrawnPDF
 		end
 
 		def self.print_items(order)
-			print_array = { 
+			print_array = {
 				"kakiset302" => ["", "", "500g×2 + 30個", ""],
 				"kakiset202" => ["", "", "500g×2 + 20個", ""],
 				"kakiset301" => ["", "", "500g×1 + 30個", ""],
@@ -123,17 +119,17 @@ class PrawnPDF
 			pdf.font_families.update(fonts)
 			#set utf-8 japanese font
 			pdf.font_size 16
-			pdf.font "SourceHan", style: :bold
+			pdf.font "MPLUS1p", style: :bold
 			pdf.text "ヤフーショッピング 発送表" + (" " * 82) + ship_date
-			pdf.font "SourceHan", style: :normal
+			pdf.font "MPLUS1p", style: :normal
 			pdf.move_down 15
-			pdf.table(order_counts(orders), 
+			pdf.table(order_counts(orders),
 					:cell_style => {
-						:inline_format => true, 
-						:border_width => 0.25, 
-						:valign => :center, 
-						:align => :center, 
-						:size => 10}, 
+						:inline_format => true,
+						:border_width => 0.25,
+						:valign => :center,
+						:align => :center,
+						:size => 10},
 					:width => pdf.bounds.width ) do |t|
 				t.row(0).background_color = "acacac"
 			end
@@ -157,18 +153,18 @@ class PrawnPDF
 
 				data_table << order_arr
 			end
-			5.times do 
+			5.times do
 				data_table << ['　'] * 13
 			end
 			pdf.font_size 8
-			pdf.table(data_table, 
-				:header => true, 
+			pdf.table(data_table,
+				:header => true,
 				:cell_style => {
-					:border_width => 0.25, 
-					:valign => :center}, 
-				:column_widths => {0 => 18, 1 => 55, 2 => 55, 3 => 30, 4 => 27, 5=> 50, 12=> 100}, 
+					:border_width => 0.25,
+					:valign => :center},
+				:column_widths => {0 => 18, 1 => 55, 2 => 55, 3 => 30, 4 => 27, 5=> 50, 12=> 100},
 				:width => pdf.bounds.width ) do
-			
+
 				cells.column(0).rows(1..-1).padding = 2
 				cells.columns(1..-1).rows(1..-1).padding = 4
 

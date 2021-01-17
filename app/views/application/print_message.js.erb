@@ -1,9 +1,11 @@
 // Load the message if
 var msgEl = $('#m_' + "<%= escape_javascript(@message.id.to_s) %>")
 if (msgEl.length) {
-	msgEl.replaceWith( "<%= escape_javascript(render partial: 'message', locals: { message: @message } ) %>" )
+	msgEl.replaceWith( "<%= escape_javascript(render partial: 'message', locals: { message: @message, refresh: true } ) %>" )
 } else {
 	$('#notifications').prepend("<%= escape_javascript(render partial: 'message', locals: { message: @message } ) %>");
 };
+msgEl.focus()
 var invoiceModalClose = $("#invoiceModal .close")
 if (invoiceModalClose) { invoiceModalClose.click() };
+Turbolinks.clearCache()

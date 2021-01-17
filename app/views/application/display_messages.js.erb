@@ -1,0 +1,29 @@
+<% @messages.each do |message| %>
+	<% @message = message %>
+	<% if @message.dismissed %>
+		// Load the message if
+		var msgEl = $('#m_' + "<%= escape_javascript(@message.id.to_s) %>")
+		if (msgEl.length) {
+			msgEl.replaceWith( "<%= escape_javascript(render partial: 'message', locals: { message: @message } ) %>" )
+		} else {
+			$('#notifications').prepend("<%= escape_javascript(render partial: 'message', locals: { message: @message } ) %>");
+		};
+	<% end %>
+<% end %>
+$('#notifications').on('click', function() {
+	$('.close_message').on('click', function() {
+		this_message = $(`#${$(this).attr('data-target')}`)
+		this_message.removeClass('animate__slideInRight')
+		this_message.addClass('animate__backOutRight')
+		setTimeout(() => { 
+			$('.message').removeClass('animate__slideInRight')
+			$('.message').addClass('animate__slideInUp')
+			this_message.removeClass('show'); 
+			this_message.addClass('hide'); 
+		}, 1000);
+		setTimeout(() => { 
+			$('.message').removeClass('animate__slideInUp')
+		}, 2000);
+	})
+});
+Turbolinks.clearCache()

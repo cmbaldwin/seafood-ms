@@ -84,6 +84,14 @@ class ProductsController < ApplicationController
 		params[:id] ? (@product = Product.find(params[:id])) : (@product = Product.new)
 	end
 
+	def insert_select_products_by_type
+		@type = params[:type_id]
+	end
+
+	def insert_product_selected_button
+		@product = params[:product_id]
+	end
+
 	# GET /products/1
 	# GET /products/1.json
 	def show
@@ -128,15 +136,30 @@ class ProductsController < ApplicationController
 	# PATCH/PUT /products/1
 	# PATCH/PUT /products/1.json
 	def update
-		@product.type_check
-		@product.refresh_history
-		respond_to do |format|
-			if @product.update(product_params)
-				format.html { redirect_to @product, notice: '商品を編集されました。' }
-				format.json { render :show, status: :ok, location: @product }
-			else
-				format.html { render :edit }
-				format.json { render json: @product.errors, status: :unprocessable_entity }
+		if params[:save_as]
+			@product = Product.new(product_params)
+			@product.type_check
+			@product.history = Hash.new
+			respond_to do |format|
+				if @product.save
+					format.html { redirect_to @product, notice: '商品を編集されました。' }
+					format.json { render :show, status: :ok, location: @product }
+				else
+					format.html { render :edit }
+					format.json { render json: @product.errors, status: :unprocessable_entity }
+				end
+			end
+		else
+			@product.type_check
+			@product.refresh_history
+			respond_to do |format|
+				if @product.update(product_params)
+					format.html { redirect_to @product, notice: '商品を編集されました。' }
+					format.json { render :show, status: :ok, location: @product }
+				else
+					format.html { render :edit }
+					format.json { render json: @product.errors, status: :unprocessable_entity }
+				end
 			end
 		end
 	end

@@ -21,6 +21,18 @@ module ProductsHelper
 		products_by_type
 	end
 
+	def product_collection(type_num)
+		products_by_type[type_num].drop(1).map do |product_id|
+			product = Product.find(product_id)
+			[product.namae, product.id]
+		end
+	end
+
+	def product_types_for_copy_select
+		types_hash
+		@types_hash.map { |i, t| [t, i] }
+	end
+
 	def product_types_for_select
 		@products = Product.order(:namae).all
 		product_types_set = Set.new

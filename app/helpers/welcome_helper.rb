@@ -9,7 +9,7 @@ module WelcomeHelper
 
 	def card_link(card, title, add_class)
 		if card
-			link_to title, card.download.url, class: 'btn ' + add_class, target: '_blank', "data-tippy-content" => exp_card_popover(card)
+			link_to title, card.download.url, class: 'btn exp_card ' + add_class, target: '_blank', "data-tippy-content" => exp_card_popover(card)
 		else
 			link_to title, new_expiration_card_path, class: 'btn disabled ' + add_class, target: '_blank'
 		end

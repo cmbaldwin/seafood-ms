@@ -146,7 +146,7 @@ namespace :restaurants do
 				end
 				manifest.infomart_orders = new_hash
 				manifest.save
-				if Manifest.all.length - 1 == i 
+				if Manifest.all.length - 1 == i
 					print "Finished."
 				else
 					print "Next."
@@ -261,7 +261,7 @@ namespace :daily_shell_cards do
 		def nengapi_maker(date, adjust)
 			(date + adjust).strftime('%Y年%m月%d日')
 		end
-		
+
 		#Destroy cards from prior day
 		ExpirationCard.where(manufactuered_date: [nengapi_maker(today, -1), '']).destroy_all
 
@@ -426,7 +426,7 @@ namespace :pull_order_data do
 			require 'mechanize'
 
 			agent = Mechanize.new
-			#today's date 
+			#today's date
 			scrape_date = DateTime.strptime(sales_date, '%Y年%m月%d日')
 			start_date = (scrape_date + 1).strftime("%Y/%m/%d")
 			end_date = (scrape_date + 2).strftime("%Y/%m/%d")
@@ -554,7 +554,7 @@ namespace :pull_order_data do
 	task :get_one_month_rakuten => :environment do
 		range = Date.today..Date.today.end_of_month
 		puts "Pulling " + Date.today.strftime('%B') + "'s Rakuten data records from API..."
-		
+
 		range.each_with_index do |date, i|
 			rmanifest = RManifest.where(:sales_date => date.strftime('%Y年%m月%d日')).first
 			rmanifest.nil? ? (rmanifest = RManifest.new(:sales_date => date.strftime('%Y年%m月%d日'))) : ()
@@ -570,7 +570,7 @@ namespace :pull_order_data do
 	task :refresh_existing_rakuten => :environment do
 		total_length = RManifest.all.length.to_s
 		puts "Pulling " + total_length + " Rakuten Data records from API..."
-		
+
 		RManifest.all.each_with_index do |rmanifest, i|
 			puts "Pulling ID#" + rmanifest.id.to_s
 			puts i.to_s + ' of ' + total_length
@@ -661,20 +661,19 @@ end
 desc "Check for mail that needs to be sent and send it"
 task mail_check_and_send: :environment do
 	counter = 0
-	OysterInvoice.all.each do |invoice|
-		unless invoice.completed
-			if invoice.send_at <= DateTime.now
-				puts 'Sending mailer for invoice from ' + invoice.start_date + ' ~ ' + invoice.end_date
-				InvoiceMailer.with(invoice: invoice).sakoshi_invoice_email.deliver_now
-				InvoiceMailer.with(invoice: invoice).aioi_invoice_email.deliver_now
-				invoice.completed = true
-				invoice.data[:mail_sent] = DateTime.now
-				invoice.save
-				counter += 1
-			end
+	OysterInvoice.where(completed: false).each do |invoice|
+		if invoice.send_at <= DateTime.now
+			puts 'Sending mailer for invoice from ' + invoice.start_date + ' ~ ' + invoice.end_date
+			InvoiceMailer.with(invoice: invoice).sakoshi_invoice_email.deliver_now
+			InvoiceMailer.with(invoice: invoice).aioi_invoice_email.deliver_now
+			invoice.completed = true
+			invoice.data[:mail_sent] = DateTime.now
+			invoice.save
+			counter += 1
 		end
 	end
-	puts 'Sent ' + counter.to_s + ' e-mail(s)'
+	puts 'Sent ' + counter.to_s + ' e-mail(s)' if counter > 0
+	puts 'No invoice emails to send' if counter == 0
 end
 
 

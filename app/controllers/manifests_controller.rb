@@ -19,6 +19,7 @@ class ManifestsController < ApplicationController
 	# GET /manifests/1
 	# GET /manifests/1.json
 	def show
+		wc_check
 		#bot_response = HTTParty.post('https://thawing-journey-94236.herokuapp.com/api?admin[email]=' + ENV['BOT_LOGIN'] + '&admin[password]=' + ENV['BOT_PASSWORD'])
 		#ap bot_response.parsed_response
 	end
@@ -104,12 +105,10 @@ class ManifestsController < ApplicationController
 	end
 
 	def pdf
-		send_data @manifest.do_pdf.render,
-			type: 'application/pdf', 
-			disposition: :inline
-		pdf = nil
-		GC.start
-		File.delete(Rails.root + 'PDF.pdf') if File.exist?(Rails.root + 'PDF.pdf')
+		@filename = "InfoMart/Funabiki.infoの出荷表（#{@manifest.sales_date}）.pdf"
+		message = Message.new(user: current_user.id, model: 'manifest', state: false, message: "InfoMart/Funabiki.infoの出荷表を作成中…", data: {manifest_id: @manifest.id, filename: @filename, expiration: (DateTime.now + 1.day)})
+		message.save
+		ManifestPdfWorker.perform_async(@manifest.id, message.id)
 	end
 
 	# POST /manifests

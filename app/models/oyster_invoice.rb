@@ -24,7 +24,13 @@ class OysterInvoice < ApplicationRecord
 
 	def destroy_message
 		msg_id = self.data[:message]
-		msg_id ? (Message.find(msg_id).destroy) : ()
+		if msg_id && Message.exists?(msg_id)
+			Message.find(msg_id).destroy
+		end
+	end
+
+	def display_date
+		self.start_date + ' ~ ' + (Date.parse(self.end_date) - 1.day).to_s
 	end
 
 	def supply_uniqueness_and_completion

@@ -22,7 +22,7 @@
 		<% @expiration_cards.each do |expiration_card| %>
 			<div class="col-md-6 col-sm-12">
 				<div class="float-right btn-group mb-1">
-					<%= link_to icon("card-heading"), expiration_card.download.url, class: 'btn btn-info popover-focus-top', target: "_blank", "data-tippy-content" => exp_card_popover(expiration_card) %>
+					<%= link_to icon("card-heading"), expiration_card.download.url, class: 'btn btn-info popover-focus-top exp_card', target: "_blank", "data-tippy-content" => exp_card_popover(expiration_card) %>
 					<%= link_to icon("pencil-square", class: "text-success"), edit_expiration_card_path(expiration_card), class: 'btn btn-info' %>
 					<%= link_to icon("trash-fill", class: "text-danger"), expiration_card, method: :delete, data: { confirm: 'Are you sure?' }, class: 'btn btn-info' %>
 				</div>

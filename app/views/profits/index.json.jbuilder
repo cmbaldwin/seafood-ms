@@ -1,5 +1,5 @@
 json.array!(@calendar_profits) do |profit|
-	json.title '￥' + yenify(profit.totals[:profits]) + (profit.alone? ? ('') : (profit.check_ampm ? '　午前' : '　午後'))
+	json.title (profit.totals[:profits].nil? || profit.totals.empty?) ? ('未計算') : ('￥' + yenify(profit.totals[:profits]) + (profit.alone? ? ('') : (profit.check_ampm ? '　午前' : '　午後')))
 	json.start DateTime.strptime(profit.sales_date, '%Y年%m月%d日')
 	json.id profit.id
 	json.allDay true

@@ -7,15 +7,42 @@ class WelcomeController < ApplicationController
 		@users = User.all
 		time_setup
 
-		# Temporarily removed
-		# frozen_data_setup
+		frozen_data_setup
 
 		rakuten_orders
 
 		# Return a observational data at the present time
 		weatherb = Weatherb::API.new(ENV['CLIMACELL_API'])
 		@weather = weatherb.realtime(lat: 34.733552, lon: 134.377873)
-		
+		ap @weather
+	end
+
+	def shipping_data_csv
+		require 'csv'
+
+		start_date = DateTime.new(2020,12,7)
+		end_date = DateTime.new(2020,12,31)
+
+		if csv_params[:csv]
+			CSV.foreach(csv_params[:csv]) do |row|
+				ap row
+			end
+		end
+
+		# config = {
+		# 	encoding: "Shift_JIS",
+		# 	headers: true
+		# }
+		# csv_data = CSV.generate(config) do |csv|
+		# 	CSVWriter.new.collect_online_shop_data(start_date, end_date).each do |array|
+		# 		csv << array
+		# 	end
+		# end
+
+		# send_data(csv_data, 
+		# 	type: 'text/csv; charset=UTF-8; header=present', 
+		# 	filename: "販売実績（#{start_date.to_s(:number)}_#{end_date.to_s(:number)}）.csv", 
+		# 	disposition: :attachment)
 	end
 
 	def frozen_data_setup
@@ -56,7 +83,7 @@ class WelcomeController < ApplicationController
 							@last_year_sales[date] += (profit.totals[:profits] <= 0 ? 0 : (profit.totals[:profits] / 10000))
 						end
 					end
-				end 
+				end
 
 				ymax = @year_sales.merge(@last_year_sales).values.max
 				ymax.nil? ? (@yearly_max = ymax.round(-(ymax.to_i.to_s.length - 4))) : (@yearly_max = 0)
@@ -68,8 +95,8 @@ class WelcomeController < ApplicationController
 					@two_year_daily_average = '万￥' + helpers.yenify(@year_sales.merge(@last_year_sales).values.sum / @year_sales.merge(@last_year_sales).values.length)
 				end
 
-			@data_array = [{name: '今年', data: @year_sales}, 
-						{name: '去年', data: @last_year_sales}, 
+			@data_array = [{name: @this_season_start.year.to_s + ' ~ ' + @this_season_end.year.to_s, data: @year_sales},
+						{name: @prior_season_start.year.to_s + ' ~ ' + @prior_season_end.year.to_s, data: @last_year_sales},
 				]
 		else
 			@data_array = [{name: 'Unauthorized', data: {}}]
@@ -83,7 +110,8 @@ class WelcomeController < ApplicationController
 			time_setup
 			@this_year_est = Hash.new
 			@last_year_est = Hash.new
-			Profit.all.order(:sales_date).each do |profit|
+			query_array = (@prior_season_start.year..@this_season_end.year).map{|yr| "%#{yr.to_s}%" }
+			Profit.where("sales_date ILIKE ANY ( array[?] )", query_array).order(:sales_date).each do |profit|
 				unless profit.totals[:profits].nil?
 					date = profit.sales_date_to_datetime.strftime("%m月%d日")
 					volumes = profit.volumes
@@ -103,13 +131,19 @@ class WelcomeController < ApplicationController
 					end
 				end
 			end
-			@data_array = [{name: @this_season_start.year.to_s + ' ~ ' + @this_season_end.year.to_s, data: @this_year_est}, 
-						{name: @prior_season_start.year.to_s + ' ~ ' + @prior_season_end.year.to_s, data: @last_year_est}, 
+			@last_year_est.each{|date, val| @this_year_est[date] = 0 if @this_year_est[date].nil?}
+			@data_array = [{name: @this_season_start.year.to_s + ' ~ ' + @this_season_end.year.to_s, data: @this_year_est.sort.to_h},
+						{name: @prior_season_start.year.to_s + ' ~ ' + @prior_season_end.year.to_s, data: @last_year_est.sort.to_h},
 				]
 		else
 			@data_array = [{name: 'Unauthorized', data: {}}]
 		end
 		render json: @data_array
+	end
+
+	def recent_oyster_supplies
+		query_array = (@prior_season_start.year..@this_season_end.year).map{|yr| "%#{yr.to_s}%" }
+		OysterSupply.where("supply_date ILIKE ANY ( array[?] )", query_array)
 	end
 
 	def farmer_kilo_costs_chart
@@ -118,7 +152,7 @@ class WelcomeController < ApplicationController
 			time_setup
 			@this_year_costs = Hash.new
 			@last_year_costs = Hash.new
-			OysterSupply.all.order(:supply_date).each do |supply|
+			recent_oyster_supplies.order(:supply_date).each do |supply|
 				unless supply.oysters.empty?
 					date = supply.date.strftime("%m月%d日")
 					kilo_price = supply.totals[:cost_total]
@@ -128,15 +162,18 @@ class WelcomeController < ApplicationController
 					else
 						kilo_price = 0
 					end
-					if supply.date > @this_season_start && supply.date < @this_season_end
-						@this_year_costs[date] = kilo_price
-					elsif supply.date > @prior_season_start && supply.date < @prior_season_end
+					if supply.date > @prior_season_start && supply.date < @prior_season_end
 						@last_year_costs[date] = kilo_price
+						@this_year_costs[date] = 0 if @this_year_costs[date].nil?
+					elsif supply.date > @this_season_start && supply.date < @this_season_end
+						@this_year_costs[date] = kilo_price
+						@last_year_costs[date] = 0 if @last_year_costs[date].nil?
 					end
 				end
 			end
-			@data_array = [{name: '今年', data: @this_year_costs}, 
-						{name: '去年', data: @last_year_costs}, 
+			@this_year_costs.sort.to_h
+			@data_array = [{name: @this_season_start.year.to_s + ' ~ ' + @this_season_end.year.to_s, data: @this_year_costs.sort.to_h},
+						{name: @prior_season_start.year.to_s + ' ~ ' + @prior_season_end.year.to_s, data: @last_year_costs.sort.to_h},
 				]
 		else
 			@data_array = [{name: 'Unauthorized', data: {}}]
@@ -150,24 +187,30 @@ class WelcomeController < ApplicationController
 			time_setup
 			@this_year_volume = Hash.new
 			@last_year_volume = Hash.new
-			OysterSupply.all.order(:supply_date).each do |supply|
+			recent_oyster_supplies.order(:supply_date).each do |supply|
 				unless supply.oysters.empty?
 					date = supply.date.strftime("%m月%d日")
 					volume = supply.totals[:mukimi_total]
 					if supply.date > @this_season_start && supply.date < @this_season_end
 						@this_year_volume[date] = volume
+						@last_year_volume[date] = 0 if @last_year_volume[date].nil?
 					elsif supply.date > @prior_season_start && supply.date < @prior_season_end
 						@last_year_volume[date] = volume
+						@this_year_volume[date] = 0 if @this_year_volume[date].nil?
 					end
 				end
 			end
-			@data_array = [{name: '今年', data: @this_year_volume}, 
-						{name: '去年', data: @last_year_volume}, 
+			@data_array = [{name: @this_season_start.year.to_s + ' ~ ' + @this_season_end.year.to_s, data: @this_year_volume.sort.to_h},
+						{name: @prior_season_start.year.to_s + ' ~ ' + @prior_season_end.year.to_s, data: @last_year_volume.sort.to_h},
 				]
 		else
 			@data_array = [{name: 'Unauthorized', data: {}}]
 		end
 		render json: @data_array
+	end
+
+	def noshi_modal
+		render partial: "noshi_modal"
 	end
 
 	def yahoo_orders_partial
@@ -180,6 +223,24 @@ class WelcomeController < ApplicationController
 		render partial: "yahoo_orders"
 	end
 
+	def new_yahoo_orders_modal
+		time_setup
+		@yahoo_orders = YahooOrder.all.where(ship_date: Date.today)
+		@yahoo_date = DateTime.now
+		@new_yahoo_orders = YahooOrder.where(ship_date: nil).order(:order_id).map{ |order| order unless order.order_status(false) == 4}.compact
+		(@new_yahoo_orders.length > 0) ? () : (@new_yahoo_orders = nil)
+
+		render partial: "new_yahoo_orders_modal"
+	end
+
+	def rakuten_shinki_modal
+		# Check for new and unprocessed orders from rakuten
+		rakuten_check
+		time_setup
+
+		render partial: "rakuten_shinki_modal"
+	end
+
 	def rakuten_orders
 		time_setup
 		rakuten_today = RManifest.where(:sales_date => @today).first
@@ -188,7 +249,7 @@ class WelcomeController < ApplicationController
 		else
 			@rakuten = RManifest.last
 		end
-		# Check for new and unprocessed orders from rakuten 
+		# Check for new and unprocessed orders from rakuten
 		rakuten_check
 	end
 
@@ -205,6 +266,19 @@ class WelcomeController < ApplicationController
 		render partial: "online_orders"
 	end
 
+	def online_orders_modal
+		time_setup
+		tsuhan_today = Manifest.where(:sales_date => @today).first
+		if tsuhan_today != nil
+			@online_orders = tsuhan_today
+		else
+			@online_orders = Manifest.last
+		end
+		wc_check
+
+		render partial: "online_orders_modal"
+	end
+
 	def daily_expiration_cards
 		time_setup
 		expiration_card_links_setup
@@ -219,14 +293,14 @@ class WelcomeController < ApplicationController
 		source_aioi = "兵庫県相生海域"
 
 		ExpirationCard.preload(:download)
-		
+
 		@sakoshi_expiration_today = ExpirationCard.where(ingredient_source: source_sakoshi,  manufactuered_date: nengapi_maker(Date.today, 0), expiration_date: nengapi_maker(Date.today, 4), made_on: true, shomiorhi: true).first
 		@sakoshi_expiration_today_five = ExpirationCard.where(ingredient_source: source_sakoshi,  manufactuered_date: nengapi_maker(Date.today, 0), expiration_date: nengapi_maker(Date.today, 5), made_on: true, shomiorhi: true).first
 		@sakoshi_expiration_tomorrow = ExpirationCard.where(ingredient_source: source_sakoshi,  manufactuered_date: nengapi_maker(Date.today, 1), expiration_date: nengapi_maker(Date.today, 5), made_on: true, shomiorhi: true).first
 		@sakoshi_expiration_tomorrow_five = ExpirationCard.where(ingredient_source: source_sakoshi,  manufactuered_date: nengapi_maker(Date.today, 1), expiration_date: nengapi_maker(Date.today, 6), made_on: true, shomiorhi: true).first
 		@sakoshi_expiration_today_five_expo = ExpirationCard.where(ingredient_source: source_sakoshi,  manufactuered_date: nengapi_maker(Date.today, 0), expiration_date: nengapi_maker(Date.today, 5), made_on: false, shomiorhi: true).first
 		@sakoshi_expiration_muji = ExpirationCard.where(ingredient_source: source_sakoshi,  manufactuered_date: '', expiration_date: '', made_on: true).first
-		
+
 		@aioi_expiration_today = ExpirationCard.where(ingredient_source: source_aioi,  manufactuered_date: nengapi_maker(Date.today, 0), expiration_date: nengapi_maker(Date.today, 4), made_on: true, shomiorhi: true).first
 		@aioi_expiration_today_five = ExpirationCard.where(ingredient_source: source_aioi,  manufactuered_date: nengapi_maker(Date.today, 0), expiration_date: nengapi_maker(Date.today, 5), made_on: true, shomiorhi: true).first
 		@aioi_expiration_tomorrow = ExpirationCard.where(ingredient_source: source_aioi,  manufactuered_date: nengapi_maker(Date.today, 1), expiration_date: nengapi_maker(Date.today, 5), made_on: true, shomiorhi: true).first
@@ -241,7 +315,7 @@ class WelcomeController < ApplicationController
 		@order = @rakuten.new_orders_hash.reverse[@order_id.to_i]
 		@purchaser = @order[:sender]['familyName']
 		@oysis = params[:oysis]
-		@sales_date = params[:sales_date]
+		@sales_date = params[:sales_date] || to_nengapi(DateTime.now)
 		@amount = @order[:final_cost].to_s
 		respond_to do |format|
 			format.js { render layout: false }
@@ -251,6 +325,7 @@ class WelcomeController < ApplicationController
 	def load_rakuten_order
 		time_setup
 		@rakuten = RManifest.find(params[:id])
+		@noshi = Noshi.new
 		rakuten_today = RManifest.where(:sales_date => @today).first
 		if rakuten_today
 			@rakuten.sales_date == (rakuten_today.sales_date) ? rakuten_check : ()
@@ -280,5 +355,11 @@ class WelcomeController < ApplicationController
 			format.js { render layout: false }
 		end
 	end
+
+	private
+
+		def csv_params
+			params.permit(:csv, :commit, :authenticity_token)
+		end
 
 end

@@ -1,38 +1,65 @@
-<ul class="list-group list-group-flush">
-	<div class="row">
-		<% products_by_type[@type].drop(1).each do |product_id| %>
-		<% product = get_product(product_id) %>
-			<div class="col-md-4 col-sm-12">
-				<li class="list-group-item product_container">
+<script>
+	tippy('.tippy', {
+		allowHTML: true, 
+		animation: 'scale', 
+		duration: [300,0] 
+	});
+</script>
+
+<div class="row m-1">
+	<div class="col-12 p-2 my-1">
+		<div class="row">
+			<div class="col-3">
+				<strong>商品名</strong>
+			</div>
+			<div class="col-6">
+				<div class="row text-center small">
+					<div class="col-4">
+						グラム数見当
+					</div>
+					<div class="col-4">
+						箱入り数 × 箱合わせ数
+					</div>
+					<div class="col-4">
+						商品の経費合
+					</div>
+				</div>
+			</div>
+			<div class="col-3 text-right">
+				商品明細・修正
+			</div>
+		</div>
+	</div>
+	<% products_by_type[@type].drop(1).each do |product_id| %>
+	<% product = get_product(product_id) %>
+		<div class="col-12 card p-1 my-1 bg-light">
+			<div class="row">
+				<div class="col-3">
+					<strong><%= product.namae %></strong>
+				</div>
+				<div class="col-6">
 					<div class="row text-center">
-						<div class="col-12 mb-2 h3">
-							<strong><%= product.namae %></strong>
+						<div class="col-4">
+							<%= product.grams %>
 						</div>
-						<% if current_user.admin? %>
-							<div class="col-12 product_data small mb-2">
-								<button class="product_tooltip" data-toggle="tooltip" data-html="true" title="<b>グラム数見当</b>">
-									<%= product.grams %>
-								</button>
-								<button class="product_tooltip" data-toggle="tooltip" data-html="true" title="<b>箱入り数 × 箱合わせ数</b>">
-									<%= product.count %> × <%= product.multiplier %>
-								</button>
-								<button class="product_tooltip" data-toggle="tooltip" data-html="true" title="<b>商品の経費合</b>">
-									<%= product.cost %>
-								</button>
-							</div>
-						<% end %>
-						<div class="col-12">
-							<div class="btn-group mt-1" role="group">
-								<%= link_to icon("card-list"), product, class: 'btn btn-sm btn-info' %>
-								<% if current_user.admin? %>
-									<%= link_to icon("pencil-square", class: "text-success"), insert_product_data_path(id: product.id), remote: true, class: 'btn btn-sm btn-info', 'data-toggle' => 'modal', 'data-target' => '#productModal' %>
-									<%= link_to icon("trash-fill", class: "text-danger"), product, method: :delete, data: { confirm: '削除確認' }, class: 'btn btn-sm btn-info' %>
-								<% end %>
-							</div>
+						<div class="col-4">
+							<%= product.count %> × <%= product.multiplier %>
+						</div>
+						<div class="col-4">
+							<%= product.cost %>
 						</div>
 					</div>
-				</li>
+				</div>
+				<div class="col-3 text-right">
+					<div class="btn-group" role="group">
+						<%= link_to icon("card-list"), product, class: 'btn btn-sm btn-info tippy', "data-tippy-content" => '商品個別ページ' %>
+						<% if current_user.admin? %>
+							<%= link_to icon("pencil-square", class: "text-success"), insert_product_data_path(id: product.id), remote: true, class: 'btn btn-sm btn-info tippy', 'data-toggle' => 'modal', 'data-target' => '#productModal', "data-tippy-content" => '商品修正' %>
+							<%= link_to icon("trash-fill", class: "text-danger"), product, method: :delete, data: { confirm: '削除確認' }, class: 'btn btn-sm btn-info tippy', "data-tippy-content" => '商品削除' %>
+						<% end %>
+					</div>
+				</div>
 			</div>
-		<% end %>
-	</div>	
-</ul>
+		</div>
+	<% end %>
+</div>	

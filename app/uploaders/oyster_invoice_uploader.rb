@@ -55,7 +55,8 @@ class OysterInvoiceUploader < CarrierWave::Uploader::Base
 		mounted_as.to_s.include?('aioi') ? (locale = '相生') : (locale = '坂越')
 		mounted_as.to_s.include?('all') ? (export_format = '生産者まとめ') : (export_format = '各生産者')
 		start_date = Date.parse(model.start_date).strftime('%Y年%m月%d日')
-		end_date = Date.parse(model.end_date).strftime('%Y年%m月%d日')
+		end_date = (Date.parse(model.end_date) - 1.day).strftime('%Y年%m月%d日')
 		"#{locale} (#{start_date} ~ #{end_date}) - #{export_format}.pdf"
 	end
 end
+ 

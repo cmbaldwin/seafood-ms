@@ -13,7 +13,7 @@ class ExpirationCard < ApplicationRecord
 			#document set up
 			pdf.font_families.update(PrawnPDF.fonts)
 			#set utf-8 japanese font
-			pdf.font "SourceHan" 
+			pdf.font "MPLUS1p"
 
 			#first page for raw oysters
 			#print the date
@@ -40,7 +40,7 @@ class ExpirationCard < ApplicationRecord
 			pdf.table(cards, :cell_style => {:border_width => 0, :valign => :center, :padding => 0}, :width => pdf.bounds.width ) do |t|
 				t.column(1).padding = [0,0,0,25]
 				t.column(0).padding = [0,0,0,7]
-				t.cells.style do |c|    
+				t.cells.style do |c|
 					c.height = ((c.row) % 2).zero? ? 30 : ()
 				end
 				t.row(0).height = 5

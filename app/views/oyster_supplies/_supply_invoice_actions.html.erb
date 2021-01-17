@@ -1,0 +1,61 @@
+<script type="text/javascript">
+	tippy('.tippy', {
+		allowHTML: true,
+		animation: 'scale',
+		duration: [300,0],
+		touch: true,
+		touch: 'hold'
+	});
+</script>
+
+<div class="card mb-2">
+	<div class="card-header py-1">
+		<h6 class="float-left pt-1">
+			仕切りプレビュー
+		</h6>
+		<span class="float-right pt-1">
+			<%= icon('file-earmark') %>
+		</span>
+	</div>
+	<div class="card-body p-1">
+		<table class="table table-hover text-center mb-0 table-sm">
+			<thead class="thead-dark">
+				<tr>
+					<th scope="col">場所</th>
+					<th scope="col">フォーマット</th>
+					<th scope="col">作成</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<th scope="row" rowspan="2" class="align-middle">坂越</th>
+					<td class="align-middle">各生産者</td>
+					<td class="align-middle">
+						<%= link_to(icon('journals'), payment_pdf_path(export_format: "individual", start_date: @start_date, end_date: @end_date, location: "sakoshi"), class: "btn btn-primary ml-2 mb-2 tippy", 'data-tippy-content' => '坂越の各生産者の仕切りプレビューを作成', remote: true) %>
+					</td>
+				</tr>
+				<tr>
+					<td class="align-middle">生産者まとめ</td>
+					<td class="align-middle">
+						<%= link_to(icon('journal'), payment_pdf_path(export_format: "all", start_date: @start_date, end_date: @end_date, location: "sakoshi"), class: "btn btn-primary ml-2 tippy", 'data-tippy-content' => '坂越の生産者まとめの仕切りプレビューを作成', remote: true) %>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row" rowspan="2" class="align-middle">相生</th>
+					<td class="align-middle">各生産者</td>
+					<td class="align-middle">
+						<%= link_to(icon('journals'), payment_pdf_path(export_format: "individual", start_date: @start_date, end_date: @end_date, location: "aioi"), class: "btn btn-primary ml-2 mb-2 tippy", 'data-tippy-content' => '相生の各生産者の仕切りプレビューを作成', remote: true) %>
+					</td>
+				</tr>
+				<tr>
+					<td class="align-middle">生産者まとめ</td>
+					<td class="align-middle">
+						<%= link_to(icon('journal'), payment_pdf_path(export_format: "all", start_date: @start_date, end_date: @end_date, location: "aioi"), class: "btn btn-primary ml-2 tippy", 'data-tippy-content' => '相生の生産者まとめの仕切りプレビューを作成', remote: true) %>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>
+
+<%= render 'invoice' %>

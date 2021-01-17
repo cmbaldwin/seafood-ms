@@ -1,3 +1,14 @@
+<script type="text/javascript">
+	<%= render partial: 'profitjs', formats: [:js] %>
+	<% if @market %>
+		$('#market-pills .nav-link.active').removeClass('active');
+		$("#navBtn<%= escape_javascript(@market.id.to_s) %>").addClass('active');
+		// animate active pill/market
+		$('#market-pills a.active').addClass('animate__animated animate__pulse animate__infinite') // newly activated tab
+		$('#market-pills a').not('.active').removeClass('animate__animated animate__pulse animate__infinite') // other pills
+	<% end %>
+</script>
+
 <% title "Funabiki Online - 計算表作成" %>
 
 <div class="modal fade" id="newProfitModal" tabindex="-1" aria-labelledby="newProfitModalLabel" aria-hidden="true">
@@ -42,30 +53,53 @@
 	</div>
 </div>
 
+<div class="modal fade" id="productModal" tabindex="-1"aria-labelledby="productModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="productModalLabel">商品編集・作成</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+				<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div id="product_card" class="card h-100">
+				<div class="card-body">
+					<div id="product_partial">
+						<%= render 'products/product', remote: true, locals: {product: @product} %>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">閉じる</button>
+			</div>
+		</div>
+	</div>
+</div>
+
 <div class="container-flex profit_container">
 	<div class="row align-middle m-3">
 		<div class="col clearfix">
 			<div class="btn-group float-right" role="group" aria-label="Basic">
-				<span class="btn btn-info" data-tippy-content="牡蠣の量予算">
+				<span class="btn btn-info tippy" data-tippy-content="牡蠣の量予算">
 					<%= link_to icon('bar-chart-line'), fetch_volumes_path(@profit.id), class: "text-primary", "data-toggle" => "modal", "data-target" => "#volumesModal", remote: true %>
 				</span>
-				<span class="btn btn-info" data-tippy-content="計算表を追加">
+				<span class="btn btn-info tippy" data-tippy-content="計算表を追加">
 					<button id="newProfitModalButton" type="button" class="btn btn-info m-0 p-0" data-toggle="modal" data-target="#newProfitModal">
 							<%= icon('plus-circle-fill', class: 'text-success') %>
 					</button>
 				</span>
-				<span class="btn btn-info" data-tippy-content="計算表をカレンダーで調べる">
+				<span class="btn btn-info tippy" data-tippy-content="計算表をカレンダーで調べる">
 					<button id="ProfitModalButton" type="button" class="btn btn-info m-0 p-0" data-toggle="modal" data-target="#ProfitModal">
 							<%= icon('calendar3', class: 'text-white') %>
 					</button>
 				</span>
-				<span class="btn btn-info" data-tippy-content="計算表トップへ">
+				<span class="btn btn-info tippy" data-tippy-content="計算表トップへ">
 					<%= link_to icon('arrow-90deg-up', class: 'text-white'), profits_path %>
 				</span>
 			</div>
-		<hr/>
-	<div id="profit_form" class="profit_form clearfix">
-	
+		<hr/><br>
+	<div id="profit_form" class="profit_form container-flex clearfix">
+
 
 		<div class="row">
 
@@ -105,28 +139,6 @@
 							</div>
 						</div>
 					</div>
-					<% if @profit.check_completion[0] != 0 %>
-						<div class="col-sm-12">
-							<div class="card mt-2">
-								<a class="card-header" data-toggle="collapse" href="#unfinished" role="button" aria-expanded="false" aria-controls="unfinished"><b>入力されていない市場</b></a>
-								<span class="card-body small collapse" id="unfinished">
-									<% @profit.check_completion.sort.each do |mjsnumber, unfinished_products| %>
-										<% if mjsnumber != 0 %>
-											<% market = Market.find_by(mjsnumber: mjsnumber) %>
-											<a class="btn btn-sm <%= profit_nav_font_color(market.color).to_s %>" style="background-color: <%= market.color %>;">
-												<%= market.nick %>
-											</a>
-											<br>
-												<% unfinished_products.each do |product_id| %>
-													→<%= Product.find(product_id).namae %><br>
-												<% end %>
-												<br>
-											<% end %>
-									<% end %>
-								</span>
-							</div>
-						</div>
-					<% end %>
 					<div class="col-sm-12">
 						<div class="card mt-2 text-center">
 							<span class="card-header">
@@ -135,22 +147,29 @@
 							</span>
 						</div>
 					</div>
+					<div class="col-sm-12">
+						<div id="unfinished_list_partial" class="card mt-2">
+							<% if @profit.check_completion[0] != 0 %>
+								<%= render :partial => 'unfinished_markets_list', locals: { profit: @profit }, :remote => 'true' %>
+							<% end %>
+						</div>
+					</div>
 				</div>
 				<% end %>
 			</div>
 
 			<div class="col-lg-9 col-md-12">
 				<nav>
-					<div class="nav nav-pills d-flex m-3" id="market-pills" role="tablist">
+					<div class="nav nav-pills d-flex mb-3" id="market-pills" role="tablist">
 						<% @markets.each_with_index do |market, i| %>
-							<%= link_to market.nick, fetch_market_path(:market_id => market.id, profit: @profit), :remote => 'true', :id => 'navBtn' + market.id.to_s, :class => 'd-flex flex-grow-1 align-content-center text-center nav-item nav-link ' + active(i).to_s + profit_nav_font_color(market.color).to_s, "data-toggle" => "pill", "role" => "tab", "style" => "background-color: " + market.color.to_s + ";" %>
+							<%= link_to market.nick, fetch_market_path(:market_id => market.id, profit: @profit), :remote => 'true', :id => 'navBtn' + market.id.to_s, :class => 'd-flex flex-grow-1 align-content-center text-center nav-item nav-link ' + profit_nav_font_color(market.color).to_s, "data-toggle" => "pill", "role" => "tab", "style" => "background-color: " + market.color.to_s + ";" %>
 						<% end %>
 					</div>
 				</nav>
 
 				<div class="tab-content" id="nav-tabContent">
 					<div class="tab-pane fade show active" id="nav-partial" role="tabpanel">
-						<div id="partial">
+						<div id="market_partial">
 							<%= render :partial => 'edit_partial_form', locals: { market: @market, profit: @profit }, :remote => 'true', cached: true %>
 						</div>
 					</div>

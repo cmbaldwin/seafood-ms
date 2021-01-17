@@ -292,7 +292,7 @@ class YahooAPI
 							"<Req>
 								<Target>
 									<OrderId>#{order_id}</OrderId>
-									<Field>OrderTime,OrderId,DeviceType,IsRoyalty,IsAffiliate,OrderStatus,StoreStatus,IsActive,IsSeen,IsSplit,Suspect,IsRoyaltyFix,PayStatus,SettleStatus,PayType,PayMethod,NeedBillSlip,NeedDetailedSlip,NeedReceipt,BillFirstName,BillFirstNameKana,BillLastName,BillLastNameKana,BillPrefecture,ShipFirstName,ShipFirstNameKana,ShipLastName,ShipLastNameKana,ShipPrefecture,ShipStatus,ShipMethod,ShipCompanyCode,IsLogin,TotalPrice,IsReadOnly,UsePointType,PayMethod,PayMethodName,BillZipCode,BillPrefecture,BillPrefectureKana,BillCity,BillCityKana,BillAddress1,BillAddress1Kana,BillAddress2,BillAddress2Kana,BillPhoneNumber,ShipMethod,ShipMethodName,ShipRequestDate,ShipRequestTime,ArriveType,ShipDate,ShipRequestTimeZoneCode,ShipZipCode,ShipPrefecture,ShipPrefectureKana,ShipCity,ShipCityKana,ShipAddress1,ShipAddress1Kana,ShipAddress2,ShipAddress2Kana,ShipPhoneNumber,ShipEmgPhoneNumber,ShipSection1Field,ShipSection1Value,ShipSection2Field,ShipSection2Value,LineId,ItemId,Title,SubCode,SubCodeOption,ItemOption,ProductId,Quantity</Field>
+									<Field>OrderTime,OrderId,DeviceType,IsRoyalty,IsAffiliate,OrderStatus,StoreStatus,IsActive,IsSeen,IsSplit,Suspect,IsRoyaltyFix,PayStatus,SettleStatus,PayType,PayMethod,NeedBillSlip,NeedDetailedSlip,NeedReceipt,BillFirstName,BillFirstNameKana,BillLastName,BillLastNameKana,BillPrefecture,ShipFirstName,ShipFirstNameKana,ShipLastName,ShipLastNameKana,ShipPrefecture,ShipStatus,ShipMethod,ShipCompanyCode,IsLogin,TotalPrice,IsReadOnly,UsePointType,PayMethod,PayMethodName,BillZipCode,BillPrefecture,BillPrefectureKana,BillCity,BillCityKana,BillAddress1,BillAddress1Kana,BillAddress2,BillAddress2Kana,BillPhoneNumber,ShipMethod,ShipMethodName,ShipRequestDate,ShipRequestTime,ArriveType,ShipDate,ShipRequestTimeZoneCode,ShipZipCode,ShipPrefecture,ShipPrefectureKana,ShipCity,ShipCityKana,ShipAddress1,ShipAddress1Kana,ShipAddress2,ShipAddress2Kana,ShipPhoneNumber,ShipEmgPhoneNumber,ShipInvoiceNumber1,ShipInvoiceNumber2,ShipSection1Field,ShipSection1Value,ShipSection2Field,ShipSection2Value,LineId,ItemId,Title,SubCode,SubCodeOption,ItemOption,ProductId,Quantity</Field>
 									</Target>
 								<SellerId>oystersisters</SellerId>
 							</Req>").parsed_response
@@ -331,7 +331,7 @@ class YahooAPI
 							"<Req>
 								<Target>
 									<OrderId>#{order_id}</OrderId>
-									<Field>OrderTime,OrderId,DeviceType,IsRoyalty,IsAffiliate,OrderStatus,StoreStatus,IsActive,IsSeen,IsSplit,Suspect,IsRoyaltyFix,PayStatus,SettleStatus,PayType,PayMethod,NeedBillSlip,NeedDetailedSlip,NeedReceipt,BillFirstName,BillFirstNameKana,BillLastName,BillLastNameKana,BillPrefecture,ShipFirstName,ShipFirstNameKana,ShipLastName,ShipLastNameKana,ShipPrefecture,ShipStatus,ShipMethod,ShipCompanyCode,IsLogin,TotalPrice,IsReadOnly,UsePointType,PayMethod,PayMethodName,BillZipCode,BillPrefecture,BillPrefectureKana,BillCity,BillCityKana,BillAddress1,BillAddress1Kana,BillAddress2,BillAddress2Kana,BillPhoneNumber,ShipMethod,ShipMethodName,ShipRequestDate,ShipRequestTime,ArriveType,ShipDate,ShipRequestTimeZoneCode,ShipZipCode,ShipPrefecture,ShipPrefectureKana,ShipCity,ShipCityKana,ShipAddress1,ShipAddress1Kana,ShipAddress2,ShipAddress2Kana,ShipPhoneNumber,ShipEmgPhoneNumber,ShipSection1Field,ShipSection1Value,ShipSection2Field,ShipSection2Value,LineId,ItemId,Title,SubCode,SubCodeOption,ItemOption,ProductId,Quantity</Field>
+									<Field>OrderTime,OrderId,DeviceType,IsRoyalty,IsAffiliate,OrderStatus,StoreStatus,IsActive,IsSeen,IsSplit,Suspect,IsRoyaltyFix,PayStatus,SettleStatus,PayType,PayMethod,NeedBillSlip,NeedDetailedSlip,NeedReceipt,BillFirstName,BillFirstNameKana,BillLastName,BillLastNameKana,BillPrefecture,ShipFirstName,ShipFirstNameKana,ShipLastName,ShipLastNameKana,ShipPrefecture,ShipStatus,ShipMethod,ShipCompanyCode,IsLogin,TotalPrice,IsReadOnly,UsePointType,PayMethod,PayMethodName,BillZipCode,BillPrefecture,BillPrefectureKana,BillCity,BillCityKana,BillAddress1,BillAddress1Kana,BillAddress2,BillAddress2Kana,BillPhoneNumber,ShipMethod,ShipMethodName,ShipRequestDate,ShipRequestTime,ArriveType,ShipDate,ShipRequestTimeZoneCode,ShipZipCode,ShipPrefecture,ShipPrefectureKana,ShipCity,ShipCityKana,ShipAddress1,ShipAddress1Kana,ShipAddress2,ShipAddress2Kana,ShipPhoneNumber,ShipEmgPhoneNumber,ShipInvoiceNumber1,ShipInvoiceNumber2,ShipSection1Field,ShipSection1Value,ShipSection2Field,ShipSection2Value,LineId,ItemId,Title,SubCode,SubCodeOption,ItemOption,ProductId,Quantity</Field>
 									</Target>
 								<SellerId>oystersisters</SellerId>
 							</Req>").parsed_response
@@ -379,7 +379,7 @@ class YahooAPI
 		if authorized?
 			begin
 				all_order_details = Hash.new
-				YahooOrder.where(ship_date: [(Date.today - period)..(Date.today)]).pluck(:order_id).each do |order_id|
+				YahooOrder.where(created_at: [(Date.today - period)..(Date.today)]).pluck(:order_id).each do |order_id|
 					order_details = self.class.post("https://circus.shopping.yahooapis.jp/ShoppingWebService/V1/orderInfo",
 						:headers => {"Content-Type" => 'text/xml;charset=UTF-8',
 							"Authorization" => 'Bearer ' + @user.data[:yahoo][:authorization]["access_token"]},
@@ -387,7 +387,40 @@ class YahooAPI
 							"<Req>
 								<Target>
 									<OrderId>#{order_id}</OrderId>
-									<Field>OrderTime,OrderId,DeviceType,IsRoyalty,IsAffiliate,OrderStatus,StoreStatus,IsActive,IsSeen,IsSplit,Suspect,IsRoyaltyFix,PayStatus,SettleStatus,PayType,PayMethod,NeedBillSlip,NeedDetailedSlip,NeedReceipt,BillFirstName,BillFirstNameKana,BillLastName,BillLastNameKana,BillPrefecture,ShipFirstName,ShipFirstNameKana,ShipLastName,ShipLastNameKana,ShipPrefecture,ShipStatus,ShipMethod,ShipCompanyCode,IsLogin,TotalPrice,IsReadOnly,UsePointType,PayMethod,PayMethodName,BillZipCode,BillPrefecture,BillPrefectureKana,BillCity,BillCityKana,BillAddress1,BillAddress1Kana,BillAddress2,BillAddress2Kana,BillPhoneNumber,ShipMethod,ShipMethodName,ShipRequestDate,ShipRequestTime,ArriveType,ShipDate,ShipRequestTimeZoneCode,ShipZipCode,ShipPrefecture,ShipPrefectureKana,ShipCity,ShipCityKana,ShipAddress1,ShipAddress1Kana,ShipAddress2,ShipAddress2Kana,ShipPhoneNumber,ShipEmgPhoneNumber,ShipSection1Field,ShipSection1Value,ShipSection2Field,ShipSection2Value,LineId,ItemId,Title,SubCode,SubCodeOption,ItemOption,ProductId,Quantity</Field>
+									<Field>OrderTime,OrderId,DeviceType,IsRoyalty,IsAffiliate,OrderStatus,StoreStatus,IsActive,IsSeen,IsSplit,Suspect,IsRoyaltyFix,PayStatus,SettleStatus,PayType,PayMethod,NeedBillSlip,NeedDetailedSlip,NeedReceipt,BillFirstName,BillFirstNameKana,BillLastName,BillLastNameKana,BillPrefecture,ShipFirstName,ShipFirstNameKana,ShipLastName,ShipLastNameKana,ShipPrefecture,ShipStatus,ShipMethod,ShipCompanyCode,IsLogin,TotalPrice,IsReadOnly,UsePointType,PayMethod,PayMethodName,BillZipCode,BillPrefecture,BillPrefectureKana,BillCity,BillCityKana,BillAddress1,BillAddress1Kana,BillAddress2,BillAddress2Kana,BillPhoneNumber,ShipMethod,ShipMethodName,ShipRequestDate,ShipRequestTime,ArriveType,ShipDate,ShipRequestTimeZoneCode,ShipZipCode,ShipPrefecture,ShipPrefectureKana,ShipCity,ShipCityKana,ShipAddress1,ShipAddress1Kana,ShipAddress2,ShipAddress2Kana,ShipPhoneNumber,ShipEmgPhoneNumber,ShipInvoiceNumber1,ShipInvoiceNumber2,ShipSection1Field,ShipSection1Value,ShipSection2Field,ShipSection2Value,LineId,ItemId,Title,SubCode,SubCodeOption,ItemOption,ProductId,Quantity</Field>
+									</Target>
+								<SellerId>oystersisters</SellerId>
+							</Req>").parsed_response
+					unless order_details["Error"]
+						all_order_details[order_id] = order_details["ResultSet"]["Result"]["OrderInfo"] if order_details["ResultSet"]["Result"]["Status"] == "OK"
+						unless all_order_details.empty?
+							record_sequenced_details(all_order_details)
+						end
+					else
+						ap order_details
+					end
+				end
+			rescue TypeError
+				puts "Error with Yahoo API request:"
+				ap request.parsed_response if request
+				false
+			end
+		end
+	end
+
+	def update_processing
+		if authorized?
+			begin
+				all_order_details = Hash.new
+				YahooOrder.all.map{|o| o.order_id if (o.details["OrderStatus"] == "2")}.compact.each do |order_id|
+					order_details = self.class.post("https://circus.shopping.yahooapis.jp/ShoppingWebService/V1/orderInfo",
+						:headers => {"Content-Type" => 'text/xml;charset=UTF-8',
+							"Authorization" => 'Bearer ' + @user.data[:yahoo][:authorization]["access_token"]},
+						:body => 
+							"<Req>
+								<Target>
+									<OrderId>#{order_id}</OrderId>
+									<Field>OrderTime,OrderId,DeviceType,IsRoyalty,IsAffiliate,OrderStatus,StoreStatus,IsActive,IsSeen,IsSplit,Suspect,IsRoyaltyFix,PayStatus,SettleStatus,PayType,PayMethod,NeedBillSlip,NeedDetailedSlip,NeedReceipt,BillFirstName,BillFirstNameKana,BillLastName,BillLastNameKana,BillPrefecture,ShipFirstName,ShipFirstNameKana,ShipLastName,ShipLastNameKana,ShipPrefecture,ShipStatus,ShipMethod,ShipCompanyCode,IsLogin,TotalPrice,IsReadOnly,UsePointType,PayMethod,PayMethodName,BillZipCode,BillPrefecture,BillPrefectureKana,BillCity,BillCityKana,BillAddress1,BillAddress1Kana,BillAddress2,BillAddress2Kana,BillPhoneNumber,ShipMethod,ShipMethodName,ShipRequestDate,ShipRequestTime,ArriveType,ShipDate,ShipRequestTimeZoneCode,ShipZipCode,ShipPrefecture,ShipPrefectureKana,ShipCity,ShipCityKana,ShipAddress1,ShipAddress1Kana,ShipAddress2,ShipAddress2Kana,ShipPhoneNumber,ShipEmgPhoneNumber,ShipInvoiceNumber1,ShipInvoiceNumber2,ShipSection1Field,ShipSection1Value,ShipSection2Field,ShipSection2Value,LineId,ItemId,Title,SubCode,SubCodeOption,ItemOption,ProductId,Quantity</Field>
 									</Target>
 								<SellerId>oystersisters</SellerId>
 							</Req>").parsed_response

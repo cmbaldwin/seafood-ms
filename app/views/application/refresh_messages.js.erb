@@ -1,0 +1,32 @@
+if ($('#sidebar_button').hasClass('active')) {
+	//Messages already visible
+	$(".toast").removeClass('animate__slideInRight')
+	$(".toast").addClass('animate__backOutRight')
+	setTimeout(() => {
+		$('.message').addClass('hide')
+		$('.message').removeClass('show')
+		$(".toast").removeClass('animate__backOutRight')
+	}, 1000);
+} else {
+	//Messages not visible, so reload
+	$("#notifications").replaceWith("<%= escape_javascript( render 'messages', remote: true ) %>");
+}
+$('#notifications').on('click', function() {
+	$('.close_message').on('click', function() {
+		this_message = $(`#${$(this).attr('data-target')}`)
+		this_message.removeClass('animate__slideInRight')
+		this_message.addClass('animate__backOutRight')
+		setTimeout(() => {
+			this_message.addClass('hide');
+			this_message.removeClass('show');
+			this_message.removeClass('animate__backOutRight')
+			setTimeout(() => {
+				if ($('.message').not('.hide').length == 0) {
+					$('#sidebar_button').removeClass('active')
+				}
+			}, 200);
+		}, 900);
+	})
+});
+$('#sidebar_button').toggleClass('active');
+Turbolinks.clearCache()

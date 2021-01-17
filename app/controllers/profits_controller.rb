@@ -16,7 +16,7 @@ class ProfitsController < ApplicationController
 			@profit.save
 		end
 	end
-	
+
 	def set_types_markets_products
 		@products = Product.order('namae DESC').all
 		@markets = Market.order('mjsnumber').all
@@ -59,7 +59,7 @@ class ProfitsController < ApplicationController
 		@profits.each do |profit|
 			if profit.subtotals.nil? || profit.volumes.nil?
 				profit.subtotals = profit.get_subtotals
-				profit.volumes = profit.calculate_volumes unless profit.figures[0].zero?
+				profit.volumes = profit.calculate_volumes unless (profit.figures[0].nil? || profit.figures[0].zero?)
 				profit.save
 			end
 		end
@@ -92,11 +92,36 @@ class ProfitsController < ApplicationController
 
 	def next_market
 		@profit = Profit.find(params[:id])
+		last_market = params[:mjsnumber]
+		#
 		unfinished = @profit.check_completion
-		unfinished.delete(0)
-		@market = Market.find_by(mjsnumber: unfinished.sort.first[0].to_s)
+		if unfinished[0] == 0
+			@market = Market.order('mjsnumber').all.first
+		else
+			unfinished.delete(0)
+			unfinished_mjsnumbers = unfinished.keys.sort
+			last_market_index = unfinished_mjsnumbers.find_index(last_market.to_i)
+			next_market_id = unfinished_mjsnumbers[last_market_index + 1] unless last_market_index.nil?
+			if next_market_id.nil?
+				@market = Market.find_by(mjsnumber: unfinished_mjsnumbers[0].to_s)
+			else
+				@market = Market.find_by(mjsnumber: next_market_id.to_s)
+			end
+		end
 		respond_to do |format|
 			format.js { render 'fetch_market', layout: false }
+		end
+	end
+
+	def update_completion
+		@profit = Profit.find(params[:id])
+		old_completed_mjsnumbers = @profit.totals[:completion].keys
+		@profit.set_completion
+		new_completed_mjsnumbers = @profit.totals[:completion].keys
+		@fresh_completed = new_completed_mjsnumbers - old_completed_mjsnumbers
+		ap @fresh_completed
+		respond_to do |format|
+			format.js { render 'update_completion', layout: false }
 		end
 	end
 
@@ -120,7 +145,16 @@ class ProfitsController < ApplicationController
 
 	# GET /profits/1/edit
 	def edit
-		@market = Market.order('mjsnumber').all.first
+		@profit.set_completion
+		unfinished = @profit.check_completion
+		if unfinished[0] == 0
+			@market = Market.order('mjsnumber').all.first
+		else
+			unfinished.delete(0)
+			unfinished_mjsnumbers = unfinished.keys.sort
+			@market = Market.find_by(mjsnumber: unfinished_mjsnumbers[0].to_s)
+		end
+		@product = Product.new
 	end
 
 	def new_by_date
@@ -162,6 +196,7 @@ class ProfitsController < ApplicationController
 		@profit.sanbyaku_extra_cost_fix
 		@profit.subtotals = @profit.get_subtotals
 		@profit.volumes = @profit.calculate_volumes
+		@profit.totals[:completion] = @profit.get_completion
 
 		respond_to do |format|
 			if @profit.save
@@ -177,7 +212,7 @@ class ProfitsController < ApplicationController
 	def autosave_tab
 		@profit.new_figures = profit_params[:figures].to_h
 		@profit.do_autosave
-		
+
 		if @profit.save
 			head :accepted, location: profits_path(@profit)
 		else

@@ -1,85 +1,6 @@
-<script> tippy('[data-tippy-content]', {allowHTML: true, animation: 'scale', duration: [300,0] }); </script>
-<!-- Modal -->
-<% if @rakuten_shinki %>
-	<div class="modal fade" id="rakuten_shinki_modal" tabindex="-1" aria-labelledby="rakuten_shinki_modal_label" aria-hidden="true">
-		<div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="rakuten_shinki_modal_label">楽天市場の新規（日付無し）注文</h5>
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true">&times;</span>
-					</button>
-				</div>
-				<div class="modal-body">
-						<div class="row bg-info text-white p-3 m-1 h5">
-							<div class="col-lg-2 col-md-6 col-sm-12">
-								注文番号
-							</div>
-							<div class="col-lg-2 col-md-6 col-sm-12">
-								注文者・届け先
-							</div>
-							<div class="col-lg-2 col-md-6 col-sm-12">
-								届け県
-							</div>
-							<div class="col-lg-2 col-md-6 col-sm-12">
-								届日設定
-							</div>
-							<div class="col-lg-2 col-md-6 col-sm-12">
-								商品
-							</div>
-							<div class="col-lg-2 col-md-6 col-sm-12">
-								メモ
-							</div>
-						</div>
-					<% @rakuten_shinki.each do |order| %>
-						<div class="row ml-1 mr-1 <%= cycle_table_rows %>">
-							<div class="col-lg-2 col-md-6 col-sm-12 small">
-								<% id = order["orderNumber"].gsub('274763-', '') %>
-								<a href="<%= rakuten_order_link(order['orderNumber']) %>"><%= id %></a>
-							</div>
-							<div class="col-lg-2 col-md-6 col-sm-12">
-								<%= order["OrdererModel"]["familyName"] + order["OrdererModel"]["firstName"] %> ・ 
-								<% order["PackageModelList"].each do |package| %>
-									<%= package["SenderModel"]["familyName"] + package["SenderModel"]["firstName"] %>
-								<% end %>
-							</div>
-							<div class="col-lg-2 col-md-6 col-sm-12">
-								<% order["PackageModelList"].each do |package| %>
-									<%= package["SenderModel"]["prefecture"] %> 
-								<% end %>
-							</div>
-							<div class="col-lg-2 col-md-6 col-sm-12">
-								<% if order["deliveryDate"] %>
-									<%= order["deliveryDate"] %>
-								<% else %>
-									<% order["PackageModelList"].each do |package| %>
-										<% package["ShippingModelList"].each do |item| %>
-											<%= item["shippingDate"] ? item["shippingDate"] : '指定日無し' %>
-										<% end %>
-									<% end %>
-								<% end %>
-							</div>
-							<div class="col-lg-2 col-md-6 col-sm-12">
-								<% order["PackageModelList"].each do |package| %>
-									<% package["ItemModelList"].each do |item| %>
-										<%= rakuten_item_id_to_nickname(item["manageNumber"]) %><%= "× #{item["units"]}" if (item["units"].to_i > 1) %>
-									<% end %>
-								<% end %>
-							</div>
-							<div class="col-lg-2 col-md-6">
-								<%= order["memo"] %><br>
-								<%= order["remarks"].scan(/(?<=\[メッセージ添付希望・他ご意見、ご要望がありましたらこちらまで:\]).*/m).first.gsub(/\n/, '') %>
-							</div>
-						</div>
-					<% end %>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-dismiss="modal">閉じる</button>
-				</div>
-			</div>
-		</div>
-	</div>
-<% end %>
+<script type="text/javascript">
+	<%= render partial: 'sharedjs', formats: [:js] %>
+</script>
 
 <div class="card m-0 p-0 border-white">
 	<div class="card-header p-3">
@@ -89,23 +10,26 @@
 		<span class="mb-3">&nbsp</span>
 		<div class="btn-group float-right mt-n2" role="group" aria-label="Basic">
 			<% if @rakuten_shinki %>
-				<span class="btn btn-sm btn-info m-0 p-0" data-tippy-content="楽天新規注文">
+				<span class="btn btn-sm btn-info m-0 p-0 tippy" data-tippy-content="楽天新規注文">
 					<button type="button" class="btn btn-info" data-toggle="modal" data-target="#rakuten_shinki_modal">
-						<%= icon("asterisk", class: 'text-white') %><span class="badge badge-warning ml-1"><%= @rakuten_shinki.length %></span>
+						<%= icon("asterisk", class: 'text-white') %><span class="badge badge-warning ml-1"><%= @rakuten_shinki.flatten.length %></span>
 					</button>
 				</span>
 			<% end %>
-			<span class="btn btn-sm btn-info m-0 p-0" data-tippy-content="<center><%= @rakuten.sales_date %>の<br>出荷個別ページ</center>">
-				<%= link_to icon("card-list", class: 'text-white'), @rakuten, :alt => "個別ページ", class: 'btn btn-info' %>
+			<span class="btn btn-sm btn-info m-0 p-0 tippy" data-tippy-content="<center><%= @rakuten.sales_date %>の<br>出荷個別ページ</center>">
+				<%= link_to icon("card-list", class: 'text-white'), @rakuten, :alt => "個別ページ", class: 'btn btn-info', 'data-turbolinks' => "false" %>
 			</span>
-			<span class="btn btn-sm btn-info m-0 p-0" data-tippy-content="<center><%= @rakuten.sales_date %>の<br>楽天データを取込む</center>">
-				<%= link_to icon("arrow-counterclockwise", class: "text-success"), edit_r_manifest_path(@rakuten), :alt => "データ更新", class: 'btn btn-info' %>
+			<span class="btn btn-sm btn-info m-0 p-0 tippy" data-tippy-content="<center><%= @rakuten.sales_date %>の<br>楽天データを取込む</center>">
+				<%= link_to icon("arrow-counterclockwise", class: "text-success"), edit_r_manifest_path(@rakuten), :alt => "データ更新", class: 'btn btn-info', 'data-turbolinks' => "false" %>
 			</span>
-			<span class="btn btn-sm btn-info m-0 p-0" data-tippy-content="<center><%= @rakuten.sales_date %>の<br>出荷表PDFを開く</center>">
-				<%= link_to icon("file-earmark-arrow-down", class: 'text-white'), r_manifest_new_pdf_path(@rakuten), class: 'btn btn-info', target: '_blank' %>
+			<span class="btn btn-sm btn-info m-0 p-0 tippy load" data-tippy-content="<center><%= @rakuten.sales_date %>の<br>出荷表PDFを作成</center>">
+				<%= link_to icon("file-earmark-arrow-down", class: 'text-white'), generate_rakuten_pdf_path(id: @rakuten.id, seperated: 0, include_yahoo: 0), class: 'btn btn-info', remote: true, 'data-turbolinks' => "false" %>
 			</span>
-			<span class="btn btn-sm btn-info m-0 p-0" data-tippy-content="<center><%= @rakuten.sales_date %>の<br>商品分別した<br>出荷表PDFを開く</center>">
-				<%= link_to icon("file-earmark-ruled", class: 'text-white'), r_manifest_seperated_pdf_path(@rakuten), :method => :get, class: 'btn btn-info', target: "_blank" %>
+			<span class="btn btn-sm btn-info m-0 p-0 tippy load" data-tippy-content="<center><%= @rakuten.sales_date %>の<br>楽天とヤフーの<br>出荷表PDFを作成</center>">
+				<%= link_to icon("file-earmark-diff", class: 'text-white'), generate_rakuten_pdf_path(id: @rakuten.id, seperated: 0, include_yahoo: 1), class: 'btn btn-info', remote: true, 'data-turbolinks' => "false" %>
+			</span>
+			<span class="btn btn-sm btn-info m-0 p-0 tippy load" data-tippy-content="<center><%= @rakuten.sales_date %>の<br>商品分別した<br>出荷表PDFを作成</center>">
+				<%= link_to icon("file-earmark-ruled", class: 'text-white'), generate_rakuten_pdf_path(id: @rakuten.id, seperated: 1, include_yahoo: 0), class: 'btn btn-info', remote: true, 'data-turbolinks' => "false" %>
 			</span>
 		</div>
 	</div>
@@ -123,8 +47,8 @@
 					<div class="btn col-3 btn-light d-block mb-1 strong">
 						<h6>セル 大・小・カード</h6>
 						<span class="badge badge-<%= counts[:shells] > 0 ? 'primary' : 'light' %> p-2">
-							<%=  ("<b>#{counts[:shells].to_s}<small>個</small></b> ・ ").html_safe if (counts[:shells] > 0) %> 
-							<%=  ("<b>#{counts[:barakara].to_s}<small>㎏</small></b> ・ ").html_safe if (counts[:barakara] > 0) %> 
+							<%=  ("<b>#{counts[:shells].to_s}<small>個</small></b> ・ ").html_safe if (counts[:shells] > 0) %>
+							<%=  ("<b>#{counts[:barakara].to_s}<small>㎏</small></b> ・ ").html_safe if (counts[:barakara] > 0) %>
 							<%= (('<b>').html_safe + work_totals[:shell_cards].to_s + ('<small>枚</small></b>').html_safe) if (work_totals[:shell_cards] > 0) %>
 						</span>
 					</div>
@@ -137,7 +61,7 @@
 					<div class="btn col-3 btn-light d-block mb-1 strong">
 						<h6>冷凍セル</h6>
 						<span class="badge badge-<%= counts[:reitou_shells] > 0 ? 'primary' : 'light' %> p-2">
-							<%= if counts[:reitou_shells] > 0 then ('<b>').html_safe + counts[:reitou_shells].to_s + ('<small>個</small></b>').html_safe else ('　') end %> 
+							<%= if counts[:reitou_shells] > 0 then ('<b>').html_safe + counts[:reitou_shells].to_s + ('<small>個</small></b>').html_safe else ('　') end %>
 						</span>
 					</div>
 				</div>
@@ -168,7 +92,7 @@
 					</div>
 				</div>
 			</div>
-		<% if rakuten_raw_oysters?(work_totals) %>	
+		<% if rakuten_raw_oysters?(work_totals) %>
 			<div class="row mb-3 m-1">
 				<div class="col-xl-5 col-lg-12 text-center border-top border-left border-right p-0 m-0">
 					<div class="col-12 bg-light p-1 m-0">
@@ -316,7 +240,7 @@
 							<%= work_totals[:product_counts][:sets][202] %>
 						</div>
 						<div class="col p-1">
-							<%= work_totals[:product_counts][:sets][302] %> 
+							<%= work_totals[:product_counts][:sets][302] %>
 						</div>
 					</div>
 				</div>
@@ -330,7 +254,7 @@
 						<% orders_hash.each do |order| %>
 							<% sender_name = order[:sender]['familyName'] + ' ' + order[:sender]['firstName'] %>
 							<% if order[:noshi] %>
-								<%= link_to (sender_name + ' <i class="fas fa-external-link-alt"></i>').html_safe, new_noshi_with_params_path(namae: order[:sender]['familyName'], ntype: '13'), target: '_blank' %>
+								<%= link_to (sender_name + icon('box-arrow-in-up-right')).html_safe, insert_noshi_data_path(namae: order[:sender]['familyName'], ntype: '13'), remote: true, "data-toggle" => "modal", "data-target" => "#noshiModal" %>
 								<br>
 							<% end %>
 						<% end %>
@@ -341,7 +265,7 @@
 							<% remarks = order[:remarks].scan(/(?<=\[メッセージ添付希望・他ご意見、ご要望がありましたらこちらまで:\]).*/m).first %>
 							<% sender_name = order[:sender]['familyName'] + ' ' + order[:sender]['firstName'] %>
 							<% if order[:reciept] || remarks.include?('領収') %>
-								<%= link_to (sender_name + ' <i class="fas fa-level-down-alt"></i>').html_safe, insert_receipt_data_path(rakuten: @rakuten, order_id: i, oysis: true), remote: true %>
+								<%= link_to (sender_name + icon('box-arrow-in-down-right')).html_safe, insert_receipt_data_path(rakuten: @rakuten, order_id: i, oysis: true), remote: true %>
 								<br>
 							<% end %>
 						<% end %>
@@ -354,8 +278,8 @@
 		<div class="btn-group float-right mt-n2 mb-1" role="group" aria-label="Basic">
 			<% previous_day = @rakuten.r_manifest_query.previous %>
 			<% next_day = @rakuten.r_manifest_query.next %>
-			<%= link_to icon("arrow-left-circle"), load_rakuten_order_path(previous_day.id), :alt => "前", class: 'btn btn-sm btn-secondary', remote: true, "data-tippy-content" => "<center>#{previous_day.sales_date}の<br>データを見る</center>" %>
-			<%= link_to icon("arrow-right-circle"), load_rakuten_order_path(next_day.id), :alt => "次", class: 'btn btn-sm btn-secondary', remote: true, "data-tippy-content" => "<center>#{next_day.sales_date}の<br>データを見る</center>" %>
+			<%= link_to icon("arrow-left-circle"), load_rakuten_order_path(previous_day.id), :alt => "前", class: 'btn btn-sm btn-secondary tippy', remote: true, "data-tippy-content" => "<center>#{previous_day.sales_date}の<br>データを見る</center>" %>
+			<%= link_to icon("arrow-right-circle"), load_rakuten_order_path(next_day.id), :alt => "次", class: 'btn btn-sm btn-secondary tippy', remote: true, "data-tippy-content" => "<center>#{next_day.sales_date}の<br>データを見る</center>" %>
 		</div>
 	</div>
 </div>

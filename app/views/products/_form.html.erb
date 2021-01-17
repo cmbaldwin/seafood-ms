@@ -81,9 +81,9 @@
 		<hr/>
 
 		<%= form.label :materials, '材料選択', class: 'h5 mb-2 mt-4' %><br />
-		<div id="freewall">
+		<div class="card-columns">
 			<% materials_by_type.each do |material_type_id, material_hash| %>
-			<div class="card brick">
+			<div class="card">
 				<div class="card-header">
 				<strong><%= material_hash[:type_name] %></strong>
 				</div>

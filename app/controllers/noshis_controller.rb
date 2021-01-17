@@ -12,6 +12,16 @@ class NoshisController < ApplicationController
 	# GET /noshis.json
 	def index
 		@noshis = Noshi.search(params[:term]).paginate(:page => params[:page], :per_page => 12)
+		@noshi = Noshi.new
+	end
+
+	def insert_noshi_data
+		@noshi = Noshi.new
+		params[:namae] ? (@noshi.namae = params[:namae]) : ()
+		params[:ntype] ? (@noshi.ntype = params[:ntype]) : (@noshi.ntype = 1)
+		respond_to do |format|
+			format.js { render layout: false }
+		end
 	end
 
 	# GET /noshis/1
@@ -36,18 +46,10 @@ class NoshisController < ApplicationController
 
 	def create
 		@noshi = Noshi.new(noshi_params)
-
-		@noshi.make_noshi
-
-		respond_to do |format|
-			if @noshi.save
-			format.html { redirect_to @noshi, notice: '熨斗が作成されました。' }
-			format.json { render :show, status: :created, location: @noshi }
-			else
-			format.html { render :new }
-			format.json { render json: @noshi.errors, status: :unprocessable_entity }
-			end
-		end
+		@noshi.save
+		message = Message.new(user: current_user.id, model: 'noshi', state: false, message: "#{@noshi.namae}の熨斗を作成中…", data: {noshi_id: @noshi.id, expiration: (DateTime.now + 1.day)})
+		message.save
+		NoshiWorker.perform_async(@noshi.id, message.id)
 	end
 
 	# PATCH/PUT /noshis/1

@@ -57,8 +57,13 @@ class RakutenAPI
 						"sortColumn" => 1,
 						"sortDirection" => 1 }]
 			}}.to_json)
-		puts 'Found ' + get_orders_list.parsed_response["orderNumberList"].length.to_s + ' unconfirmed orders.'
-		get_orders_list.parsed_response["orderNumberList"]
+		if get_orders_list.parsed_response["orderNumberList"]
+			puts 'Found ' + get_orders_list.parsed_response["orderNumberList"].length.to_s + ' unconfirmed orders.'
+			get_orders_list.parsed_response["orderNumberList"]
+		else
+			ap get_orders_list.parsed_response
+			[]
+		end
 	end
 
 	#get one week of new orders
@@ -454,17 +459,28 @@ class RakutenAPI
 	end
 
 	def set_details(order_details)
-		order_details.each do |order|
+		order_details.flatten.each do |order|
 			errors = Hash.new
 			if order["orderProgress"] == 100 && order["subStatusId"] != 15822
 				order_id = order["orderNumber"]
 
 				## CALCULATE AND UPDATE SHIPPING AND ARRIVAL DATES
 				@arrival_date = order["deliveryDate"]
+				selected_choices = order["PackageModelList"].map{|package| package["ItemModelList"].map{ |item| item["selectedChoice"] }}.flatten
+				end_of_year_shipping_hash = {
+					':12月26日(土)お届け希望' => "#{Date.today.year}-12-26",
+					':12月27日(日)お届け希望' => "#{Date.today.year}-12-27",
+					':12月28日(月)お届け希望' => "#{Date.today.year}-12-28",
+					':12月29日(火)お届け希望' => "#{Date.today.year}-12-29",
+					':12月30日(水)お届け希望' => "#{Date.today.year}-12-30"}
+				end_of_year = selected_choices.map{|select_text| end_of_year_shipping_hash.map{|date_text, date_value| date_value if (!select_text.nil? && select_text.include?(date_text))}.compact }.flatten.first
+				end_of_year_memo = end_of_year ? end_of_year.to_time.strftime('%m月%d日') : ''
+				@arrival_date = end_of_year.to_date unless end_of_year.nil?
 				shipping_base_date = (DateTime.now.hour > 11) ? Date.tomorrow : Date.today
 				@impossible_delivery_time = false
 				isolated_island = (order["isolatedIslandFlag"] == 1)
-				shipping_date_wait = (order["SettlementModel"]["settlementMethod"] == "銀行振込" || order["SettlementModel"]["settlementMethod"].include?('前払') )
+				cod_shipping = order["SettlementModel"]["settlementMethod"] == "代金引換"
+				shipping_date_wait = ( order["SettlementModel"]["settlementMethod"] == "銀行振込" || order["SettlementModel"]["settlementMethod"].include?('前払') )
 				@packages = Array.new
 				old_order_shipping = {"orderNumber" => order_id}
 				destinations = Array.new
@@ -530,6 +546,8 @@ class RakutenAPI
 					}
 					@packages << basket_hash
 				end
+				includes_anago = @packages.map{|pkg| pkg[:items_list].map{|item| item[:item_name] }}.flatten.join(' ').include?('穴子')
+				new_year_delivery = selected_choices.map{|choice| ((choice.include?('1月以降の発送OK。') || (choice.include?('):1月の発送希望'))) ? true : false) unless choice.nil? }.compact.include?(true)
 				new_order_shipping = {
 					"orderNumber" => order_id,
 					"BasketidModelList" => @packages.map.with_index{|pkg, i| { 
@@ -538,7 +556,7 @@ class RakutenAPI
 								"shippingDetailId" => old_order_shipping.dig("BasketidModelList", i, "ShippingModelList", i, "shippingDetailId").nil? ? nil : old_order_shipping["BasketidModelList"][i]["ShippingModelList"][i]["shippingDetailId"],
 								"deliveryCompany" => "1001",
 								"deliveryCompanyName" => "ヤマト運輸",
-								"shippingDate" => shipping_date_wait ? nil : pkg[:shipping_date]
+								"shippingDate" => (shipping_date_wait || includes_anago || new_year_delivery) ? nil : pkg[:shipping_date]
 								}]
 							} 
 						} 
@@ -552,22 +570,37 @@ class RakutenAPI
 				## Add Oyster Knife and Simplify Item Name (special rules require coupons and daibiki tax)
 				knife_count = @packages.map{|pkg| pkg[:items_list].map{|item| item[:selection]}}.flatten.map{|choice| ((choice.include?('牡蠣ナイフ') && choice.include?('希望する')) ? 1 : 0) unless choice.nil? }.compact.inject(0, :+)
 				coupon_model = order["CouponModelList"]
-				new_sender_model = {
-					"orderNumber" => order_id,
-					"PackageModelList" => @packages.map{|pkg| {
-							"basketId" => pkg[:basket_id],
-							"postageTaxRate" => 0.1,
-							"deliveryPrice" => (pkg[:delivery_cost] + pkg[:items_list].map{|item| item[:extra_delivery_cost]}.inject(0, :+)),
-							"deliveryTaxRate" => 0.1, #required for daibiki, disregards for others
-							"SenderModel" => pkg[:sender_model],
-							"ItemModelList" => pkg[:item_model_list]
+				if cod_shipping
+					new_sender_model = {
+						"orderNumber" => order_id,
+						"PackageModelList" => @packages.map{|pkg| {
+								"basketId" => pkg[:basket_id],
+								"postageTaxRate" => 0.1,
+								"deliveryPrice" => pkg[:delivery_cost],
+								"postagePrice" => (pkg[:items_list].map{|item| item[:extra_delivery_cost]}.inject(0, :+)),
+								"deliveryTaxRate" => 0.1, #required for daibiki, disregards for others
+								"SenderModel" => pkg[:sender_model],
+								"ItemModelList" => pkg[:item_model_list]
+							}
 						}
 					}
-				}
+				else
+					new_sender_model = {
+						"orderNumber" => order_id,
+						"PackageModelList" => @packages.map{|pkg| {
+								"basketId" => pkg[:basket_id],
+								"postageTaxRate" => 0.1,
+								"postagePrice" => (pkg[:items_list].map{|item| item[:extra_delivery_cost]}.inject(0, :+)),
+								"SenderModel" => pkg[:sender_model],
+								"ItemModelList" => pkg[:item_model_list]
+							}
+						}
+					}
+				end
 				if knife_count > 0
 					new_sender_model["WrappingModel1"] = {
 						"title" => 2,
-						"name" => "牡蠣ナイフセット#{('× ' + knife_count) if (knife_count > 1)}",
+						"name" => "牡蠣ナイフセット#{('× ' + knife_count.to_s) if (knife_count > 1)}",
 						"price" => (220 * knife_count),
 						"taxRate" => 0.1,
 						"includeTaxFlag" => 1,
@@ -593,14 +626,14 @@ class RakutenAPI
 				there_are_errors = !errors.empty?
 				additional_shipping = @packages.map{|pkg| pkg[:items_list].map{|item| item[:extra_delivery_cost]}.inject(0, :+) > 0 }.include?(true)
 				days = @packages.map{|pkg| (@arrival_date - Date.parse(pkg[:shipping_date])).to_i }.max
-				memo = "#{'時間指定無理' if @impossible_delivery_time}#{memo_product_names}#{days.to_s + 'D' if days > 1}#{' 離島' if isolated_island }#{' 送料追加' if additional_shipping}#{' ナイフ' if knife_count > 0}#{' のし' if has_noshi}#{' 冷凍' if frozen_check}#{' ' + payment_method if (payment_method == "代金引換" || payment_method == "銀行振込")}#{' 前払' if payment_method.include?('前払')}#{' ギフト' if gift}#{' 備考あり' unless remarks.empty? }#{' 時間指定備考あり' unless memo_date_memo.empty?}#{' 自動処理エラー' if there_are_errors }"
+				memo = "#{memo_product_names} #{' 時間指定無理' if @impossible_delivery_time}#{' 1月OK' if new_year_delivery}#{' ' + days.to_s + 'D' if days > 1}#{' 離島' if isolated_island }#{' 送料追加' if additional_shipping}#{' ナイフ' if knife_count > 0}#{' のし' if has_noshi}#{' 冷凍' if frozen_check}#{' ' + payment_method if (payment_method == "代金引換" || payment_method == "銀行振込")}#{' 前払' if payment_method.include?('前払')}#{' ギフト' if gift}#{' 備考あり' unless remarks.empty? }#{' 時間指定備考あり' unless memo_date_memo.empty?}#{' 自動処理エラー' if there_are_errors }#{ " #{end_of_year_memo}年内届" unless end_of_year_memo.empty?}"
 				#same_sender = !order["equalSenderFlag"].zero?
 				#several_sender = !order["severalSenderFlag"].zero?
 				order_memo = {
 					"orderNumber" => order_id,
 					"subStatusId" => 15822,
 					"deliveryClass" => (frozen_check ? 3 : 2),
-					"deliveryDate" => shipping_date_wait ? nil : @arrival_date.to_s,
+					"deliveryDate" => (shipping_date_wait || includes_anago || new_year_delivery) ? nil : (end_of_year ? end_of_year : @arrival_date.to_s),
 					"memo" => memo
 				}
 				# https://webservice.rms.rakuten.co.jp/merchant-portal/view?contents=/ja/common/1-1_service_index/rakutenpayorderapi/updateordermemo
@@ -614,95 +647,213 @@ class RakutenAPI
 	end
 
 	def print_details(order_details)
-		order_details.each do |order|
+		# Easy debugging and fixing errors using this method:
+		# order_details = RakutenAPI.new.get_details_by_ids(["###"])
+		# RakutenAPI.new.print_details(order_details)
+		order_details.flatten.each do |order|
 			errors = Hash.new
-			order_id = order["orderNumber"]
+				order_id = order["orderNumber"]
 
-			## CALCULATE AND UPDATE SHIPPING AND ARRIVAL DATES
-			@arrival_date = order["deliveryDate"]
-			shipping_base_date = (DateTime.now.hour > 11) ? Date.tomorrow : Date.today
-			@impossible_delivery_time = false
-			isolated_island = (order["isolatedIslandFlag"] == 1)
-			shipping_date_wait = (order["SettlementModel"]["settlementMethod"] == "銀行振込" || order["SettlementModel"]["settlementMethod"].include?('前払') )
-			@packages = Array.new
-			old_order_shipping = {"orderNumber" => order_id}
-			destinations = Array.new
-			order["PackageModelList"].each_with_index do |package, i|
-				arrival_prefecture = package["SenderModel"]["prefecture"]
-				destinations << [arrival_prefecture, package["SenderModel"]["city"]]
-				memo_set_time = order["remarks"][/[0-9]{2}:[0-9]{2}-[0-9]{2}:[0-9]{2}/]
-				earliest_arrival_array = earliest_arrival(arrival_prefecture, package["SenderModel"]["city"], errors)
-				if @arrival_date.nil? #unspecified arrival
-					shipping_date = shipping_base_date
-					@arrival_date = (shipping_base_date + earliest_arrival_array[0].days)
-				elsif @arrival_date && memo_set_time.nil? #specified arrival date, but no time
-					@arrival_date = Date.parse(@arrival_date) unless @arrival_date.is_a?(Date)
-					shipping_date = (@arrival_date - earliest_arrival_array[0].days)
-				elsif @arrival_date && memo_set_time #specifie arrival date and time
-					@arrival_date = Date.parse(@arrival_date) unless @arrival_date.is_a?(Date)
-					def add_hours_enum(integer)
-						{
-							0 => 12.hours,
-							1 => 16.hours,
-							2 => 18.hours}[integer]
-					end
-					def add_hours_string(string)
-						{
-							'午前中' => 12.hours,
-							'14:00-16:00' => 16.hours,
-							'16:00-18:00' => 18.hours,
-							'18:00-20:00' => 20.hours,
-							'19:00-21:00' => 21.hours
-						}[string]
-					end
-					set_time_arrival = @arrival_date.to_time + add_hours_string(memo_set_time)
-					earliest_possible_arrival = shipping_base_date.to_time + earliest_arrival_array[0].days + add_hours_enum(earliest_arrival_array[1])
-					#check setting if possible
-					if set_time_arrival < earliest_possible_arrival #impossible setting
-						@impossible_delivery_time = true
-					end
-					shipping_date = @arrival_date - earliest_arrival_array[0].days
-				end
-				old_order_shipping["BasketidModelList"] = [{ "basket_id" => package["basketId"], "ShippingModelList" => package["ShippingModelList"]}]
-				updated_item_list_model = Array.new
-				package["ItemModelList"].each do |arr|
-					new_hash = Hash.new
-					arr.each do |k,v|
-						if k == "itemName"
-							new_hash[k] = simple_item_name(arr["manageNumber"])
-						else
-							new_hash[k] = v
+				## CALCULATE AND UPDATE SHIPPING AND ARRIVAL DATES
+				@arrival_date = order["deliveryDate"]
+				selected_choices = order["PackageModelList"].map{|package| package["ItemModelList"].map{ |item| item["selectedChoice"] }}.flatten
+				end_of_year_shipping_hash = {
+					':12月26日(土)お届け希望' => "#{Date.today.year}-12-26",
+					':12月27日(日)お届け希望' => "#{Date.today.year}-12-27",
+					':12月28日(月)お届け希望' => "#{Date.today.year}-12-28",
+					':12月29日(火)お届け希望' => "#{Date.today.year}-12-29",
+					':12月30日(水)お届け希望' => "#{Date.today.year}-12-30"}
+				end_of_year = selected_choices.map{|select_text| end_of_year_shipping_hash.map{|date_text, date_value| date_value if (!select_text.nil? && select_text.include?(date_text))}.compact }.flatten.first
+				end_of_year_memo = end_of_year ? end_of_year.to_time.strftime('%m月%d日') : ''
+				@arrival_date = end_of_year.to_date unless end_of_year.nil?
+				shipping_base_date = (DateTime.now.hour > 11) ? Date.tomorrow : Date.today
+				@impossible_delivery_time = false
+				isolated_island = (order["isolatedIslandFlag"] == 1)
+				cod_shipping = order["SettlementModel"]["settlementMethod"] == "代金引換"
+				shipping_date_wait = (order["SettlementModel"]["settlementMethod"] == "銀行振込" || order["SettlementModel"]["settlementMethod"].include?('前払') )
+				@packages = Array.new
+				old_order_shipping = {"orderNumber" => order_id}
+				destinations = Array.new
+				order["PackageModelList"].each_with_index do |package, i|
+					arrival_prefecture = package["SenderModel"]["prefecture"]
+					destinations << [arrival_prefecture, package["SenderModel"]["city"]]
+					memo_set_time = order["remarks"][/[0-9]{2}:[0-9]{2}-[0-9]{2}:[0-9]{2}/]
+					# memo_set_date = order["remarks"][/[0-9]{4}-(1[0-2]|0[1-9])-(3[01]|[12][0-9]|0[1-9])/]
+					earliest_arrival_array = earliest_arrival(arrival_prefecture, package["SenderModel"]["city"], errors)
+					if @arrival_date.nil? #unspecified arrival
+						shipping_date = shipping_base_date
+						@arrival_date = (shipping_base_date + earliest_arrival_array[0].days)
+					elsif @arrival_date && memo_set_time.nil? #specified arrival date, but no time
+						@arrival_date = Date.parse(@arrival_date) unless @arrival_date.is_a?(Date)
+						shipping_date = (@arrival_date - earliest_arrival_array[0].days)
+					elsif @arrival_date && memo_set_time #specified arrival date and time
+						@arrival_date = Date.parse(@arrival_date) unless @arrival_date.is_a?(Date)
+						def add_hours_enum(integer)
+							{
+								0 => 12.hours,
+								1 => 16.hours,
+								2 => 18.hours}[integer]
 						end
+						def add_hours_string(string)
+							{
+								'午前中' => 12.hours,
+								'14:00-16:00' => 16.hours,
+								'16:00-18:00' => 18.hours,
+								'18:00-20:00' => 20.hours,
+								'19:00-21:00' => 21.hours
+							}[string]
+						end
+						set_time_arrival = @arrival_date.to_time + add_hours_string(memo_set_time)
+						earliest_possible_arrival = shipping_base_date.to_time + earliest_arrival_array[0].days + add_hours_enum(earliest_arrival_array[1])
+						#check if setting possible
+						if set_time_arrival < earliest_possible_arrival #impossible setting
+							@impossible_delivery_time = true
+						end
+						shipping_date = @arrival_date - earliest_arrival_array[0].days
 					end
-					new_hash["taxRate"] = 0.08
-					updated_item_list_model << new_hash
+					old_order_shipping["BasketidModelList"] = [{ "basket_id" => package["basketId"], "ShippingModelList" => package["ShippingModelList"]}]
+					updated_item_list_model = Array.new
+					package["ItemModelList"].each do |arr|
+						new_hash = Hash.new
+						arr.each do |k,v|
+							if k == "itemName"
+								new_hash[k] = simple_item_name(arr["manageNumber"])
+							else
+								new_hash[k] = v
+							end
+						end
+						new_hash["taxRate"] = 0.08
+						updated_item_list_model << new_hash
+					end
+					basket_hash = { 
+						sender_model: package["SenderModel"],
+						basket_id: package["basketId"],
+						noshi: package["noshi"],
+						delivery_cost: package["deliveryPrice"],
+						shipping_date: shipping_date.to_s,
+						item_model_list: updated_item_list_model,
+						items_list: package["ItemModelList"].map{ |item| {
+							id: item["manageNumber"], 
+							count: item["units"], 
+							item_name: item["itemName"], 
+							selection: item["selectedChoice"], 
+							extra_delivery_cost: get_extra_cost(package["SenderModel"]["prefecture"], item["manageNumber"])
+						}}
+					}
+					@packages << basket_hash
 				end
-				basket_hash = { 
-					sender_model: package["SenderModel"],
-					basket_id: package["basketId"],
-					noshi: package["noshi"],
-					shipping_date: shipping_date.to_s,
-					item_model_list: updated_item_list_model,
-					items_list: package["ItemModelList"].map{ |item| {id: item["manageNumber"], count: item["units"], selection: item["selectedChoice"], extra_delivery_cost: get_extra_cost(package["SenderModel"]["prefecture"], item["manageNumber"])} }
-				}
-				@packages << basket_hash
-			end
-			new_order_shipping = {
-				"orderNumber" => order_id,
-				"BasketidModelList" => @packages.map.with_index{|pkg, i| { 
-					"basketId" => pkg[:basket_id], 
-					"ShippingModelList" => [{
-							"shippingDetailId" => old_order_shipping.dig("BasketidModelList", i, "ShippingModelList", i, "shippingDetailId").nil? ? nil : old_order_shipping["BasketidModelList"][i]["ShippingModelList"][i]["shippingDetailId"],
-							"deliveryCompany" => "1001",
-							"deliveryCompanyName" => "ヤマト運輸",
-							"shippingDate" => shipping_date_wait ? nil : pkg[:shipping_date]
-							}]
+				includes_anago = @packages.map{|pkg| pkg[:items_list].map{|item| item[:item_name] }}.flatten.join(' ').include?('穴子')
+				new_year_delivery = selected_choices.map{|choice| ((choice.include?('1月以降の発送OK。') || (choice.include?('):1月の発送希望'))) ? true : false) unless choice.nil? }.compact.include?(true)
+				
+				new_order_shipping = {
+					"orderNumber" => order_id,
+					"BasketidModelList" => @packages.map.with_index{|pkg, i| { 
+						"basketId" => pkg[:basket_id], 
+						"ShippingModelList" => [{
+								"shippingDetailId" => old_order_shipping.dig("BasketidModelList", i, "ShippingModelList", i, "shippingDetailId").nil? ? nil : old_order_shipping["BasketidModelList"][i]["ShippingModelList"][i]["shippingDetailId"],
+								"deliveryCompany" => "1001",
+								"deliveryCompanyName" => "ヤマト運輸",
+								"shippingDate" => (shipping_date_wait || includes_anago || new_year_delivery) ? nil : pkg[:shipping_date]
+								}]
+							} 
 						} 
-					} 
+					}
+				## https://webservice.rms.rakuten.co.jp/merchant-portal/view?contents=/ja/common/1-1_service_index/rakutenpayorderapi/updateordershipping
+				# response = HTTParty.post("https://api.rms.rakuten.co.jp/es/2.0/order/updateOrderShipping/",
+				# 	:headers => @auth_header,
+				# 	:body => new_order_shipping.to_json)
+				# errors[:shipping] = response.parsed_response unless response["MessageModelList"].first["messageType"] == "INFO"
+
+				## Add Oyster Knife and Simplify Item Name (special rules require coupons and daibiki tax)
+				knife_count = @packages.map{|pkg| pkg[:items_list].map{|item| item[:selection]}}.flatten.map{|choice| ((choice.include?('牡蠣ナイフ') && choice.include?('希望する')) ? 1 : 0) unless choice.nil? }.compact.inject(0, :+)
+				new_year_delivery = @packages.map{|pkg| pkg[:items_list].map{|item| item[:selection]}}.flatten.map{|choice| ((choice.include?('1月以降の発送OK。')) ? true : false) unless choice.nil? }.compact.include?(true)
+				coupon_model = order["CouponModelList"]
+				if cod_shipping
+					new_sender_model = {
+						"orderNumber" => order_id,
+						"PackageModelList" => @packages.map{|pkg| {
+								"basketId" => pkg[:basket_id],
+								"postageTaxRate" => 0.1,
+								"deliveryPrice" => pkg[:delivery_cost],
+								"postagePrice" => (pkg[:items_list].map{|item| item[:extra_delivery_cost]}.inject(0, :+)),
+								"deliveryTaxRate" => 0.1, #required for daibiki, disregards for others
+								"SenderModel" => pkg[:sender_model],
+								"ItemModelList" => pkg[:item_model_list]
+							}
+						}
+					}
+				else
+					new_sender_model = {
+						"orderNumber" => order_id,
+						"PackageModelList" => @packages.map{|pkg| {
+								"basketId" => pkg[:basket_id],
+								"postageTaxRate" => 0.1,
+								"postagePrice" => (pkg[:items_list].map{|item| item[:extra_delivery_cost]}.inject(0, :+)),
+								"SenderModel" => pkg[:sender_model],
+								"ItemModelList" => pkg[:item_model_list]
+							}
+						}
+					}
+				end
+				unless order["WrappingModel1"].nil?
+					new_sender_model["WrappingModel1"] = order["WrappingModel1"]
+					new_sender_model["WrappingModel1"]["taxRate"] = 0.1
+				end
+				if knife_count > 0
+					new_sender_model["WrappingModel1"] = {
+						"title" => 2,
+						"name" => "牡蠣ナイフセット#{('× ' + knife_count.to_s) if (knife_count > 1)}",
+						"price" => (220 * knife_count),
+						"taxRate" => 0.1,
+						"includeTaxFlag" => 1,
+						"deleteWrappingFlag" => 0
+						}
+				end
+				unless coupon_model.nil? || coupon_model.empty?
+					new_sender_model["CouponModelList"]= order["CouponModelList"]
+				end
+				ap new_sender_model
+				response = HTTParty.post("https://api.rms.rakuten.co.jp/es/2.0/order/updateOrderSender/",
+					:headers => @auth_header,
+					:body => new_sender_model.to_json)
+				errors[:sender_model] = response.parsed_response unless response["MessageModelList"].first["messageType"] == "INFO"
+
+				## SET MEMO, SHIP DATE, MEMO(ERROR, PAYMENT METHOD, GIFT, COOL/FROZEN, COUNTS), AND UPDATE SUBSTATUS COMPLETE
+				frozen_check = @packages.map{|pkg| pkg[:items_list].map{|item| item_frozen?(item[:id])}}.flatten.compact.include?(true)
+				payment_method = order["SettlementModel"]["settlementMethod"]
+				remarks = order["remarks"].delete("\n")[/(?<=\[メッセージ添付希望・他ご意見、ご要望がありましたらこちらまで:\]).*/]
+				memo_product_names = @packages.map{|pkg| pkg[:items_list].map{|item| memo_product_name(item[:id])}}.flatten.join(' ')
+				memo_date_memo = order["remarks"].delete("\n")[/(?<=\[配送日時指定:\]).*(?=\[メッセージ)/].sub(/[0-9]{4}-(1[0-2]|0[1-9])-(3[01]|[12][0-9]|0[1-9])/, '').sub(/\(.\)(午前中)/,'').sub(/\(.\)/,'').sub(/[0-9]{2}:[0-9]{2}-[0-9]{2}:[0-9]{2}/,'').sub('指定なし', '')
+				has_noshi = !@packages.map{|pkg| pkg[:noshi] }.compact.empty?
+				gift = !order["giftCheckFlag"].zero?
+				there_are_errors = !errors.empty?
+				additional_shipping = @packages.map{|pkg| pkg[:items_list].map{|item| item[:extra_delivery_cost]}.inject(0, :+) > 0 }.include?(true)
+				days = @packages.map{|pkg| (@arrival_date - Date.parse(pkg[:shipping_date])).to_i }.max
+				memo = "#{'時間指定無理' if @impossible_delivery_time}[#{memo_product_names}]#{' 1月OK' if new_year_delivery}#{' ' + days.to_s + 'D' if days > 1}#{' 離島' if isolated_island }#{' 送料追加' if additional_shipping}#{' ナイフ' if knife_count > 0}#{' のし' if has_noshi}#{' 冷凍' if frozen_check}#{' ' + payment_method if (payment_method == "代金引換" || payment_method == "銀行振込")}#{' 前払' if payment_method.include?('前払')}#{' ギフト' if gift}#{' 備考あり' unless remarks.empty? }#{' 時間指定備考あり' unless memo_date_memo.empty?}#{' 自動処理エラー' if there_are_errors }#{ " #{end_of_year_memo}年内届" unless end_of_year_memo.empty?}"
+				#same_sender = !order["equalSenderFlag"].zero?
+				#several_sender = !order["severalSenderFlag"].zero?
+				order_memo = {
+					"orderNumber" => order_id,
+					"subStatusId" => 15822,
+					"deliveryClass" => (frozen_check ? 3 : 2),
+					"deliveryDate" => (shipping_date_wait || includes_anago || new_year_delivery) ? nil : (end_of_year ? end_of_year : @arrival_date.to_s),
+					"memo" => memo
 				}
+				# https://webservice.rms.rakuten.co.jp/merchant-portal/view?contents=/ja/common/1-1_service_index/rakutenpayorderapi/updateordermemo
+				# response = HTTParty.post("https://api.rms.rakuten.co.jp/es/2.0/order/updateOrderMemo/",
+				# 	:headers => @auth_header,
+				# 	:body => order_memo.to_json)
+				# errors[:order_memo] = response.parsed_response unless response["MessageModelList"].first["messageType"] == "INFO"
+				# ap errors
 			## https://webservice.rms.rakuten.co.jp/merchant-portal/view?contents=/ja/common/1-1_service_index/rakutenpayorderapi/updateordershipping
-			ap @packages.map{|pkg| pkg[:items_list].map{|item| item[:extra_delivery_cost]}.inject(0, :+) > 0 }.include?(true)
-		end; nil
+			#
+
+			################## FOR TESTING AND BUGFIXING PURPOSES ###################
+			# order_details = RakutenAPI.new.get_details_by_ids(["274763-20201225-00025840"])
+			# ap RakutenAPI.new.print_details(order_details)
+			ap '--------------------------------------------------------------------'
+			ap errors
+		end; 'success'
 	end
 
 end

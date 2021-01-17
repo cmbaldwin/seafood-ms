@@ -25,4 +25,22 @@ module OysterSuppliesHelper
 		price[type]
 	end
 
+	def stat_column_title(stat)
+		{
+			'grand_total' => '総合計',
+			'hyogo_grand_total' => '兵庫県合計',
+			'okayama_grand_total' => '岡山県合計',
+			'kara_grand_total' => '殻付き合計',
+		}[stat]
+	end
+
+	def get_supply_stat(stat, supply)
+		{
+			'grand_total' => supply.totals[:mukimi_total],
+			'hyogo_grand_total' => supply.totals[:sakoshi_total],
+			'okayama_grand_total' => supply.totals[:okayama_total],
+			'kara_grand_total' => supply.totals[:shell_total],
+		}[stat]
+	end
+
 end

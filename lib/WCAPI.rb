@@ -23,7 +23,7 @@ class WCAPI
 			@response.each do |order|
 				tracking_number = order["meta_data"].map { |h| h["value"] if (h["key"] == "ywot_tracking_code") }.compact.first
 				if (tracking_number == "") || (tracking_number.nil?)
-					shinki << order unless order["status"] == "cancelled"
+					shinki << order unless (order["status"] == "cancelled") || (order["status"] == "completed") || (order["status"] == "refunded")
 				end
 			end
 			shinki

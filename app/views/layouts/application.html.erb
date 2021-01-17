@@ -6,18 +6,15 @@
 	<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;" />
 	<head>
 		<title><%= content_for?(:title) ? content_for(:title) : "Funabiki Online" %></title>
-		
+
 		<link href="https://fonts.googleapis.com/earlyaccess/notosansjapanese.css" rel="stylesheet" />
-		
+
 		<%= favicon_link_tag %>
 
 		<%= stylesheet_pack_tag "application", media: 'all', 'data-turbolinks-track': 'reload' %>
 		<%= javascript_pack_tag 'application', 'data-turbolinks-track': 'reload' %>
 
-		<%= javascript_pack_tag 'custom', 'data-turbolinks-track': 'reload' %>
-		<%= javascript_pack_tag 'noshis', 'data-turbolinks-track': 'reload' %>
-		<%= javascript_pack_tag 'oyster_supplies', 'data-turbolinks-track': 'reload' %>
-		<%= javascript_pack_tag 'profits', 'data-turbolinks-track': 'reload' %>
+		<%= javascript_pack_tag 'main', 'data-turbolinks-track': 'reload' %>
 
 		<%= action_cable_meta_tag %>
 
@@ -25,120 +22,99 @@
 		<%= csp_meta_tag %>
 
 		<%= content_for :render_async %>
-
 	</head>
 
-	<body data-spy="scroll" data-target="#sidebar" data-offset="0">
-		<div class="wrapper">
-			<div id="content">
-				<nav id="top_nav" class="navbar navbar-dark navbar-expand-lg mb-3 d-print-none" data-turbolinks-permanent>
-					<a class="navbar-brand" href="/"><div id="logo"></div></a>
-					<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-						<span class="navbar-toggler-icon"></span>
-					</button>
-					<div class="collapse navbar-collapse" id="navbarNav">
-						<ul class="navbar-nav mr-auto">
-						<% if user_signed_in? %>
-							<% if current_user.approved? && !current_user.supplier? %>
-								<li class="nav-iteme">
-									<a class="nav-link light_link" href="/profits">計算表</a>
-								</li>
-								<li class="nav-iteme">
-									<a class="nav-link light_link" href="/oyster_supplies">牡蠣原料</a>
-								</li>
-								<li class="nav-item dropdown">
-									<a class="nav-link light_link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-										設定
-									</a>
-									<div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-										<% if current_user.admin? %>
-										<a class="dropdown-item dark_link" href="/frozen_oysters">冷凍牡蠣データ</a>
-										<% end %>
-										<a class="dropdown-item dark_link" href="/expiration_cards">消費期限カード</a>
-										<a class="dropdown-item dark_link" href="/suppliers">生産者</a>
-										<% if current_user.admin? %>
-										<a class="dropdown-item dark_link" href="/restaurants">飲食店</a>
-										<% end %>
-										<a class="dropdown-item dark_link" href="/products">商品</a>
-										<a class="dropdown-item dark_link" href="/markets">市場</a>
-										<a class="dropdown-item dark_link" href="/materials">材料</a>
-									</div>
-								</li>
-								<li class="nav-item dropdown">
-									<a class="nav-link light_link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-										通販
-									</a>
-									<div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-										<a class="dropdown-item dark_link" href="/manifests">IM/WC・発送表</a>
-										<a class="dropdown-item dark_link" href="/r_manifests">楽天・発送表</a>
-										<a class="dropdown-item dark_link" href="/yahoo_orders">ヤフー・発送表</a>
-										<a class="dropdown-item dark_link" href="/noshis">熨斗作成</a>
-									</div>
-								</li>
-							<% end %>
-						<% end %>
-						</ul>
-
-						<ul class="navbar-nav">
-							<% if user_signed_in? %>
-								<span class="navbar-text">
-									<div class="btn-group" role="group" aria-label="Basic">
-										<span class="navbar-link btn btn-info" data-tippy-content="ログアウト">
-											<%= link_to icon("arrow-up-right-circle-fill", class: 'text-warning'), destroy_user_session_path, :method => :delete, :class => 'btn btn-info m-0 p-0' %>
-										</span>
-										<%= link_to icon("file-person", class: 'text-primary'), edit_user_registration_path, :class => 'navbar-link btn btn-info',
-											"data-content" =>
-												('メール<strong>:<br><small>' + current_user.email + '</small></strong><br>ユーザー名<strong>:<br>' + current_user.username + '</strong>'),
-										"role" => "button", "data-html" => "true", "data-toggle" => "popover", "data-trigger" => "hover", "data-placement" => "bottom", :title => 'ユーザー', :alt => 'ユーザー', "tabindex" => "0" %>
-										<button type="button" class="sidebarCollapse navbar-link btn btn-info" data-tippy-content="システム通知パネル">
-											<%= icon('collection', class: 'text-white') %>
-										</button>
-									</div>
-								</span>
-							<% else %>
-								<span class="navbar-text">
-									<%= link_to "サインアップ", new_user_registration_path, :class => 'navbar-link'  %> |
-									<%= link_to "ログイン", new_user_session_path, :method => :post, :class => 'navbar-link'  %>
-								</span>
-							<% end %>
-						</ul>
-
-					</div>
-				</nav>
-
-				<%= yield %>
-
-				<% if user_signed_in? && !current_user.approved? %>
-					<div class="container m-3">
-						<div class="card bg-warning text-white m3">
-							<div class="card-body">
-								<h5>このアカウントを許可されるまではしばらくお待ちください。</h5>
-							</div>
-						</div>
-					</div>
-				<% end %>
-				
-			</div>
-
-			<div id="sidebar_spacer" class="active" data-turbolinks-permanent>
-			</div>
-			<nav id="front_sidebar" data-user-id="<%= user_signed_in? ? (current_user.id) : () %>" class="bg-light border-dark border-left active" data-turbolinks-permanent>
-				<div class="sidebar-header bg-light p-2 m-1 rounded">
-					　
-					<h5 class="float-left">システム通報</h5>
-					<button type="button" class="sidebarCollapse navbar-link btn btn-sm m-0 p-0 pl-1 pr-1 btn-light float-right active">
-						<%= icon('x-circle') %>
-					</button>
-				</div>
-
+	<body data-spy="scroll">
+		<nav id="top_nav" class="navbar navbar-dark bg-dark navbar-expand-lg mb-3 d-print-none" data-turbolinks-permanent>
+			<a class="navbar-brand" href="/"><div id="logo"></div></a>
+			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+			<div class="collapse navbar-collapse" id="navbarNav">
+				<ul class="navbar-nav h5 ml-3 mr-auto">
 				<% if user_signed_in? %>
-					<div id="notifications">
-						<%= render 'messages', remote: true %>
-					</div>
+					<% if current_user.approved? && !current_user.supplier? %>
+						<li class="nav-item">
+							<a class="nav-link light_link" href="/profits">計算</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link light_link" href="/oyster_supplies">牡蠣の供給</a>
+						</li>
+						<li class="nav-item dropdown">
+							<a class="nav-link light_link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+								設定等
+							</a>
+							<div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+								<% if current_user.admin? %>
+								<a class="dropdown-item dark_link" href="/frozen_oysters">冷凍牡蠣データ</a>
+								<% end %>
+								<a class="dropdown-item dark_link" href="/expiration_cards">消費期限カード</a>
+								<a class="dropdown-item dark_link" href="/suppliers">生産者</a>
+								<% if current_user.admin? %>
+								<a class="dropdown-item dark_link" href="/restaurants">飲食店</a>
+								<% end %>
+								<a class="dropdown-item dark_link" href="/products">商品</a>
+								<a class="dropdown-item dark_link" href="/markets">市場</a>
+								<a class="dropdown-item dark_link" href="/materials">材料</a>
+							</div>
+						</li>
+						<li class="nav-item dropdown">
+							<a class="nav-link light_link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+								通販・EC
+							</a>
+							<div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+								<a class="dropdown-item dark_link" href="/manifests">IM/WC・発送表</a>
+								<a class="dropdown-item dark_link" href="/r_manifests">楽天・発送表</a>
+								<a class="dropdown-item dark_link" href="/yahoo_orders">ヤフー・発送表</a>
+								<a class="dropdown-item dark_link" href="/noshis">熨斗作成</a>
+							</div>
+						</li>
+					<% end %>
 				<% end %>
-			</nav>
-			<% if user_signed_in? %>
-			<!-- Alerts -->
+				</ul>
+
+				<ul class="navbar-nav">
+					<% if user_signed_in? %>
+						<span class="navbar-text">
+							<div class="btn-group" role="group" aria-label="Basic">
+								<span class="navbar-link btn btn-info tippy" data-tippy-content="ログアウト">
+									<%= link_to icon("arrow-up-right-circle-fill", class: 'text-warning'), destroy_user_session_path, :method => :delete, :class => 'btn btn-info m-0 p-0' %>
+								</span>
+								<%= link_to icon("file-person", class: 'text-primary'), edit_user_registration_path, :class => 'navbar-link btn btn-info',
+									"data-content" =>
+										('メール<strong>:<br><small>' + current_user.email + '</small></strong><br>ユーザー名<strong>:<br>' + current_user.username + '</strong>'),
+								"role" => "button", "data-html" => "true", "data-toggle" => "popover", "data-trigger" => "hover", "data-placement" => "bottom", :title => 'ユーザー', :alt => 'ユーザー', "tabindex" => "0" %>
+								<button type="button" id="sidebar_button" data-user-id="<%= current_user.id %>" class="sidebarCollapse navbar-link btn btn-info tippy" data-tippy-content="システム通知表示">
+									<%= icon('collection', class: 'text-white') %>
+								</button>
+							</div>
+						</span>
+					<% else %>
+						<span class="navbar-text">
+							<%= link_to "サインアップ", new_user_registration_path, :class => 'navbar-link'  %> |
+							<%= link_to "ログイン", new_user_session_path, :method => :post, :class => 'navbar-link'  %>
+						</span>
+					<% end %>
+				</ul>
+
+			</div>
+		</nav>
+
+		<%= yield %>
+
+		<% if user_signed_in? && !current_user.approved? %>
+			<div class="container m-3">
+				<div class="card bg-warning text-white m3">
+					<div class="card-body">
+						<h5>このアカウントを許可されるまではしばらくお待ちください。</h5>
+					</div>
+				</div>
+			</div>
+		<% end %>
+
+		<% if user_signed_in? %>
+			<div id="notifications" data-turbolinks-permanent>
+				<!-- Alerts -->
 				<% if notice %>
 					<div class="container notice_container mt-2 d-print-none">
 						<div class="alert alert-success d-print-none"><%= notice %></div>
@@ -149,8 +125,7 @@
 						<div class="alert alert-danger d-print-none"><%= alert %></div>
 					</div>
 				<% end %>
-			<% end %>
-
-		</div>
+			</div>
+		<% end %>
 	</body>
 </html>

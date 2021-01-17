@@ -5,52 +5,15 @@ module ApplicationHelper
 	end
 
 	def print_model(model)
-		{'oyster_supply' => '牡蠣原料', 'profit' => '計算表', 'oyster_invoice' => '牡蠣原料仕切り'}[model]
-	end
-
-	def create_chart(chart_params)
-		(method(chart_params[:chart_type]).call method(chart_params[:chart_path] + "_path").call, chart_params[:init_params])
-	end
-
-	def exp_card_popover(expiration_card)
-		"<small>
-			<div class='container m-0 p-0'>
-				<div class='row m-0 p-0'>
-					<div class='float-left w-25 font-weight-bolder m-0 p-0 border-bottom'>名称</div>
-					<div class='float-right w-75 m-0 p-0 border-bottom'>#{expiration_card.product_name}</div>
-				</div>
-				<div class='row m-0 p-0'>
-					<div class='float-left w-25 font-weight-bolder m-0 p-0 border-bottom'>加工所所在地</div>
-					<div class='float-right w-75 m-0 p-0 border-bottom'>#{expiration_card.manufacturer_address}</div>
-				</div>
-				<div class='row m-0 p-0'>
-					<div class='float-left w-25 font-weight-bolder m-0 p-0 border-bottom'>加工者</div>
-					<div class='float-right w-75 m-0 p-0 border-bottom'>#{expiration_card.manufacturer}</div>
-				</div>
-				<div class='row m-0 p-0'>
-					<div class='float-left w-25 font-weight-bolder m-0 p-0 border-bottom'>採取海域</div>
-					<div class='float-right w-75 m-0 p-0 border-bottom'>#{expiration_card.ingredient_source}</div>
-				</div>
-				<div class='row m-0 p-0'>
-					<div class='float-left w-25 font-weight-bolder m-0 p-0 border-bottom'>用途</div>
-					<div class='float-right w-75 m-0 p-0 border-bottom'>#{expiration_card.consumption_restrictions}</div>
-				</div>
-				<div class='row m-0 p-0'>
-					<div class='float-left w-25 font-weight-bolder m-0 p-0 border-bottom'>保存温度</div>
-					<div class='float-right w-75 m-0 p-0 border-bottom'>#{expiration_card.storage_recommendation}</div>
-				</div>
-				#{if expiration_card.made_on
-					"<div class='row m-0 p-0'>
-						<div class='float-left w-25 font-weight-bolder m-0 p-0 border-bottom'>保存温度</div>
-						<div class='float-right w-75 m-0 p-0 border-bottom'>#{expiration_card.manufactuered_date}</div>
-					</div>"
-				end}
-				<div class='row m-0 p-0'>
-					<div class='float-left w-25 font-weight-bolder m-0 p-0'>#{expiration_card.print_shomiorhi}</div>
-					<div class='float-right w-75 m-0 mb-2 p-0'>#{expiration_card.expiration_date}</div>
-				</div>
-			</div>
-		</small>"
+		{
+			'oyster_supply' => '牡蠣原料',
+			'profit' => '計算表',
+			'manifest' => 'InfoMart/Funabiki.infoの出荷表',
+			'rakuten_manifest' => '楽天出荷表',
+			'yahoo_shipping_list' => 'ヤフー出荷表',
+			'oyster_invoice' => '牡蠣原料仕切り',
+			'reciept' => '領収証',
+			'noshi' => '熨斗'}[model]
 	end
 
 	def print_message_data(message)
@@ -63,33 +26,121 @@ module ApplicationHelper
 		data = message.data
 		if message.model == 'oyster_invoice'
 			if message.state
-				unless data[:invoice_id] == 0 
-					begin 
+				unless data[:invoice_id] == 0
+					begin
 						invoice = OysterInvoice.find(data[:invoice_id])
 						start_nengapi = Date.parse(invoice.start_date).strftime("%Y年%m月%d日")
 						end_nengapi = Date.parse(invoice.end_date).strftime("%Y年%m月%d日")
-						render html: (link_to("#{start_nengapi}~#{end_nengapi}仕切り", invoice, class: 'card-link small')).html_safe
+						render html: (link_to("#{start_nengapi}~#{end_nengapi}仕切り", invoice, class: 'card-link')).html_safe
 					rescue ActiveRecord::RecordNotFound
 						render html: ("<p class='small text-warning'>エラー:　仕切り##{data[:invoice_id]}をみつけられませんでした。</p>").html_safe
 					end
 				else
 					render html: (link_to("#{data[:invoice_preview][:start_date]}~の#{data[:invoice_preview][:end_date]}
 						(#{invoice_location(data[:invoice_preview][:location])}-#{invoice_format(data[:invoice_preview][:export_format])})
-						仕切りプレビュー", message.document.url, class: 'card-link small', target: '_blank')).html_safe
+						仕切りプレビュー", message.document.url, class: 'card-link', target: '_blank')).html_safe
 				end
 			end
 		elsif message.model == 'oyster_supply'
 			if message.state
-				begin 
+				begin
 					oyster_supply = OysterSupply.find(data[:oyster_supply_id])
-					render html: (link_to("#{oyster_supply.supply_date}原料受入れチェック表", message.document.url, class: 'card-link small', target: '_blank')).html_safe
+					render html: (link_to("#{oyster_supply.supply_date}原料受入れチェック表", message.document.url, class: 'card-link', target: '_blank')).html_safe
 				rescue
 					render html: ("<p class='small text-warning'>エラー:　原料受入れ##{data[:oyster_supply_id]}をみつけられませんでした。</p>").html_safe
+				end
+			end
+		elsif message.model == 'rakuten_manifest'
+			if message.state
+				begin
+					@r_manifest = RManifest.find(data[:r_manifest_id])
+					render html: (link_to("楽天#{'とヤフー' if data[:include_yahoo]}#{' 商品分別版 ' if data[:seperated]}出荷表（#{@r_manifest.sales_date})", message.document.url, class: 'card-link', target: '_blank')).html_safe
+				rescue
+					render html: ("<p class='small text-warning'>エラー:　出荷表##{data[:oyster_supply_id]}をみつけられませんでした。</p>").html_safe
+				end
+			end
+		elsif message.model == 'manifest'
+			if message.state
+				begin
+					@manifest = Manifest.find(data[:manifest_id])
+					render html: (link_to("InfoMart/Funabiki.infoの出荷表（#{@manifest.sales_date})", message.document.url, class: 'card-link', target: '_blank')).html_safe
+				rescue
+					render html: ("<p class='small text-warning'>エラー:　出荷表##{data[:oyster_supply_id]}をみつけられませんでした。</p>").html_safe
+				end
+			end
+		elsif message.model == 'yahoo_shipping_list'
+			if message.state
+				begin
+					render html: (link_to("ヤフー出荷表（#{message.data[:ship_date]})", message.document.url, class: 'card-link', target: '_blank')).html_safe
+				rescue
+					render html: ("<p class='small text-warning'>エラー:　出荷表##{data[:oyster_supply_id]}をみつけられませんでした。</p>").html_safe
+				end
+			end
+		elsif message.model == 'reciept'
+			if message.state
+				begin
+					render html: (link_to(message.document.filename, message.document.url, class: 'card-link', target: '_blank')).html_safe
+				rescue
+					render html: ("<p class='small text-warning'>エラー:　領収証保存出来なかった").html_safe
+				end
+			end
+		elsif message.model == 'noshi'
+			if message.state
+				begin
+					@noshi = Noshi.find(data[:noshi_id])
+					render html: (link_to image_tag(@noshi.image_url(:thumb).to_s, :alt => "#{@noshi.namae.to_s + " " + @noshi.omotegaki.to_s}", :class => "noshi_img"), @noshi.image_url, target: "_blank").html_safe
+				rescue
+					render html: ("<p class='small text-warning'>エラー:　熨斗保存出来なかった").html_safe
 				end
 			end
 		else
 			ap data.to_s
 		end
+	end
+
+	def create_chart(chart_params)
+		(method(chart_params[:chart_type]).call method(chart_params[:chart_path] + "_path").call, chart_params[:init_params])
+	end
+
+	def exp_card_popover(expiration_card)
+		"<small>
+			<div class='container m-0 p-0'>
+				<div class='row m-0 p-0'>
+					<div class='float-left w-25 font-weight-bolder m-0 p-0 border-bottom'>名称</div>
+					<div class='float-right w-75 m-0 p-0 pl-2 border-bottom'>#{expiration_card.product_name}</div>
+				</div>
+				<div class='row m-0 p-0'>
+					<div class='float-left w-25 font-weight-bolder m-0 p-0 border-bottom'>加工所所在地</div>
+					<div class='float-right w-75 m-0 p-0 pl-2 border-bottom'>#{expiration_card.manufacturer_address}</div>
+				</div>
+				<div class='row m-0 p-0'>
+					<div class='float-left w-25 font-weight-bolder m-0 p-0 border-bottom'>加工者</div>
+					<div class='float-right w-75 m-0 p-0 pl-2 border-bottom'>#{expiration_card.manufacturer}</div>
+				</div>
+				<div class='row m-0 p-0'>
+					<div class='float-left w-25 font-weight-bolder m-0 p-0 border-bottom'>採取海域</div>
+					<div class='float-right w-75 m-0 p-0 pl-2 border-bottom'>#{expiration_card.ingredient_source}</div>
+				</div>
+				<div class='row m-0 p-0'>
+					<div class='float-left w-25 font-weight-bolder m-0 p-0 border-bottom'>用途</div>
+					<div class='float-right w-75 m-0 p-0 pl-2 border-bottom'>#{expiration_card.consumption_restrictions}</div>
+				</div>
+				<div class='row m-0 p-0'>
+					<div class='float-left w-25 font-weight-bolder m-0 p-0 border-bottom'>保存温度</div>
+					<div class='float-right w-75 m-0 p-0 pl-2 border-bottom'>#{expiration_card.storage_recommendation}</div>
+				</div>
+				#{if expiration_card.made_on
+					"<div class='row m-0 p-0'>
+						<div class='float-left w-25 font-weight-bolder m-0 p-0 border-bottom'>保存温度</div>
+						<div class='float-right w-75 m-0 p-0 pl-2 border-bottom'>#{expiration_card.manufactuered_date}</div>
+					</div>"
+				end}
+				<div class='row m-0 p-0'>
+					<div class='float-left w-25 font-weight-bolder m-0 p-0'>#{expiration_card.print_shomiorhi}</div>
+					<div class='float-right w-75 m-0 mb-2 p-0 pl-2'>#{expiration_card.expiration_date}</div>
+				</div>
+			</div>
+		</small>"
 	end
 
 	def title(page_title)
@@ -109,7 +160,7 @@ module ApplicationHelper
 	def yenify_with_decimal(number)
 		ActionController::Base.helpers.number_to_currency(number, locale: :ja, :unit => "", precision: 1)
 	end
-	
+
 	def cycle_table_rows
 		cycle("even", "odd")
 	end
@@ -123,7 +174,9 @@ module ApplicationHelper
 	end
 
 	def icon(icon, options = {})
-		file = File.read("#{Rails.root}/node_modules/bootstrap-icons/icons/#{icon}.svg")
+		icon_path = "#{Rails.root}/node_modules/bootstrap-icons/icons/#{icon}.svg"
+		backup_path = "#{Rails.root}/node_modules/bootstrap-icons/icons/x.svg"
+		file = File.exist?(icon_path) ? File.read(icon_path) : File.read(backup_path)
 		doc = Nokogiri::HTML::DocumentFragment.parse file
 		svg = doc.at_css 'svg'
 		if options[:class].present?
@@ -144,7 +197,7 @@ module ApplicationHelper
 		counts = Hash.new
 		types_arr = %w{生むき身 生セル 小殻付 セルカード 冷凍むき身 冷凍セル 穴子(件) 穴子(g) 干しムキエビ(80g) 干し殻付エビ(80g) タコ}
 		types_arr.each {|w| counts[w] = 0}
-		count_hash = { 
+		count_hash = {
 			"kakiset302" => [2, 30, 0, 1, 0, 0, 0, 0, 0, 0, 0],
 			"kakiset202" => [2, 20, 0, 1, 0, 0, 0, 0, 0, 0, 0],
 			"kakiset301" => [1, 30, 0, 1, 0, 0, 0, 0, 0, 0, 0],

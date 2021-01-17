@@ -1,3 +1,7 @@
+<script type="text/javascript"> 
+	<%= render partial: 'profitjs', formats: [:js] %>
+</script>
+
 <% title "Funabiki Online - " + @profit.sales_date + " 計算表" %>
 
 <div class="modal fade" id="ProfitModal" tabindex="-1" aria-labelledby="ProfitModalLabel" aria-hidden="true">
@@ -30,24 +34,24 @@
 	<div class="row">
 		<div class="col-12 align-middle d-print-none">
 			<div class="btn-group float-right" role="group" aria-label="Basic">
-				<span class="btn btn-info p-0 m-0" data-tippy-content="牡蠣の量予算">
+				<span class="btn btn-info p-0 m-0 tippy" data-tippy-content="牡蠣の量予算">
 					<%= link_to icon('bar-chart-line', class: 'text-primary'), fetch_volumes_path(@profit.id), class: "btn btn-info", "data-toggle" => "modal", "data-target" => "#volumesModal", remote: true %>
 				</span>
-				<span class="btn btn-info p-0 m-0" data-tippy-content="前の計算表へ">
+				<span class="btn btn-info p-0 m-0 tippy" data-tippy-content="前の計算表へ">
 					<%= link_to icon("arrow-left-circle", class: 'text-white'), @profit.profit_query.previous, class: 'btn btn-info' %>
 				</span>
-				<span class="btn btn-info p-0 m-0" data-tippy-content="次の計算表へ">
+				<span class="btn btn-info p-0 m-0 tippy" data-tippy-content="次の計算表へ">
 					<%= link_to icon("arrow-right-circle", class: 'text-white'), @profit.profit_query.next, class: 'btn btn-info' %>
 				</span>
-				<span class="btn btn-info" data-tippy-content="計算表をカレンダーで調べる">
+				<span class="btn btn-info tippy" data-tippy-content="計算表をカレンダーで調べる">
 					<button id="ProfitModalButton" type="button" class="btn btn-info m-0 p-0" data-toggle="modal" data-target="#ProfitModal">
 							<%= icon('calendar3', class: 'text-white') %>
 					</button>
 				</span>
-				<span class="btn btn-info p-0 m-0" data-tippy-content="編集する">
+				<span class="btn btn-info p-0 m-0 tippy" data-tippy-content="編集する">
 					<%= link_to icon("pencil-square", class: "text-success"), edit_profit_path(@profit), class: 'btn btn-info' %>
 				</span>
-				<span class="btn btn-info p-0 m-0" data-tippy-content="計算表トップへ">
+				<span class="btn btn-info p-0 m-0 tippy" data-tippy-content="計算表トップへ">
 					<%= link_to icon('arrow-90deg-up', class: 'text-white'), profits_path, class: 'btn btn-info' %>
 				</span>
 			</div>

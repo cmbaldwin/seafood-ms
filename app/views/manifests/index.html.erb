@@ -5,9 +5,9 @@
 			<div class="col">
 	<% if current_user.admin? %>
 				<div class="btn-group float-right" role="group" aria-label="Basic">
-					<%= link_to icon("file-ruled", class: 'text-white'), empty_manifest_path('生食用'), :class => "btn btn-info", target: "_blank", "data-tippy-content" => '無印チェック表（生食用）' %>
-					<%= link_to icon("file-ruled-fill", class: 'text-white'), empty_manifest_path('プロトン凍結冷凍用'), :class => "btn btn-info", target: "_blank", "data-tippy-content" => '無印チェック表（冷凍用）' %>
-					<%= link_to icon('plus-circle-fill', class: 'text-success'), new_manifest_path, :class => "btn btn-info", "data-tippy-content" => "新しいデータを<br>取込む" %>
+					<%= link_to icon("file-ruled", class: 'text-white'), empty_manifest_path('生食用'), :class => "btn btn-info tippy", target: "_blank", "data-tippy-content" => '無印チェック表（生食用）' %>
+					<%= link_to icon("file-ruled-fill", class: 'text-white'), empty_manifest_path('プロトン凍結冷凍用'), :class => "btn btn-info tippy", target: "_blank", "data-tippy-content" => '無印チェック表（冷凍用）' %>
+					<%= link_to icon('plus-circle-fill', class: 'text-success'), new_manifest_path, :class => "btn btn-info tippy", "data-tippy-content" => "新しいデータを<br>取込む" %>
 				</div>
 	<% end %> 
 			<hr/>
@@ -64,9 +64,9 @@
 				</div>
 				<div class="col-md-3 col-sm-12 text-center">
 					<div class="btn-group">
-						<%= link_to icon("card-list"), manifest, :alt => "個別ページ", class: 'btn btn-info', "data-tippy-content" => "<center>#{manifest.sales_date}の<br>個別ページ</center>" %>
-						<%= link_to icon("file-earmark-arrow-down"), manifest_pdf_path(manifest), :method => :get, class: 'btn btn-info', target: "_blank", "data-tippy-content" => "<center>#{manifest.sales_date}の<br>出荷表PDFを開く</center>" %>
-						<%= link_to icon("arrow-counterclockwise", class: "text-success"), edit_manifest_path(manifest), :alt => "データを更新", class: 'btn btn-info', "data-tippy-content" => "<center>#{manifest.sales_date}の<br>データを取込む</center>" %>
+						<%= link_to icon("card-list"), manifest, :alt => "個別ページ", class: 'btn btn-info tippy', "data-tippy-content" => "<center>#{manifest.sales_date}の<br>個別ページ</center>" %>
+						<%= link_to icon("file-earmark-arrow-down"), manifest_pdf_path(manifest), :method => :get, class: 'btn btn-info tippy load', remote: true, "data-tippy-content" => "<center>#{manifest.sales_date}の<br>出荷表PDFを開く</center>" %>
+						<%= link_to icon("arrow-counterclockwise", class: "text-success"), edit_manifest_path(manifest), :alt => "データを更新", class: 'btn btn-info tippy load', "data-tippy-content" => "<center>#{manifest.sales_date}の<br>データを取込む</center>" %>
 					</div>
 				</div>
 		</div>

@@ -1,99 +1,6 @@
-<script> tippy('[data-tippy-content]', {allowHTML: true, animation: 'scale', duration: [300,0] }); </script>
-
-<% if @new_yahoo_orders %>
-	<div class="modal fade" id="yahoo_shinki_modal" tabindex="-1" aria-labelledby="yahoo_shinki_modal_label" aria-hidden="true">
-		<div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="yahoo_shinki_modal_label">Yahoo!ショッピング 新規注文</h5>
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true">&times;</span>
-					</button>
-				</div>
-				<div class="modal-body">
-					<table class="table table-sm">
-						<thead>
-							<tr>
-								<th colspan="4">
-									<table class="table table-borderless">
-										<% counts = yahoo_order_counts(@new_yahoo_orders) %>
-										<tr>
-											<% counts[:headers].each_with_index do |header, i| %>
-												<%= ("</tr><tr>").html_safe if (i % 4 == 0) %>
-													<th class="text-center">
-														<b><%= header %><%= "{ｇ合計}" if (i == 4)%></b><br>
-														<i><%= counts[:values][i].to_s %><%= " {#{counts[:anago]}g}" if (i == 4)%></i>
-														<%= "(#{counts[:cards]}枚)" if (i == 1) %>
-													</th>
-											<% end %>
-										</tr>
-									</table>
-								</th>
-							</tr>
-							<tr class="table-dark">
-								<th>
-									<div class="btn btn-light mr-3">ヤフー注文ID</div><span class="badge badge-secondary">現在の注文ステータス</span>
-								</th>
-								<th>注文者</th>
-								<th>送り先</th>
-								<th>出荷ステータス</th>
-							</tr>
-							<tr class="table-dark">
-								<th class="pl-3">
-									商品×数量
-								</th>
-								<th>
-									届け日
-								</th>
-								<th>
-									届け時間帯
-								</th>
-								<th>
-									支払い方法
-								</th>
-							</tr>
-						</thead>
-						<tbody>
-							<% @new_yahoo_orders.each do |order| %>
-								<tr class="table-<%= status_color(order) %>">
-									<th>
-										<%= link_to(order.order_id[/\d.*/], order.url, class: "btn btn-primary mr-3", target: "_blank") %><span class="badge badge-<%= status_color(order) %>"><%= order.order_status %></span>
-									</th>
-									<th>
-										<%= order.billing_name %>
-									</th>
-									<th>
-										<%= print_shipping_name(order) %>
-									</th>
-									<th>
-										<span class="badge badge-primary"><%= order.shipping_status %></span>
-									</th>
-								</tr>
-								<tr>
-									<td class="pl-3">
-										<%= order.item_name %><%= order.print_quantity %>
-									</td>
-									<td>
-										<%= order.shipping_arrival_date.strftime("%m月%d日") %>
-									</td>
-									<td>
-										<%= order.arrival_time %>
-									</td>
-									<td>
-										<%= order.payment_type %>
-									</td>
-								</tr>
-							<% end %>
-						</tbody>
-					</table>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-dismiss="modal">閉じる</button>
-				</div>
-			</div>
-		</div>
-	</div>
-<% end %>
+<script type="text/javascript">
+	<%= render partial: 'sharedjs', formats: [:js] %>
+</script>
 
 <div class="card m-0 p-0 border-white">
 	<div class="card-header p-3">
@@ -101,13 +8,13 @@
 		<span class="mb-3">&nbsp</span>
 		<div class="btn-group float-right mt-n2">
 			<% if @new_yahoo_orders %>
-				<button type="button" class="btn btn-sm btn-info" data-toggle="modal" data-target="#yahoo_shinki_modal" data-tippy-content="<center>ヤフー新規注文</center>">
+				<button type="button" class="btn btn-sm btn-info tippy" data-toggle="modal" data-target="#yahoo_shinki_modal" data-tippy-content="<center>ヤフー新規注文</center>">
 					<%= icon("asterisk") %><span class="badge badge-warning ml-1"><%= @new_yahoo_orders.length %></span>
 				</button>
 			<% end %>
-			<%= link_to icon("card-list"), yahoo_orders_path(date: @yahoo_date), :alt => "個別ページ", class: 'btn btn-info', "data-tippy-content" => "<center>#{to_nengapi(@yahoo_date)}の<br>個別ページ</center>" %>
-			<%= link_to icon("arrow-counterclockwise", class: "text-success"), refresh_yahoo_path, :alt => "ヤフーから<br>データを取込み", class: 'btn btn-info', "data-tippy-content" => "<center>ヤフーからデータを<br>取込み</center>" %>
-			<%= link_to icon("file-earmark-arrow-down"), yahoo_shipping_list_path(ship_date: @yahoo_date.strftime("%Y-%m-%d")), :method => :get, class: 'btn btn-info', target: "_blank", "data-tippy-content" => "<center>#{to_nengapi(@yahoo_date)}の<br>出荷表PDFを開く</center>" %>
+			<%= link_to icon("card-list"), yahoo_orders_path(date: @yahoo_date), :alt => "個別ページ", class: 'btn btn-info tippy', "data-tippy-content" => "<center>#{to_nengapi(@yahoo_date)}の<br>個別ページ</center>" %>
+			<%= link_to icon("arrow-counterclockwise", class: "text-success"), refresh_yahoo_path, :alt => "ヤフーから<br>データを取込み", class: 'btn btn-info tippy', "data-tippy-content" => "<center>ヤフーからデータを<br>取込み</center>" %>
+			<%= link_to icon("file-earmark-arrow-down"), yahoo_shipping_list_path(ship_date: @yahoo_date.strftime("%Y-%m-%d")), class: 'btn btn-info tippy', remote: true, "data-tippy-content" => "<center>#{to_nengapi(@yahoo_date)}の<br>出荷表PDFを開く</center>", 'data-turbolinks' => "false" %>
 		</div>
 	</div>
 		<div class="card-text text-center">
@@ -132,8 +39,8 @@
 			<%= "(#{@yahoo_orders.last.updated_at})に更新された" unless @yahoo_orders.empty? %>
 		</small>
 		<div class="btn-group float-right mt-n2 mb-1" role="group" aria-label="Basic">
-			<%= link_to icon("arrow-left-circle"), load_yahoo_orders_path(@yahoo_date - 1.day), :alt => "前", class: 'btn btn-sm btn-secondary', remote: true, "data-tippy-content" => "<center>#{to_nengapi(@yahoo_date - 1.day)}の<br>データを見る</center>"  %>
-			<%= link_to icon("arrow-right-circle"), load_yahoo_orders_path(@yahoo_date + 1.day), :alt => "次", class: 'btn btn-sm btn-secondary', remote: true, "data-tippy-content" => "<center>#{to_nengapi(@yahoo_date + 1.day)}の<br>データを見る</center>" %>
+			<%= link_to icon("arrow-left-circle"), load_yahoo_orders_path(@yahoo_date - 1.day), :alt => "前", class: 'btn btn-sm btn-secondary tippy', remote: true, "data-tippy-content" => "<center>#{to_nengapi(@yahoo_date - 1.day)}の<br>データを見る</center>"  %>
+			<%= link_to icon("arrow-right-circle"), load_yahoo_orders_path(@yahoo_date + 1.day), :alt => "次", class: 'btn btn-sm btn-secondary tippy', remote: true, "data-tippy-content" => "<center>#{to_nengapi(@yahoo_date + 1.day)}の<br>データを見る</center>" %>
 		</div>
 	</div>
 </div>

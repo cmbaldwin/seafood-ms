@@ -1,4 +1,14 @@
-<script> tippy('[data-tippy-content]', {allowHTML: true, animation: 'scale', duration: [300,0] }); </script>
+<script>
+	tippy('.exp_card', {
+		allowHTML: true, 
+		animation: 'scale', 
+		duration: [300,0],
+		interactive: true,
+		theme: 'exp_card',
+		touch: true,
+		touch: 'hold'
+	});
+</script>
 
 <% if @sakoshi_expiration_today %>
 	<h5>―　坂越海域　―</h5>

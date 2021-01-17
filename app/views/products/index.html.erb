@@ -4,13 +4,13 @@
 	<div class="modal-dialog modal-xl">
 		<div class="modal-content">
 			<div class="modal-header">
-				<h5 class="modal-title" id="productModalLabel">材料</h5>
+				<h5 class="modal-title" id="productModalLabel">商品編集・作成</h5>
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 				<span aria-hidden="true">&times;</span>
 				</button>
 			</div>
 			<div id="product_card" class="card h-100">
-				<div class="card-body text-center">
+				<div class="card-body">
 					<div id="product_partial">
 						<%= render 'product', remote: true, locals: {product: @product} %>
 					</div>
@@ -28,9 +28,9 @@
 			<div class="col">
 	<% if current_user.admin?%>
 				<div class="btn-group float-right" role="group" aria-label="Basic">
-					<%= link_to icon("file-arrow-down"), product_pdf_path, :class => "btn btn-info" %>
+					<%# link_to icon("file-arrow-down"), product_pdf_path, :class => "btn btn-info" %>
 					<%# link_to "InfoMart関連商品", associations_path, :class => "btn btn-info" %>
-					<%= link_to icon('plus-circle-fill', class: 'text-success'), insert_product_data_path, remote: true, class: 'product_link btn btn-info', 'data-toggle' => 'modal', 'data-target' => '#productModal' %>
+					<%= link_to icon('plus-circle-fill', class: 'text-success'), insert_product_data_path, remote: true, class: 'btn btn-info tippy', 'data-toggle' => 'modal', 'data-target' => '#productModal', "data-tippy-content" => '商品追加' %>
 				</div>
 	<% end %> 
 			<hr/>

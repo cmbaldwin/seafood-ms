@@ -1,16 +1,53 @@
 json.array!(@oyster_supply) do |supply|
 	if @place == "supply_index"
-		json.title "兵庫 #{supply.totals[:sakoshi_total].round(0).to_s}#{current_user.admin? ? "  @#{supply.totals[:sakoshi_avg_kilo].round(0).to_s}" : ""}
-		岡山 #{supply.totals[:okayama_total].round(0).to_s}#{current_user.admin? ? " @#{supply.totals[:okayama_avg_kilo].round(0).to_s}" : ""}
-		殻付 #{supply.totals[:shell_total].round(0).to_s}" + (current_user.admin? ? " @#{supply.totals[:big_shell_avg_cost].round(0).to_s}
-			合計 #{supply.totals[:mukimi_total].round(0).to_s} @#{supply.totals[:total_kilo_avg].round(0).to_s}" : "")
+		json.title "#{supply.totals[:mukimi_total].round(0).to_s}㎏　#{ "@#{supply.totals[:total_kilo_avg].round(0).to_s}¥/㎏" if (current_user.admin? && supply.check_completion.empty?)}"
 	elsif @place == "supply_show"
 		json.title ""
 	else
 	end
 	json.start DateTime.strptime(supply.supply_date, '%Y年%m月%d日')
 	json.allDay true
-	json.className 'supply_event'
+	json.className "supply_event tippy_#{supply.id}"
+	json.supply_id supply.id
+	json.description current_user.admin? ? "
+		<div class='container-flex small'>
+			<table class='table table-sm table-hover table-striped table-dark'>
+				<thead>
+					<tr>
+						<th scope='col'>場所</th>
+						<th scope='col'>
+							量
+						</th>
+						<th scope='col'>単価(¥/㎏)</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<th scope='row'>兵庫</th>
+						<td>
+							#{supply.totals[:sakoshi_total].round(0).to_s}㎏<br>
+							( 大#{supply.large_shucked_total.round(0)}㎏ / 小#{supply.small_shucked_total.round(0)}㎏)
+						</td>
+						<td>@#{supply.totals[:sakoshi_avg_kilo].round(0).to_s}㎏</td>
+					</tr>
+					<tr>
+						<th scope='row'>岡山</th>
+						<td>#{supply.totals[:okayama_total].round(0).to_s}㎏</td>
+						<td>@#{supply.totals[:okayama_avg_kilo].round(0).to_s}</td>
+					</tr>
+					<tr>
+						<th scope='row'>殻付</th>
+						<td>#{supply.totals[:shell_total].round(0).to_s}個 / #{supply.thin_shells_total}㎏</td>
+						<td>@#{supply.totals[:big_shell_avg_cost].round(0).to_s}</td>
+					</tr>
+					<tr>
+						<th scope='row'>合計</th>
+						<td>#{supply.totals[:mukimi_total].round(0).to_s}㎏</td>
+						<td>@#{supply.totals[:total_kilo_avg].round(0).to_s}㎏</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>" : ""
 	json.backgroundColor ((supply.check_completion.empty?) ? 'rgba(185, 232, 247, 0.24)' : '#DC7632')
 	json.textColor 'black'
 	json.borderColor 'rgba(255, 255, 255, 0)'

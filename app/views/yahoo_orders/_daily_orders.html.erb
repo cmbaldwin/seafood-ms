@@ -1,8 +1,23 @@
+<script type="text/javascript">
+		tippy('.tippy', {
+			allowHTML: true, 
+			animation: 'scale', 
+			duration: [300,0],
+			touch: true,
+			touch: 'hold'
+		});
+</script>
 <% if !@daily_orders.empty? %>
 	<div class="clearfix mb-2">
 		<h2 class="float-left"><%= @search_date.day %>日</h2>
-		<%= link_to("出荷データ(CSV)", yahoo_csv_path(ship_date: @search_date), :method => :get, class: "btn btn-primary float-right ml-2", data: {turbolinks: false}) %>
-		<%= link_to("発送表", yahoo_shipping_list_path(ship_date: @search_date), :method => :get, target: '_blank', class: "btn btn-primary float-right ml-2") %>
+		<div class="btn-group float-right mt-n2">
+			<span class="btn btn-sm btn-info m-0 p-0 tippy load" data-tippy-content="ヤフー出荷データCSVを作成">
+				<%= link_to icon("file-earmark-spreadsheet", class: 'text-white'), yahoo_csv_path(ship_date: @search_date), :method => :get, data: {turbolinks: false}, class: "btn btn-info" %>
+			</span>
+			<span class="btn btn-sm btn-info m-0 p-0 tippy load" data-tippy-content="ヤフー出荷表を作成">
+				<%= link_to icon("file-earmark-arrow-down", class: 'text-white'), yahoo_shipping_list_path(ship_date: @search_date), :method => :get, remote: true, class: "btn btn-info" %>
+			</span>
+		</div>
 	</div>
 	<table class="table table-sm">
 		<thead>

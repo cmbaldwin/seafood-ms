@@ -52,7 +52,12 @@ class Profit < ApplicationRecord
 		self.alone? ? () : (self.ampm = check_ampm)
 	end
 
-	def check_completion
+	def set_completion
+		self.totals[:completion] = self.get_completion
+		self.save
+	end
+
+	def get_completion
 		unfinished = Hash.new
 		unfinished[0] = 0
 		if self.figures && !self.figures[0]
@@ -72,6 +77,11 @@ class Profit < ApplicationRecord
 			end
 		end
 		unfinished
+	end
+
+	def check_completion
+		set_completion if self.totals[:completion].nil?
+		self.totals[:completion]
 	end
 
 	def get_total_rankings

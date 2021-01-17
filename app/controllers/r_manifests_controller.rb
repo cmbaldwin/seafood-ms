@@ -1,5 +1,5 @@
 class RManifestsController < ApplicationController
-	before_action :set_r_manifest, only: [:show, :edit, :update, :destroy, :pdf, :new_pdf, :seperated_pdf, :reciept]
+	before_action :set_r_manifest, only: [:show, :edit, :update, :destroy, :generate_pdf]
 	before_action :check_status
 
 	def check_status
@@ -7,7 +7,7 @@ class RManifestsController < ApplicationController
 		flash[:notice] = 'そのページはアクセスできません。'
 		redirect_to root_path, error: 'そのページはアクセスできません。'
 	end
-	
+
 	# GET /r_manifests
 	# GET /r_manifests.json
 	def index
@@ -21,7 +21,7 @@ class RManifestsController < ApplicationController
 		@rakuten_shinki = rakuten_api_client.get_details_by_ids(rakuten_api_client.get_shinki_without_shipdate_ids)
 	end
 
-	# GET /r_manifests/1 
+	# GET /r_manifests/1
 	# GET /r_manifests/1.json
 	def show
 		time_setup
@@ -29,6 +29,7 @@ class RManifestsController < ApplicationController
 		if rakuten_today
 			@r_manifest.sales_date == (rakuten_today.sales_date) ? rakuten_check : ()
 		end
+		@noshi = Noshi.new
 	end
 
 	# GET /r_manifests/new
@@ -53,35 +54,22 @@ class RManifestsController < ApplicationController
 		end
 	end
 
-	def seperated_pdf
-		pdf = @r_manifest.do_seperated_pdf
-		send_data pdf.render,
-			type: 'application/pdf', 
-			disposition: :inline
-		pdf = nil
-		File.delete(Rails.root + 'PDF.pdf') if File.exist?(Rails.root + 'PDF.pdf')
-		GC.start
-	end
-
-	def new_pdf
-		pdf = @r_manifest.do_new_pdf
-		send_data pdf.render,
-			type: 'application/pdf', 
-			disposition: :inline
-		pdf = nil
-		File.delete(Rails.root + 'PDF.pdf') if File.exist?(Rails.root + 'PDF.pdf')
-		GC.start
+	def generate_pdf
+		seperated = (params[:seperated] == "1")
+		include_yahoo = (params[:include_yahoo] == "1")
+		@filename = "楽天#{'とヤフー' if include_yahoo}#{' 商品分別版 ' if seperated}出荷表（#{@r_manifest.sales_date}）.pdf"
+		message = Message.new(user: current_user.id, model: 'rakuten_manifest', state: false, message: "楽天出荷表#{'とヤフー' if include_yahoo}#{' 商品分別版 ' if seperated}を作成中…", data: {r_manifest_id: @r_manifest.id, seperated: seperated, include_yahoo: include_yahoo, filename: @filename, expiration: (DateTime.now + 1.day)})
+		message.save
+		RakutenManifestWorker.perform_async(@r_manifest.id, seperated, current_user.id, message.id, include_yahoo)
 	end
 
 	def reciept
 		# Set the options
-		@r_manifest.options = params[:r_manifest]
-		pdf = @r_manifest.do_reciept
-		send_data pdf.render,
-			type: 'application/pdf', 
-			disposition: :inline
-		pdf = nil
-		File.delete(Rails.root + 'PDF.pdf') if File.exist?(Rails.root + 'PDF.pdf')
+		@options = reciept_options
+		@filename = "#{@options[:purchaser]}の領収証(#{DateTime.now.to_s}).pdf"
+		message = Message.new(user: current_user.id, model: 'reciept', state: false, message: "#{@options[:purchaser]}の領収証を作成中…", data: {options: @options, filename: @filename, expiration: (DateTime.now + 1.day)})
+		message.save
+		RecieptWorker.perform_async(@options, message.id)
 	end
 
 	# POST /r_manifests
@@ -142,5 +130,9 @@ class RManifestsController < ApplicationController
 		# Never trust parameters from the scary internet, only allow the white list through.
 		def r_manifest_params
 			params.require(:r_manifest).permit(:orders_hash, :Rakuten_Order, :sales_date, :new_orders_hash)
+		end
+
+		def reciept_options
+			params.require(:reciept_options).permit(:sales_date, :order_id, :purchaser, :title, :amount, :expense_name, :oysis)
 		end
 end

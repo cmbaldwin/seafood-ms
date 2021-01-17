@@ -1,0 +1,115 @@
+tippy('.tippy', {
+	allowHTML: true,
+	animation: 'scale',
+	duration: [300,0]
+});
+
+// Turn on warnings for unit price inputs without figures which have unit counts greater than zero
+(function($) {
+	$.fn.toggleWarning = function() {
+		return this.each(function() {
+			if ($(this).val() != '') {
+				var nextInput = $(this).parent().parent().next().find('input')
+				if (nextInput.val() == '') {
+					nextInput.addClass('bg-warning');
+				}
+			} else {
+				$(this).parent().parent().next().find('input').removeClass('bg-warning');
+			};
+		});
+	};
+})(jQuery);
+$(document).ready(function(){
+	$('#market_partial .p_market_ordercount input').each(function() {
+		$(this).toggleWarning()
+	});
+});
+$('#market_partial .p_market_ordercount input').keyup(function(){
+	$(this).toggleWarning()
+});
+$('#market_partial .p_market_unitcost input').keyup(function(){
+	if ($(this).val() != '') {
+		$(this).removeClass('bg-warning');
+	};
+});
+
+// Autosave is triggered on un-focusing an input element
+var id = (window.location.href).match(/\d*(?=\/edit)/)[0]
+$('.p_market_ordercount').find('input').blur( function() {
+	$.ajax({
+		type: "PATCH",
+		url: "/profits/" + id + "/autosave_tab",
+		dataType: "script",
+		data: $(".edit_profit").serialize()
+	});
+})
+
+// enter on the tab_edit form goes to next input with bg-warning
+var partialInputs = $('#market_partial input:visible:text')
+partialInputs.keyup(function (e) {
+	if (e.which === 13) {
+		var warningInputs = $('input.bg-warning:visible:text');
+		if (warningInputs.length != 0) {
+			var selectableWarns = $('input.bg-warning:visible:text')
+			if ($(this).hasClass('bg-warning')) {
+				index = selectableWarns.index(this) + 1;
+				selectableWarns.eq(index).focus();
+			} else {
+				selectableWarns.eq(0).focus();
+			}
+		} else {
+			$.ajax({
+				type: "GET",
+				url: 'next_market/' + $("#market_card").attr('data-mjs-number'),
+				success: function() {
+					$.ajax({
+						type: "GET",
+						url: 'update_completion/',
+						success: function() {
+							//console.log('success')
+						}
+					});
+				}
+			});
+		}
+	}
+});
+
+// Style unit price box on figure entry partial by entered value compared to average cost
+var priceInputs = $('.p_market_unitcost input:visible:text');
+priceInputs.on('keyup keypress blur change', function(e) {
+	parentDiv = $(this).parent().parent();
+	var averagePrice = parentDiv.attr("data-average-price");
+	if (averagePrice > 0) {
+		currentValue = $(this).val()
+		if ((currentValue > averagePrice * 1.3) || (currentValue < averagePrice * 0.7)) {
+			if ((currentValue != '') || (currentValue != 0)) {
+				parentDiv.addClass('border rounded border-warning');
+			}
+		} else {
+			parentDiv.removeClass('border rounded border-warning');
+		}
+	};
+
+});
+$(document).ready(function(){
+	$('.p_market_unitcost').each(function(){
+		var avg_price = $(this).attr("data-average-price")
+		var set_price = $(this).find('input:visible:text').val()
+		if (set_price > 0) {
+			if ((set_price > (avg_price * 1.51)) || (set_price < (avg_price * 0.49))) {
+				$(this).addClass('border rounded border-warning');
+			};
+		} else {
+			$(this).removeClass('border rounded border-warning');
+		};
+	});
+});
+
+// Focus on first text box that needs filling
+$(document).ready(function(){
+	var toFocus = $('input[type=text].floatTextBox.bg-warning').first()
+	if (toFocus) {
+		toFocus.focus()
+	};
+});

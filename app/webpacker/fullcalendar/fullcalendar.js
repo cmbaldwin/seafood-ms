@@ -13,6 +13,14 @@ import interactionPlugin from "@fullcalendar/interaction";
 // Including an "if calendarEl exists then render" type of function
 // solves the error problem, but renders from previous calendar settings
 
+var calendar_load = `
+<div class="calendar_load container d-flex align-items-center justify-content-center">
+	<div class="spinner-grow text-primary" role="status">
+  	<span class="sr-only">読み込み中...</span>
+	</div>
+</div>
+`;
+
 // Oyster Supplies Calendar
 document.addEventListener('turbolinks:load', function() {
 	var calendarEl = document.getElementById('supply_calendar');
@@ -26,9 +34,9 @@ document.addEventListener('turbolinks:load', function() {
 			aspectRatio: 1.35,
 			themeSystem: 'bootstrap',
 			headerToolbar: {
-				left: 'prevYear,prev,next,nextYear shikiri title',
+				left: 'prevYear,prev,next,nextYear shikiri',
 				center: '',
-				right: 'appendArea'
+				right: 'title'
 			},
 			customButtons: {
 				shikiri: {
@@ -37,11 +45,23 @@ document.addEventListener('turbolinks:load', function() {
 						location.href = '/oyster_invoices';
 					}
 				},
-				appendArea: {
-					text: ''
-				}
 			},
 			events: '/oyster_supplies.json?place=' + place,
+			eventDidMount: function(info) {
+				if ($(info.el).hasClass('supply_event')) {
+					tippy('.tippy_' + info.event.extendedProps.supply_id, {
+						onShow(instance) {
+							instance.setContent(info.event.extendedProps.description)
+						},
+						allowHTML: true,
+						animation: 'scale',
+						duration: [100,0],
+						touch: true,
+						theme: 'supply_cal',
+						touch: 'hold'
+					});
+				}
+			},
 			eventClick: function(info) {
 				if (info.className == 'invoice_event') {
 						$('#invoiceModal').modal('toggle');
@@ -63,66 +83,35 @@ document.addEventListener('turbolinks:load', function() {
 			select: function(info) {
 				var start_date = info.startStr
 				var end_date = info.endStr
-				while ($('.fc-appendArea-button').next('div').length) {
-					$('.fc-appendArea-button').next('div').remove();
-				}
-				if (($('.fc-highlight').last().width() > $('.fc-daygrid-day').width() + 10) || ($('.fc-highlight').length > 1)) {
-					$('.fc-appendArea-button').parent().append(`
-						<div class="btn-toolbar" id="select_toolbar" role="toolbar" aria-label="ツールバー">
-							<div class="btn-group mr-2" role="group" aria-label="botton-group">
-								<small class="badge align-middle text-wrap btn btn-white pt-2 border border-grey cursor-default">
-									支払明細書<br>プレビュー
-								</small>
-								<div type="button" class="btn btn-small text-white btn-secondary btn-disabled cursor-help">
-									生産者まとめ :
-								</div>
-								<div type="button" class="pdf_btn btn-small btn btn-primary pl-1 pr-1" data-location="sakoshi" data-format="all" data-start="` + start_date + `" data-end="` + end_date + `">
-									坂越
-								</div>
-								<div type="button" class="pdf_btn btn btn-small btn-primary pl-1 pr-1" data-location="aioi" data-format="all" data-start="` + start_date + `" data-end="` + end_date + `">
-									相生
-								</div>
-								<div type="button" class="btn btn-secondary btn-small text-white btn-disabled cursor-help">
-									各生産者:
-								</div>
-								<div type="button" class="pdf_btn btn btn-small btn-info pl-1 pr-1" data-location="sakoshi" data-format="individual" data-start="` + start_date + `" data-end="` + end_date + `">
-									坂越
-								</div>
-								<div type="button" class="pdf_btn btn btn-small btn-info pl-1 pr-1" data-location="aioi" data-format="individual" data-start="` + start_date + `" data-end="` + end_date + `">
-									相生
-								</div>
-								<small class="badge align-middle text-wrap btn btn-white pt-2 border border-grey cursor-default">
-									仕切り作成<br>送信予約
-								</small>
-								<div type="button" class="btn btn-small btn-success pl-1 pr-1" data-toggle="modal" data-target="#invoiceModal">
-									作成画面
-								</div>
-							</div>
-						</div>
-					`);
-				}
-				$.ajax({
-					type: "GET",
-					url: '/oyster_supplies/new_invoice/' + start_date + '/' + end_date + '/',
-					dataType: "script",
-					data: start_date + end_date,
-					success: function() {
-					}
-				});
-				$('.pdf_btn').bind('click', function(event){
-					var format = $(this).attr('data-format')
-					var start_date = $(this).attr('data-start')
-					var end_date = $(this).attr('data-end')
-					var location = $(this).attr('data-location')
+				var difference = moment(end_date).diff(moment(start_date), "hours");
+				if (difference > 24) {
+					var display_end = moment(end_date).subtract(1, 'days').format('YYYY-MM-DD');
+					$('#supply_action_date_title').html( '　(' + start_date + ' ~ ' + display_end + ')' )
 					$.ajax({
 						type: "GET",
-						url: "/oyster_supplies/payment_pdf/" + format + "/" + start_date + "/" + end_date + "/" + location,
+						url: "/oyster_supplies/supply_action_nav/" + start_date + "/" + end_date,
 					});
-				});
+					$.ajax({
+						type: "GET",
+						url: "/oyster_supplies/supply_invoice_actions/" + start_date + "/" + end_date,
+					});
+					$.ajax({
+						type: "GET",
+						url: '/oyster_supplies/new_invoice/' + start_date + '/' + end_date + '/',
+					});
+					$('#supplyActionModal').modal('show')
+				};
 			},
 			unselect: function(jsEvent, view) {
+			},
+			loading: function (loading) {
+				if (loading) {
+					$(calendarEl).prepend( calendar_load );
+				} else {
+					$('.calendar_load').remove()
+				}
 			}
-	  	});
+	  });
 	};
 
 	if (calendarEl) {
@@ -150,6 +139,7 @@ document.addEventListener('turbolinks:load', function() {
 			},
 			customButtons: {
 			},
+			selectable: true,
 			events: '/yahoo_orders.json',
 			eventClick: function(info) {
 				$.ajax({
@@ -167,7 +157,13 @@ document.addEventListener('turbolinks:load', function() {
 					data: info.date
 				});
 			},
-			selectable: true
+			loading: function (loading) {
+				if (loading) {
+					$(calendarEl).prepend( calendar_load );
+				} else {
+					$('.calendar_load').remove()
+				}
+			}
 	  	});
 	  };
 
@@ -198,10 +194,17 @@ document.addEventListener('turbolinks:load', function() {
 			},
 			customButtons: {
 			},
+			selectable: false,
 			dateClick: function(info) {
 				window.location = 'profits/new/' + encodeURI(moment(info.date).format('YYYY年MM月DD日'));
 			},
-			selectable: false
+			loading: function (loading) {
+				if (loading) {
+					$(calendarEl).prepend( calendar_load );
+				} else {
+					$('.calendar_load').remove()
+				}
+			}
 	  	});
 	  };
 
@@ -229,11 +232,18 @@ document.addEventListener('turbolinks:load', function() {
 			},
 			customButtons: {
 			},
+			selectable: false,
 			events: '/profits.json',
 			eventClick: function(info) {
 				//
 				},
-			selectable: false
+			loading: function (loading) {
+				if (loading) {
+					$(calendarEl).prepend( calendar_load );
+				} else {
+					$('.calendar_load').remove()
+				}
+			}
 	  	});
 	};
 

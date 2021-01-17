@@ -1,0 +1,127 @@
+$( document ).on('turbolinks:load', function() {
+
+	// select linked market link
+
+
+	// Turn on warnings for unit price inputs without figures which have unit counts greater than zero
+	(function($) {
+		$.fn.toggleWarning = function() {
+			return this.each(function() {
+				if ($(this).val() != '') {
+					var nextInput = $(this).parent().parent().next().find('input')
+					if (nextInput.val() == '') {
+						nextInput.addClass('bg-warning');
+					}
+				} else {
+					$(this).parent().parent().next().find('input').removeClass('bg-warning');
+				};
+			});
+		};
+	})(jQuery);
+	$(document).ready(function(){
+		$('#market_partial .p_market_ordercount input').each(function() {
+			$(this).toggleWarning()
+		});
+	});
+	$('#market_partial .p_market_ordercount input').keyup(function(){
+		$(this).toggleWarning()
+	});
+	$('#market_partial .p_market_unitcost input').keyup(function(){
+		if ($(this).val() != '') {
+			$(this).removeClass('bg-warning');
+		};
+	});
+
+	// enter on the tab_edit form goes to next input with bg-warning (skipping to next market if necessary)
+	var partialInputs = $('#market_partial input:visible:text')
+	partialInputs.keyup(function (e) {
+		if (e.which === 13) {
+			var warningInputs = $('input.bg-warning:visible:text');
+			if (warningInputs.length != 0) {
+				var selectableWarns = $('input.bg-warning:visible:text')
+				if ($(this).hasClass('bg-warning')) {
+					var index = selectableWarns.index(this) + 1;
+					selectableWarns.eq(index).focus();
+				} else {
+					selectableWarns.eq(0).focus();
+				}
+			} else {
+				$.ajax({
+					type: "GET",
+					url: 'next_market/' + $("#market_card").attr('data-mjs-number'),
+					success: function() {
+						$.ajax({
+							type: "GET",
+							url: 'update_completion/'
+						});
+					}
+				});
+			}
+		}
+	});
+
+	//// Tab-edit page customizations
+	// Add autosave for when a market is expanded on the profit tab-edit page
+	// Autosave is triggered on hitting enter or un-focusing an input element
+	var id = (window.location.href).match(/\d*(?=\/edit)/)[0]
+	function autosave() {
+		$.ajax({
+			type: "PATCH",
+			url: "/profits/" + id + "/autosave_tab",
+			dataType: "script",
+			data: $(".edit_profit").serialize()
+		});
+	}
+	$('body').bind('click keyup', function(e){
+		if (e.keyCode == '13') {
+			autosave()
+		}
+
+	});
+	$('.p_market_ordercount').find('input').blur( function() {
+		autosave()
+	})
+
+	// Update incomplete markets on change market by market link click
+	$('#market-pills .nav-link').click( function(e) {
+		$.ajax({
+			type: "GET",
+			url: 'update_completion/'
+		});
+	})
+
+	// Left/right keys as links to next market
+	$('body').bind('keyup', function(e){
+		if (e.keyCode == '37') {
+			// left arrow
+			var prev = $('#market-pills .active').prev('.nav-link')
+			if (prev.length) {
+				var url = prev.attr('href')
+			} else {
+				var url = $('#market-pills .nav-link').last().attr('href')
+			}
+			$.ajax({
+				type: "GET",
+				url: url,
+				success: function() {
+				}
+			});
+		};
+		if (e.keyCode == '39') {
+			// right arrow
+			var next = $('#market-pills .active').next('.nav-link')
+			if (next.length) {
+				var url = next.attr('href')
+			} else {
+				var url = $('#market-pills .nav-link').first().attr('href')
+			}
+			$.ajax({
+				type: "GET",
+				url: url,
+				success: function() {
+				}
+			});
+		};
+	});
+
+});

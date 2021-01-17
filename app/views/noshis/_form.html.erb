@@ -1,43 +1,57 @@
-<div class="row">
-	<div class="col-lg-12">
-		<%= form_with(model: noshi, local: true, html: { class: "directUpload" }) do |form| %>
-		<% if noshi.errors.any? %>
-			<div id="error_explanation">
-				<h2><%= pluralize(noshi.errors.count, "error") %> prohibited this noshi from being saved:</h2>
+<script type="text/javascript">
+		$( document ).on('turbolinks:load', function() {
+		$(".noshi_type").change(function () {
+			if ($('#noshi_ntype_15, #noshi_ntype_16, #noshi_ntype_17').is( ':checked' )) {
+				$('#noshi_namae4, #noshi_namae5').prop('readonly', true)
+				$('#noshi_namae4, #noshi_namae5').val('')
+			} else {
+				$('#noshi_namae4, #noshi_namae5').prop('readonly', false)
+			};
+			if ($('#noshi_ntype_16').is( ':checked' )) {
+				$('#noshi_omotegaki').val('空白')
+			};
+		});
 
-				<ul>
-				<% noshi.errors.full_messages.each do |message| %>
-					<li><%= message %></li>
-				<% end %>
-				</ul>
-			</div>
-		<% end %>
-	</div>
-	<div class="col-sm-12 col-md-7">
-		<p>
+		$(".noshi_selector").click(function () {
+			$('#noshi_omotegaki').val($(this).html())
+		});
+	});
+</script>
+
+<%= form_for(noshi, remote: true) do |form| %>
+	<div class="row">
+		<div class="col-lg-12">
+			<% if noshi.errors.any? %>
+				<div id="error_explanation">
+					<h2><%= pluralize(noshi.errors.count, "error") %> 熨斗保存出来なかった:</h2>
+					<ul>
+					<% noshi.errors.full_messages.each do |message| %>
+						<li><%= message %></li>
+					<% end %>
+					</ul>
+				</div>
+			<% end %>
+		</div>
+		<div class="col-sm-12 col-md-7">
 			<%= hidden_field :user_id, :value => current_user.id %>
 
 			<div class="field noshi_type">
 				<p><b>熨斗タイプ</b></p>
-				
+
 				<%= form.collection_radio_buttons( :ntype, [[1, '1'], [2, '2'], [3, '3'], [4, '4'], [5, '5'], [6, '6'], [7, '7'], [8, '8'], [9, '9'], [10, '10'], [11, '11'], [12, '12'], [13, '13'], [14, '14'], [15, '15'], [16, '16'], [17, '17']], :first, :last, :item_wrapper_class => 'horizontal') { |ntype| ntype.label { ntype.radio_button + image_tag("#{ENV['GBUCKET_PREFIX']}noshi/thumbs/noshi#{ntype.text}-thumb.jpg") } } %>
 			</div>
-		</p>
-	</div>
-	<div class="col-sm-12 col-md-5">
-		<p>
+		</div>
+		<div class="col-sm-12 col-md-5">
 			<div class="field">
-				<p><b>表書き</b></p>
+				<b>表書き</b>
 				<br>
-				<%= form.select :omotegaki, ['御祝', '┣━　結婚・出産', '寿', '祝御結婚', '入学内祝', '内祝', '御出産祝', '御霊前', '御仏前', '御供', '粗供養', '満中陰志', '┣━　日頃のお礼', '志', '心ばかり', 'おみやげ', 'おめでとう', 'ありがとう', 'ビンゴ賞', '御挨拶', '寸志', '目録', '粗品', '粗酒', '献金', '奉献', '御新築祝', '上棟御祝', '御引越祝', '奉納', '謝礼', '御礼', '感謝', '薄謝', '祈必勝', '┣━　順位', '優勝', '準優勝', '一位', '二位', '三位', '四位', '五位', '六位', '七位', '八位', '九位', '十位', '皆勤賞', '最優秀賞', '優秀賞', '参加賞', '敢闘賞', '成績優秀賞', '┣━　ゴルフ', 'ぶうびい賞', 'ドラコン賞', 'ニアピン賞', 'ベスグロ賞', '大波賞', '水平賞', '┣━　誕生日', '御誕生日祝', '還暦御祝', '┣━　進学・卒業・就職', '祝御卒業', '祝ご卒団', '祝ご卒園', '祝御入園', '祝御入学', '祝御進学', '祝御就職', '祝御成人', '┣━　舞台・公演', '初日祝い', '楽屋御見舞', '┣━　夏の挨拶', '御中元', '暑中御見舞', '暑中御伺', '残暑御見舞', '残暑御伺', '┣━　冬の挨拶', '御歳暮', '御年賀', 'お年玉', '寒中御見舞', '┣━　その他', '快気祝', '快気内祝', '御見舞', '御餞別', '松の葉', '御帯料', '御帯地料', '小袖料', '御袴料', '御袴地料', '初穂料', '御車代', '御車料', '玉串料', '記念品', '開店御祝', '開業御祝', '陣中御見舞', '一周年記念', '二周年記念', '三周年記念', '四周年記念', '五周年記念', '六周年記念', '七周年記念', '八周年記念', '九周年記念', '十周年記念', '空白'], class: "form-control form-control mb-1" %>
+				<%= form.select :omotegaki, ['御祝', '┣━　結婚・出産', '寿', '祝御結婚', '入学内祝', '内祝', '御出産祝', '御霊前', '御仏前', '御供', '粗供養', '満中陰志', '┣━　日頃のお礼', '志', '心ばかり', 'おみやげ', 'おめでとう', 'ありがとう', 'ビンゴ賞', '御挨拶', '寸志', '目録', '粗品', '粗酒', '献金', '奉献', '御新築祝', '上棟御祝', '御引越祝', '奉納', '謝礼', '御礼', '感謝', '薄謝', '祈必勝', '┣━　順位', '優勝', '準優勝', '一位', '二位', '三位', '四位', '五位', '六位', '七位', '八位', '九位', '十位', '皆勤賞', '最優秀賞', '優秀賞', '参加賞', '敢闘賞', '成績優秀賞', '┣━　ゴルフ', 'ぶうびい賞', 'ドラコン賞', 'ニアピン賞', 'ベスグロ賞', '大波賞', '水平賞', '┣━　誕生日', '御誕生日祝', '還暦御祝', '┣━　進学・卒業・就職', '祝御卒業', '祝ご卒団', '祝ご卒園', '祝御入園', '祝御入学', '祝御進学', '祝御就職', '祝御成人', '┣━　舞台・公演', '初日祝い', '楽屋御見舞', '┣━　夏の挨拶', '御中元', '暑中御見舞', '暑中御伺', '残暑御見舞', '残暑御伺', '┣━　冬の挨拶', '御歳暮', '御年始', '御年賀', 'お年玉', '寒中御見舞', '┣━　その他', '快気祝', '快気内祝', '御見舞', '御餞別', '松の葉', '御帯料', '御帯地料', '小袖料', '御袴料', '御袴地料', '初穂料', '御車代', '御車料', '玉串料', '記念品', '開店御祝', '開業御祝', '陣中御見舞', '一周年記念', '二周年記念', '三周年記念', '四周年記念', '五周年記念', '六周年記念', '七周年記念', '八周年記念', '九周年記念', '十周年記念', '空白'], class: "form-control form-control mb-1" %>
 				<br>
 				<button type="button" class="noshi_selector btn btn-light mt-2 mr-2">御歳暮</button>
 				<button type="button" class="noshi_selector btn btn-light mt-2 mr-2">御祝</button>
 				<button type="button" class="noshi_selector btn btn-light mt-2 mr-2">御礼</button>
 			</div>
-		</p>
 
-		<p>
 			<div class="field name_field">
 				<p><b>名前</b></p>
 				<%= form.text_field :namae, class: "form-control mb-1" %>
@@ -54,14 +68,8 @@
 			<div class="field name_field">
 				<%= form.text_field :namae5, class: "form-control mb-1" %>
 			</div>
-		</p>
 
-		<p>
-			<div class="actions">
-				<%= form.submit '作成', :class => 'btn btn-lg btn-success' %>
-			</div>
-		</p>
-
-		<% end %>
+			<%= form.submit '作成', :class => 'btn btn-lg btn-success' %>
+		</div>
 	</div>
-</div>
+<% end %>

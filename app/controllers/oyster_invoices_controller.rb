@@ -38,17 +38,14 @@ class OysterInvoicesController < ApplicationController
 				processing: true,
 				},
 			completed: ((oyster_invoice_params[:completed] == "0") ? false : true),
-			send_at: oyster_invoice_params[:send_at]
+			send_at: DateTime.strptime(oyster_invoice_params[:send_at], "%Y年%m月%d日 %H:%M").change(offset: "+0900")
 			)
 		invoice.oyster_supply_ids = invoice.date_range.map { |date| (supply = OysterSupply.find_by(supply_date: (date.strftime('%Y年%m月%d日')))) ? (supply.id) : () }
 		if invoice.save
-			message = Message.new(user: current_user.id, model: 'oyster_invoice', state: false, message: '牡蠣原料仕切り作成中…', data: {invoice_id: invoice.id})
+			message = Message.new(user: current_user.id, model: 'oyster_invoice', state: false, message: '牡蠣原料仕切り作成中…', data: {invoice_id: invoice.id, expiration: (DateTime.now + 2.days)})
 			message.save
-			if ProcessInvoiceWorker.perform_async(invoice.id, current_user.id, message.id)
-				redirect_to oyster_invoice_search_path(invoice.id), notice: "仕切りは処理中です。しばらくお待ちください。"
-			else
-				redirect_to oyster_invoice_search_path(invoice.id), notice: "仕切りのエラーが発生しました。アドミニストレータに確認してください。"
-			end
+			ProcessInvoiceWorker.perform_async(invoice.id, current_user.id, message.id)
+			redirect_to oyster_supplies_path
 		else
 			respond_to do |format|
 				format.html { redirect_to oyster_supplies_path, notice: invoice.errors.full_messages.each { |msg| msg + "\n" } }
@@ -61,7 +58,10 @@ class OysterInvoicesController < ApplicationController
 	# PATCH/PUT /oyster_invoices/1.json
 	def update
 		respond_to do |format|
-			if @oyster_invoice.update(oyster_invoice_params)
+			new_params = oyster_invoice_params
+			new_params[:send_at] = DateTime.strptime(oyster_invoice_params[:send_at], "%Y年%m月%d日 %H:%M").change(offset: "+0900")
+			ap new_params
+			if @oyster_invoice.update(new_params)
 				format.html { redirect_to @oyster_invoice, notice: '仕切りを更新しました。' }
 				format.json { render :show, status: :ok, location: @oyster_invoice }
 			else

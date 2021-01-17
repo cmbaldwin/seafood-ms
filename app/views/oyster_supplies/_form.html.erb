@@ -1,39 +1,516 @@
+<script type="text/javascript">
+	$( document ).on('turbolinks:load', function() {
+
+		<% unless @oyster_supply.id.nil? %>
+		// Tippy with Ajax
+		tippy('.supply_tippy', {
+			allowHTML: true,
+			animation: 'scale',
+			duration: [300,0],
+			interactive: true,
+			placement: 'bottom',
+			touch: true,
+			touch: 'hold',
+			maxWidth: 'none',
+			content: '読み込み中...',
+			onShow(instance) {
+			fetch('/oyster_supplies/tippy_stats/' + <%= @oyster_supply.id %> + '/' + $(instance.reference).attr('data-stat-name'))
+				.then(response => response.text())
+				.then(result => instance.setContent(result))
+				.catch((error) => {
+					instance._error = error;
+					instance.setContent(`エラー： ${error}`);
+				})
+			},
+		});
+		<% end %>
+
+		//On click previous/next buttons get JSON data for that month
+		var year_month = $(".fc-header-toolbar .fc-center").text()
+		$('.fc-next-button','.fc-prev-button').bind('click', function(event){
+			$.ajax({
+				type: "GET",
+				url: "/oyster_supplies/fetch_supplies/" + start + "/" + end,
+				dataType: "script",
+				data: year_month,
+				success: function() {
+				}
+			});
+		});
+
+		// Calendar Setup
+		$('.fc-toolbar-title').addClass('float-right');
+		$('a.invoice_event').attr('data-remote', 'true');
+		$('.fc-appendArea-button').addClass('d-none').attr('disabled', 'disabled').removeClass('fc-button fc-state-default fc-corner-left fc-corner-right');
+		$('#supply_calendar .fc-view-harness').click(function(event){
+			event.stopPropagation();
+		});
+		$("body").click(function(event) {
+			while ($('.fc-appendArea-button').next('div').length) {
+				$('.fc-appendArea-button').next('div').remove();
+			}
+		});
+
+		// When to perform the calculations
+		$(document).ready(calculate);
+		$(document).on("keyup", calculate);
+
+		// Calculate subtotals, totals, and display alerts
+		function calculate(){
+			var tables = $('table.table.table-striped');
+			var subtotal_l = $('.subtotal_l');
+			var subtotal_u = $('.subtotal_u');
+			var subtotal_lu = $('.subtotal_lu');
+			var muki_total = $('.muki_total');
+			var suppliers = $('.supplier_name');
+			var volume_subtotal = $('.volume_subtotal');
+			var price_input = $('.price-input');
+			var type_subtotal = $('.type_subtotal');
+			var tax_added_subtotal = $('.tax_added_subtotal');
+			var supplier_total = $('.supplier_total');
+			const tax = parseFloat($('#oyster_supply_oysters_tax').val());
+
+			subtotal_l.each(function(index) {
+				var columns = $(this).parent('tr').children('td');
+				var col_num = columns.length - 1;
+				var subtotal = 0;
+				columns.each(function(index) {
+					if (index < col_num) {
+						var current = $(this).find('input').val();
+						subtotal += parseFloat(current);
+					};
+				});
+				$(this).html(subtotal);
+			});
+
+			// Subtotals calculated by adding the values above it (as per each supplier per time period)
+			subtotal_u.each(function(index) {
+				var columns = $(this).parent('tr').children('td').length;
+				var position = $(this).index() - 1;
+				var rows = $(this).parent('tr').prevUntil('.left_head', 'tr');
+				var subtotal = 0;
+				rows.each(function(index) {
+					var cell = $(this).find('td').get(position);
+					var value = $(cell).find('input').val();
+					subtotal += parseFloat(value);
+				});
+				$(this).find('input').val(subtotal);
+			});
+
+			// Subtotals calculated by adding up (but also should be the same as the sum of the left values)
+			subtotal_lu.each(function(index) {
+				var position = $(this).index() - 1;
+				var rows = $(this).parent('tr').prevUntil('.left_head', 'tr');
+				var subtotal = 0;
+				rows.each(function(index) {
+					var cell = $(this).find('td').get(position);
+					var value = $(cell).html();
+					subtotal += parseFloat(value);
+				});
+				$(this).html(subtotal);
+			});
+
+			// Subtotals calculated by adding cells from the right
+			tables.each(function() {
+				var total = 0;
+				var subtotals = $(this).find('.subtotal_lu');
+				subtotals.each(function() {
+					value = $(this).html();
+					total += parseFloat(value);
+				});
+				ran = $(this).find('.ran').html();
+				total += parseFloat(ran);
+				$(this).find('#total').html(total);
+			});
+
+			// Combined shucked volume subtotals
+			muki_total.each(function(index) {
+				var subtotal = 0;
+				var position = $(this).index();
+				var rows = $(this).parent().prevUntil('thead', 'tr.subtotal_row');
+				rows.each(function() {
+					var cell = $(this).find('th').get(position);
+					var value = $(cell).find('input').val();
+					subtotal += parseFloat(value);
+				});
+				$(this).html(subtotal);
+			});
+
+			//Ran row calculations
+			$('.ran_row').each(function() {
+				var ran_subtotal = 0;
+				$(this).find('input').each(function() {
+					ran_subtotal += parseFloat($(this).val());
+				});
+				$(this).find('.subtotal_l').html(ran_subtotal)
+			});
+
+			// Calculate combined morning and evening subtotals
+			volume_subtotal.each(function() {
+				var type_name = $(this).find('input').attr('name').replace('oyster_supply[oysters][', '').replace('][volume]]', '').replace(/\d/gi, "").replace("[", "");
+				var supplier_id = $(this).find('input').attr('name').replace('oyster_supply[oysters][', '').replace('][volume]]', '').replace("[", "").replace("_", "").replace(/([a-z]*)/gi, "");
+				var subtotals = $('.subtotal_row input[id*="\[' + type_name + '\]"][id*="\[' + supplier_id + '\]"]');
+				var total = 0;
+				subtotals.each (function () {
+					total += parseFloat($(this).val());
+				});
+				$(this).find('input').val(total);
+			});
+
+			// Sakoshi grand total and am/pm totals
+			var hyogo_grand_total = 0
+			$('#nav-am').add('#nav-pm').add('#nav-aioi').each(function() {
+				var tab_total = 0
+				$(this).find('.mukimi.subtotal_row input').each(function() {
+					tab_total += parseFloat($(this).val());
+				})
+				hyogo_grand_total += tab_total
+				$(this).find('#total').html(tab_total)
+			});
+			$('#hyogo_grand_total').html(Math.round(hyogo_grand_total))
+
+			// If Volume Subtotal isn't 0 and Price Input IS 0 (or out of range) then give a visual alert for the input
+			price_input.each(function() {
+				var price = parseFloat($(this).find('input').val());
+				var volume = parseFloat($(this).next().find('input').val());;
+				var price_label = $(this).parent().find('th').text()
+				if ((volume != 0) && (price == 0)) {
+					$(this).find('input').addClass("bg-warning");
+				} else {
+					$(this).find('input').removeClass("bg-warning");
+				};
+				if (price_label.includes('むき身', 0)) {
+					if (((price < 500) || (price > 3000)) && (volume != 0)) {
+						$(this).find('input').addClass("bg-warning");
+					} else {
+						$(this).find('input').removeClass("bg-warning");
+					}
+				} else if ((price_label.includes('殻付き〔大-個〕', 0)) || (price_label.includes('殻付き〔小-個〕', 0))) {
+					if (((price < 30) || (price > 100)) && (volume != 0)) {
+						$(this).find('input').addClass("bg-warning");
+					} else {
+						$(this).find('input').removeClass("bg-warning");
+					}
+				} else if (price_label.includes('殻付き〔バラ-㎏〕', 0)) {
+					if (((price < 200) || (price > 800)) && (volume != 0)) {
+						$(this).find('input').addClass("bg-warning");
+					} else {
+						$(this).find('input').removeClass("bg-warning");
+					}
+				};
+			});
+			// Extend this visual alert to the total card for each supplier
+			suppliers.each(function() {
+				rows = $(this).nextUntil('.supplier_last').addBack().next();
+				need = false;
+				rows.each(function(){
+					if ($(this).find('input').hasClass('bg-warning')) {
+						need = true;
+					};
+				});
+				if (need === true) {
+					$(this).next().find('.card').addClass('border-warning');
+				} else {
+					$(this).next().find('.card').removeClass('border-warning');
+				};
+			});
+
+			// Calculate price multiplied by volume for each type
+			type_subtotal.each(function() {
+				price = $(this).parent().prev().find('input').val();
+				volume = $(this).parent().prev().prev().find('input').val();
+				$(this).html((parseFloat(price) * parseFloat(volume)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+				$(this).parent().find('input').val(parseFloat(price) * parseFloat(volume));
+			});
+
+			// Calculate the tax added subtotal
+			tax_added_subtotal.each(function() {
+				subtotal = parseFloat($(this).prev().find('.type_subtotal').html());
+				$(this).find('input').val(parseFloat(subtotal * tax));
+			});
+
+			// Calculated the tax added total for each supplier
+			supplier_total.each(function() {
+				var current_row = $(this).parents('tr');
+				var next_rows = $(this).parents('tr').nextAll().slice(0,5);
+				var rows = current_row.add(next_rows);
+				total = 0
+				rows.each(function() {
+					var subtotal = parseFloat($(this).find('.type_subtotal').html().replace(/,/g, ''));
+					total += subtotal
+				});
+				rows.find('.before_tax_total').html(total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+				var tax_only = tax - 1;
+				$(this).parent().prev().find('.tax_subtotal').html(parseInt(total * tax_only).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+				$(this).html(parseInt(total * tax).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+			});
+
+			// Okayama page
+			var hinase_volumes = $('.hinase_volume');
+			var hinase_subtotal_input = $('#hinase_subtotal');
+			var hinase_price = parseFloat($('#hinase_price').val());
+			var hinase_invoice_input = $('#hinase_invoice');
+			var iri_tanka_type = $('#iri_tanka_type');
+			var iri_volumes = $('.iri_volume');
+			var iri_subtotal_input = $('#iri_subtotal');
+			var iri_avg_price = $('#iri_avg_price')
+			var iri_prices = $('.iri_price');
+			var iri_invoice_input = $('#iri_invoice');
+			var iri_tanka_type = $('#iri_tanka_type');
+			var tamatsu_tanka_type = $('#tamatsu_tanka_type');
+			var tamatsu_volumes = $('.tamatsu_volume');
+			var tamatsu_small_volumes = $('.tamatsu_small_volume')
+			var tamatsu_small_price = $('#tamatsu_small_price')
+			var tamatsu_subtotal_input = $('#tamatsu_subtotal');
+			var tamatsu_prices = $('.tamatsu_price');
+			var tamatsu_avg_price = $('#tamatsu_avg_price')
+			var tamatsu_invoice_input = $('#tamatsu_invoice');
+			var mushiage_volumes = $('.mushiage_volume');
+			var mushiage_subtotal_input = $('#mushiage_subtotal');
+			var mushiage_prices = $('.mushiage_price');
+			var mushiage_invoice_input = $('#mushiage_invoice');
+
+			// Subtotal/Price Calculations
+			// HINASE
+			hinase_subtotal = 0
+			hinase_volumes.each( function() {
+				hinase_subtotal += parseFloat($(this).val())
+			});
+			hinase_subtotal_input.val((hinase_subtotal).toFixed(1))
+			hinase_invoice_input.val(Math.round(parseFloat(hinase_price * hinase_subtotal * tax)))
+
+			// IRI
+			var iri_volume_subtotal = 0
+			var iri_invoice_total = 0
+			iri_volumes.each( function() {
+				this_vol = parseFloat($(this).val())
+				this_id = $(this).attr('id').match(/\d+/)[0]
+				this_price = parseFloat($('#iri_' + this_id + '_price').val())
+				iri_volume_subtotal += this_vol
+				iri_invoice_total += (this_vol * this_price)
+				$('#iri_' + this_id + '_invoice_subtotal').html(Math.round(this_vol * this_price * tax))
+			});
+			if (iri_volume_subtotal == 0) { iri_avg_price_val = 0 } else { iri_avg_price_val = Math.round(iri_invoice_total / iri_volume_subtotal) }
+			iri_avg_price.val(iri_avg_price_val)
+			iri_subtotal_input.val(iri_volume_subtotal.toFixed(1));
+			iri_invoice_input.val(Math.round(iri_volume_subtotal * iri_avg_price.val() * tax))
+
+			// TAMATSU
+			var tamatsu_volume_subtotal = 0
+			var tamatsu_invoice_total = 0
+			tamatsu_volumes.each( function() {
+				this_vol = parseFloat($(this).val())
+				this_id = $(this).attr('id').match(/\d+/)[0]
+				this_price = parseFloat($('#tamatsu_' + this_id + '_price').val())
+				tamatsu_volume_subtotal += this_vol
+				tamatsu_invoice_total += (this_vol * this_price)
+				$('#tamatsu_' + this_id + '_invoice_subtotal').html(Math.round(this_vol * this_price * tax))
+			});
+			if (tamatsu_volume_subtotal == 0) { tamatsu_avg_price_val = 0 } else { tamatsu_avg_price_val = Math.round(tamatsu_invoice_total / tamatsu_volume_subtotal) }
+			tamatsu_avg_price.val(tamatsu_avg_price_val)
+			tamatsu_subtotal_input.val(tamatsu_volume_subtotal.toFixed(1));
+			tamatsu_small_volume_subtotal = 0
+			tamatsu_small_volumes.each( function() {
+				tamatsu_small_volume_subtotal += parseFloat($(this).val())
+			})
+			tamatsu_large_invoice_subtotal = tamatsu_volume_subtotal * parseFloat(tamatsu_avg_price.val())
+			tamatsu_small_invoice_subtotal = tamatsu_small_volume_subtotal * parseFloat(tamatsu_small_price.val())
+			tamatsu_invoice_input.val(Math.round((tamatsu_large_invoice_subtotal + tamatsu_small_invoice_subtotal) * tax))
+			tamatsu_volume_total = tamatsu_volume_subtotal + tamatsu_small_volume_subtotal
+
+			// MUSHIAGE
+			var mushiage_invoice_subtotal = 0
+			var mushiage_volume_subtotal = 0
+			Array.from({ length: 7 }, (x, i) => {
+				volume = parseFloat($("#mushiage_" + i + "_volume").val());
+				price = parseFloat($("#mushiage_" + i + "_price").val());
+				this_subtotal = (volume * price)
+				mushiage_invoice_subtotal += this_subtotal
+				mushiage_volume_subtotal += volume
+				$(`#mushiage_${i}_invoice_subtotal`).html(this_subtotal)
+			});
+			$('#mushiage_volume_subtotal').val(mushiage_volume_subtotal)
+			$('#mushiage_per_kilo_price').html(Math.round(mushiage_invoice_subtotal / mushiage_volume_subtotal))
+			$('#mushiage_pre_tax_subtotal').html(Math.round(mushiage_invoice_subtotal))
+			mushiage_invoice_input.val(Math.round(parseFloat(mushiage_invoice_subtotal * tax)))
+
+			$('#supply_save').removeAttr("disabled")
+
+			// Okayama totals
+			$('#okayama_grand_total').html(Math.round(hinase_subtotal + iri_volume_subtotal + tamatsu_volume_subtotal + mushiage_volume_subtotal))
+
+			shells_total = 0
+			$('.large_shells').each(function() { shells_total += parseFloat($(this).html()) });
+			$('.small_shells').each(function() { shells_total += parseFloat($(this).html()) });
+			$('#kara_grand_total').html(shells_total)
+
+			// Grand totals
+			$('#grand_total').html(parseFloat($('#okayama_grand_total').html()) + parseFloat($('#hyogo_grand_total').html()))
+		};
+		// Disable default enter functonality and instead perform tab-ish, including skipping to relevant price input on the tanka page
+		if (document.querySelector('form')) {
+
+			$('input').on("keypress", function(e) {
+				/* ENTER PRESSED ON INPUT */
+				if (e.keyCode == 13) {
+
+					/* INPUT IS VISIBLE AND NOT READONLY */
+					if (($(this).is(':visible')) && ($(this).attr('readonly') != 'readonly')) {
+
+						/* INPUT HAS WARNING CLASS / NEEDS TO BE FILLED */
+						if ($(this).hasClass('bg-warning')) {
+							var warning_inputs = $('input.bg-warning')
+							if (warning_inputs.length > 0) {
+								var warning_idx = warning_inputs.add(this).index(this);
+								if (warning_idx == warning_inputs.length) { // if it was the last input focus on the submit button
+									$('.supply_save').focus();
+								} else {
+									warning_inputs[warning_idx + 1].focus();
+									warning_inputs[warning_idx + 1].select();
+								}
+								return false;
+							} else {
+								// if there are no inputs focus on the submit button
+								$('#supply_save').focus();
+								return false;
+							}
+
+						/* HYOGO INPUT */
+						} else if ($(this).parents('.tab-pane').hasClass('hyogo-input')) {
+							var input_row = $(this).parents('tr')
+							var row_inputs = input_row.find('input')
+							var this_index = row_inputs.index(this)
+							var next_row = input_row.next('tr')
+							var next_row_inputs = next_row.find('input')
+							// If the row below has inputs
+							if (next_row_inputs.length) {
+								var readonly = false
+								var next_row_accessible = next_row_inputs.each( function(i) { if ($(this).attr('readonly') == 'readonly') {readonly = true} });
+								// If the inputs aren't a readonly row
+								function newFocus(down_cell, input_row) {
+									if (down_cell) {
+										down_cell.focus()
+									} else {
+										var header_inputs = $(input_row.parents('table').find('tr')[2]).find('input')
+										var next_column_cell = header_inputs[this_index + 1]
+										if (next_column_cell) {
+											next_column_cell.focus()
+										} else {
+											$('#supply_save').focus();
+										}
+									}
+								}
+								if (!readonly) {
+									var down_cell = next_row_inputs[this_index]
+									newFocus(down_cell, input_row)
+									return false;
+								} else {
+									var next_next_row = input_row.next('tr').next('tr').next('tr')
+									var next_next_row_inputs = next_next_row.find('input')
+									var down_cell = next_next_row_inputs[this_index]
+									newFocus(down_cell, input_row)
+									return false;
+								};
+								return false;
+							} else {
+								return false;
+							}
+							return false;
+
+						/* OTHER INPUT */
+						}  else {
+							console.log(e)
+							return false;
+						};
+
+					} else {
+							return false;
+					};
+				};
+			});
+		};
+
+		// Left right key column change functionality
+		$('body').bind('keyup', function(e){
+			if (e.keyCode == '37') {
+				// left arrow
+
+			};
+			if (e.keyCode == '39') {
+				// right arrow
+			};
+		});
+
+		// Make sure all inputs have a 0, select all numbers on focus
+		var inputs = $('.genryou').find('input');
+		inputs.focusout(function(){
+			if ($(this).val() == '') {
+				$(this).val("0");
+			};
+		});
+		inputs.focus(function() {
+	   		$(this).select();
+		});
+
+	});
+</script>
+
 <%= simple_form_for @oyster_supply do |f| %>
 	<div class="container genryou">
 
 		<div class="row align-middle">
-			<div class="col-md-6">
-				<h4>牡蠣原料入力表</h4>
+			<div class="col-md-8 text-center">
+				<h4 class='d-inline float-left'>牡蠣原料入力表</h4>
+				<div class="tippy_container d-inline">
+					<div class="badge badge-success tab_totals p-2 cursor-help supply_tippy" data-stat-name="grand_total">
+						総合計：<span id="grand_total"></span>
+					</div>
+				</div>
+				<div class="tippy_container d-inline">
+					<div class="badge badge-primary tab_totals p-2 cursor-help supply_tippy" data-stat-name="hyogo_grand_total">
+						兵庫：<span id="hyogo_grand_total"></span>
+					</div>
+				</div>
+				<div class="tippy_container d-inline">
+					<div class="badge badge-primary tab_totals p-2 cursor-help supply_tippy" data-stat-name="okayama_grand_total">
+						岡山県：<span id="okayama_grand_total"></span>
+					</div>
+				</div>
+				<div class="tippy_container d-inline">
+					<div class="badge badge-primary tab_totals p-2 cursor-help supply_tippy" data-stat-name="kara_grand_total">
+						殻付き：<span id="kara_grand_total"></span>
+					</div>
+				</div>
 			</div>
-			<div class="col-md-3 text-right">
+			<div class="col-md-2 text-right">
 				<h5><%= f.label :supply_date, '原料受入日付:' %></h5>
 			</div>
-			<div class="col-md-3">
+			<div class="col-md-2">
 				<%= f.text_field :supply_date, 'data-behaviour' => 'datepicker', class: "form-control form-control-sm datepicker" %>
 			</div>
 		</div>
 		<%= f.simple_fields_for :oysters, remote: true do |oysters_form| %>
 			<div class="btn-group float-right" role="group">
-				<%= link_to icon("arrow-90deg-up"), oyster_supplies_path, class: 'btn btn-info' %>
-				<% if @oyster_supply.locked? %>
-					<%= button_tag(type: "submit", class: "btn btn-info disabled", 'data-toggle' => 'tooltip', 'data-placement' => 'bottom', 'title' => '仕切りに使われてある', 'disabled' => 'disabled') do %>
-						<%= icon("arrow-counterclockwise", class: "text-disabled") %>
-					<% end %>
-				<% else %>
-					<%= button_tag(type: "submit", class: "btn btn-info") do %>
-						<%= icon("arrow-counterclockwise", class: "text-success") %>
-					<% end %>
+				<% if @oyster_supply.id %>
+					<% previous_supply = @oyster_supply.previous %>
+					<%= link_to icon("arrow-left-circle"), previous_supply, class: 'btn btn-info tippy', "data-tippy-content" => "<center>#{previous_supply.supply_date}の<br>データを見る</center>" %>
+					<% next_supply = @oyster_supply.next %>
+					<%= link_to icon("arrow-right-circle"), next_supply, class: 'btn btn-info tippy', "data-tippy-content" => "<center>#{next_supply.supply_date}の<br>データを見る</center>" %>
+				<% end %>
+				<%= link_to icon("arrow-90deg-up"), oyster_supplies_path, 'data-tippy-content' => '戻る', class: 'btn btn-info tippy' %>
+				<%= button_tag(type: "submit", id: 'supply_save', class: "btn btn-info tippy", 'data-tippy-content' => '保存・更新する', 'disabled' => 'disabled') do %>
+					<%= icon("arrow-counterclockwise", class: "text-success") %>
 				<% end %>
 				<% if @oyster_supply.id %>
-					<%= link_to icon("file-earmark-arrow-down"), supply_check_path, class: 'btn btn-info', remote: true %>
+					<%= link_to icon("file-earmark-arrow-down"), supply_check_path, class: 'btn btn-info tippy', 'data-tippy-content' => '受入れチェック表を作成する', remote: true %>
 				<% end %>
 				<% if !@oyster_supply.id.nil? %>
 					<% if @oyster_supply.locked? %>
-						<%= button_tag(class: "btn btn-info disabled", 'data-toggle' => 'tooltip', 'data-placement' => 'bottom', 'title' => '仕切りに使われてある', 'disabled' => 'disabled') do %>
+						<%= button_tag(class: "btn btn-info disabled tippy", 'data-tippy-content' => '削除禁止') do %>
 							<%= icon("trash-fill", class: "text-danger") %>
 						<% end %>
 					<% else %>
-						<%= link_to icon("trash-fill", class: "text-danger"), @oyster_supply, method: :delete, data: { confirm: '削除を確認してください' }, class: 'btn btn-info' %>
+						<%= link_to icon("trash-fill", class: "text-danger"), @oyster_supply, method: :delete, data: { confirm: '削除を確認してください' }, class: 'btn btn-info tippy', 'data-tippy-content' => '削除' %>
 					<% end %>
 				<% end %>
 			</div>
@@ -48,7 +525,7 @@
 			</nav>
 
 			<div class="tab-content" id="nav-tabContent">
-				<div class="tab-pane fade show active border border-top-0" id="nav-am" role="tabpanel" aria-labelledby="nav-am-tab">
+				<div class="tab-pane hyogo-input fade show active border border-top-0" id="nav-am" role="tabpanel" aria-labelledby="nav-am-tab">
 					<table class="table table-striped table-small mb-0">
 						<thead>
 							<th scope="col" class="lh">水産物</th>
@@ -72,7 +549,7 @@
 									<td class="text-center subtotal_l">0</td>
 								</tr>
 							<% end %>
-							<tr class="subtotal_row">
+							<tr class="mukimi subtotal_row">
 								<th scope="row" class="lh">小計（大）</th>
 								<% @sakoshi_suppliers.each do |supplier| %>
 									<th class="text-center subtotal_u">
@@ -95,7 +572,7 @@
 									<td class="text-center subtotal_l">0</td>
 								</tr>
 							<% end %>
-							<tr class="subtotal_row">
+							<tr class="mukimi subtotal_row">
 								<th scope="row" class="lh">小計（小）</th>
 								<% @sakoshi_suppliers.each do |supplier| %>
 									<th class="text-center subtotal_u">
@@ -105,7 +582,7 @@
 								<th class="text-center subtotal_lu">0</th>
 							</tr>
 							<!-- 卵かき  -->
-							<tr class="subtotal_row ran_row">
+							<tr class="mukimi subtotal_row ran_row">
 								<th scope="row" class="lh">むき身（卵）</th>
 								<% @sakoshi_suppliers.each do |supplier| %>
 									<th>
@@ -150,12 +627,12 @@
 										<%= oysters_form.input "am[thin_shells][" + supplier.id.to_s + "][0]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { :class => 'floatTextBox', :value => @oyster_supply.oysters["am"]["thin_shells"][supplier.id.to_s]["0"] } %>
 									</td>
 								<% end %>
-								<td class="text-center subtotal_l large_shells">0</td>
+								<td class="text-center subtotal_l flat_shells">0</td>
 							</tr>
 						</tbody>
 					</table>
 				</div>
-				<div class="tab-pane fade" id="nav-pm" role="tabpanel" aria-labelledby="nav-pm-tab">
+				<div class="tab-pane hyogo-input fade" id="nav-pm" role="tabpanel" aria-labelledby="nav-pm-tab">
 					<table class="table table-striped table-dark table-small mb-0">
 						<thead>
 							<th scope="col" class="lh">水産物</th>
@@ -179,7 +656,7 @@
 									<td class="text-center subtotal_l">0</td>
 								</tr>
 							<% end %>
-							<tr class="subtotal_row">
+							<tr class="mukimi subtotal_row">
 								<th scope="row" class="lh">小計（大）</th>
 								<% @sakoshi_suppliers.each do |supplier| %>
 									<th class="text-center subtotal_u">
@@ -202,7 +679,7 @@
 									<td class="text-center subtotal_l">0</td>
 								</tr>
 							<% end %>
-							<tr class="subtotal_row">
+							<tr class="mukimi subtotal_row">
 								<th scope="row" class="lh">小計（小）</th>
 								<% @sakoshi_suppliers.each do |supplier| %>
 									<th class="text-center subtotal_u"><%= oysters_form.input "pm[small][" + supplier.id.to_s + "][subtotal]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { :class => 'bg-secondary text-white floatTextBox', :readonly => :readonly, :value => @oyster_supply.oysters["pm"]["small"][supplier.id.to_s]["subtotal"] } %></th>
@@ -210,14 +687,14 @@
 								<th class="text-center subtotal_lu">0</th>
 							</tr>
 							<!-- 卵かき  -->
-							<tr class="subtotal_row">
+							<tr class="mukimi subtotal_row ran_row">
 								<th scope="row" class="lh">むき身（卵）</th>
 								<% @sakoshi_suppliers.each do |supplier| %>
 									<th>
 										<%= oysters_form.input "pm[eggy][" + supplier.id.to_s + "][0]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { :class => 'bg-dark text-white floatTextBox', :value => @oyster_supply.oysters["pm"]["eggy"][supplier.id.to_s]["0"] } %>
 									</th>
 								<% end %>
-								<td class="text-center subtotal_l ran">0</td>
+								<td class="text-center subtotal_l ran_subtotal">0</td>
 							</tr>
 							<!-- 合計 -->
 							<tr class="border">
@@ -255,12 +732,12 @@
 										<%= oysters_form.input "pm[thin_shells][" + supplier.id.to_s + "][0]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { :class => 'bg-dark text-white floatTextBox', :value => @oyster_supply.oysters["pm"]["thin_shells"][supplier.id.to_s]["0"] } %>
 									</td>
 								<% end %>
-								<td class="text-center subtotal_l large_shells">0</td>
+								<td class="text-center subtotal_l flat_shells">0</td>
 							</tr>
 						</tbody>
 					</table>
 				</div>
-				<div class="tab-pane fade" id="nav-aioi" role="tabpanel" aria-labelledby="nav-aioi-tab">
+				<div class="tab-pane hyogo-input fade" id="nav-aioi" role="tabpanel" aria-labelledby="nav-aioi-tab">
 					<table class="table table-striped table-secondary table-small mb-0">
 						<thead>
 							<th scope="col" class="lh">水産物</th>
@@ -284,7 +761,7 @@
 									<td class="text-center subtotal_l">0</td>
 								</tr>
 							<% end %>
-							<tr class="subtotal_row">
+							<tr class="mukimi subtotal_row">
 								<th scope="row" class="lh">小計（大）</th>
 								<% @aioi_suppliers.each do |supplier| %>
 									<th class="text-center subtotal_u">
@@ -307,7 +784,7 @@
 									<td class="text-center subtotal_l">0</td>
 								</tr>
 							<% end %>
-							<tr class="subtotal_row">
+							<tr class="mukimi subtotal_row">
 								<th scope="row" class="lh">小計（小）</th>
 								<% @aioi_suppliers.each do |supplier| %>
 									<th class="text-center subtotal_u">
@@ -317,14 +794,14 @@
 								<th class="text-center subtotal_lu">0</th>
 							</tr>
 							<!-- 卵かき  -->
-							<tr class="subtotal_row">
+							<tr class="mukimi subtotal_row ran_row">
 								<th scope="row" class="lh">むき身（卵）</th>
 								<% @aioi_suppliers.each do |supplier| %>
 									<th>
 										<%= oysters_form.input "pm[eggy][" + supplier.id.to_s + "][0]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { :class => 'bg-secondary text-white floatTextBox', :value => @oyster_supply.oysters["pm"]["eggy"][supplier.id.to_s]["0"] } %>
 									</th>
 								<% end %>
-								<td class="text-center subtotal_l ran">0</td>
+								<td class="text-center subtotal_l ran_subtotal">0</td>
 							</tr>
 							<!-- 合計 -->
 							<tr class="border">
@@ -438,7 +915,7 @@
 								<td><%= sup_num %></td>
 								<td>
 									<div class="input-group">
-										<%= oysters_form.input "okayama[iri][#{sup_num}][volume]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0 text-right", :input_html => { id: "iri_#{sup_num}_volume", :class => 'iri_volume floatTextBox', :value => @oyster_supply.oysters["okayama"]["iri"]["#{sup_num}"]["volume"] }, wrapper: false %>
+										<%= oysters_form.input "okayama[iri][#{sup_num}][volume]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0 text-right", :input_html => { id: "iri_#{sup_num}_volume", :class => 'iri_volume floatTextBox', :value => @oyster_supply.oysters["okayama"]["iri"][sup_num]["volume"] }, wrapper: false %>
 										<div class="input-group-append">
 											<span class="input-group-text"><i>㎏</i></span>
 										</div>
@@ -452,7 +929,7 @@
 										<div class="input-group-prepend">
 											<span class="input-group-text">￥</span>
 										</div>
-										<%= oysters_form.input "okayama[iri][#{sup_num}][price]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { :class => 'floatTextBox iri_price', id: "iri_#{sup_num}_price", :value => @oyster_supply.oysters["okayama"]["iri"][sup_num]["price"], 'disabled' => 'disabled' }, wrapper: false %>
+										<%= oysters_form.input "okayama[iri][#{sup_num}][price]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { :class => 'floatTextBox iri_price', id: "iri_#{sup_num}_price", :value => @oyster_supply.oysters["okayama"]["iri"][sup_num]["price"] }, wrapper: false %>
 									</div>
 									<div class="w-25 mt-2 float-right text-center">
 										<span class="small">×1.08</span>
@@ -467,9 +944,6 @@
 						<% end %>
 						<tr class="iri_totals">
 							<td colspan="2">
-								<button type="button" id="iri_tanka_type" class="btn btn-sm btn-secondary" data-toggle="button" aria-pressed="true">
-									<small>統一単価</small>
-								</button>
 							</td>
 							<td>
 								<div class="input-group w-75 float-left">
@@ -485,7 +959,7 @@
 									<div class="input-group-prepend">
 										<span class="input-group-text">￥</span>
 									</div>
-									<%= oysters_form.input "okayama[iri][price]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { :class => 'floatTextBox', id: "iri_avg_price", :value => @oyster_supply.oysters["okayama"]["iri"]["price"] }, wrapper: false %>
+									<%= oysters_form.input "okayama[iri][price]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { :readonly => :readonly, :class => 'floatTextBox', id: "iri_avg_price", :value => @oyster_supply.oysters["okayama"]["iri"]["price"] }, wrapper: false %>
 								</div>
 								<div class="w-25 mt-2 float-right text-center">
 									<span class="small">×1.08</span>
@@ -513,7 +987,7 @@
 										<div class="input-group-prepend">
 											<span class="input-group-text">小</span>
 										</div>
-										<%= oysters_form.input "okayama[tamatsu][#{sup_num}][小]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0 text-right", :input_html => { id: "tamatsu_#{sup_num}_small_volume", :class => 'tamatsu_small_volume floatTextBox', :value => @oyster_supply.oysters["okayama"]["tamatsu"]["#{sup_num}"]["小"] }, wrapper: false %>
+										<%= oysters_form.input "okayama[tamatsu][#{sup_num}][小]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0 text-right", :input_html => { id: "tamatsu_#{sup_num}_small_volume", :class => 'tamatsu_small_volume floatTextBox', :value => @oyster_supply.oysters["okayama"]["tamatsu"][sup_num]["小"] }, wrapper: false %>
 										<div class="input-group-append">
 											<span class="input-group-text"><i>㎏</i></span>
 										</div>
@@ -524,7 +998,7 @@
 										<div class="input-group-prepend">
 											<span class="input-group-text">大</span>
 										</div>
-										<%= oysters_form.input "okayama[tamatsu][#{sup_num}][大]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0 text-right", :input_html => { id: "tamatsu_#{sup_num}_large_volume", :class => 'tamatsu_volume floatTextBox', :value => @oyster_supply.oysters["okayama"]["tamatsu"]["#{sup_num}"]["大"] }, wrapper: false %>
+										<%= oysters_form.input "okayama[tamatsu][#{sup_num}][大]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0 text-right", :input_html => { id: "tamatsu_#{sup_num}_large_volume", :class => 'tamatsu_volume floatTextBox', :value => @oyster_supply.oysters["okayama"]["tamatsu"][sup_num]["大"] }, wrapper: false %>
 										<div class="input-group-append">
 											<span class="input-group-text"><i>㎏</i></span>
 										</div>
@@ -535,7 +1009,7 @@
 										<div class="input-group-prepend">
 											<span class="input-group-text">￥</span>
 										</div>
-										<%= oysters_form.input "okayama[tamatsu][#{sup_num}][price]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { id: "tamatsu_#{sup_num}_price", :class => 'tamatsu_price floatTextBox', :value => @oyster_supply.oysters["okayama"]["tamatsu"][sup_num]["price"], 'disabled' => 'disabled' }, wrapper: false %>
+										<%= oysters_form.input "okayama[tamatsu][#{sup_num}][price]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { id: "tamatsu_#{sup_num}_price", :class => 'tamatsu_price floatTextBox', :value => @oyster_supply.oysters["okayama"]["tamatsu"][sup_num]["price"]}, wrapper: false %>
 									</div>
 									<div class="w-25 mt-2 float-right text-center">
 										<span class="small">×1.08</span>
@@ -550,9 +1024,6 @@
 						<% end %>
 						<tr class="tamatsu_totals">
 							<td>
-								<button id="tamatsu_tanka_type" type="button" class="btn btn-sm btn-secondary p-1" data-toggle="button" aria-pressed="true">
-									<small>統一単価</small>
-								</button>
 							</td>
 							<td>
 								<div class="input-group w-75 float-left">
@@ -576,7 +1047,7 @@
 									<div class="input-group-prepend">
 										<span class="input-group-text">￥</span>
 									</div>
-									<%= oysters_form.input "okayama[tamatsu][price]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { id: "tamatsu_avg_price", :class => 'floatTextBox', :value => @oyster_supply.oysters["okayama"]["tamatsu"]["price"] }, wrapper: false %>
+									<%= oysters_form.input "okayama[tamatsu][price]", 'type' => "number", label: false, class: "form-control form-control-sm mb-0", :input_html => { id: "tamatsu_avg_price", :readonly => :readonly, :class => 'floatTextBox', :value => @oyster_supply.oysters["okayama"]["tamatsu"]["price"] }, wrapper: false %>
 								</div>
 								<div class="w-25 mt-2 float-right text-center">
 									<span class="small">×1.08</span>

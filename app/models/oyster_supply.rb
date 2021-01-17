@@ -15,6 +15,14 @@ class OysterSupply < ApplicationRecord
 	order_query :oyster_supply_query,
 		[:supply_date] # Sort :supply_date in :desc order
 
+	def previous
+		self.oyster_supply_query.previous
+	end
+
+	def next
+		self.oyster_supply_query.next
+	end
+
 	def date
 		DateTime.strptime(self.supply_date, "%Y年%m月%d日")
 	end
@@ -39,7 +47,7 @@ class OysterSupply < ApplicationRecord
 	end
 
 	def type_to_unit(type)
-		japanese = {"large" => "㎏", "small" => "㎏", "eggy" => "㎏", "large_shells" => "個", "small_shells" => "個", "thin_shells" => "㎏"}
+		japanese = {"large" => "kg", "small" => "kg", "eggy" => "kg", "large_shells" => "個", "small_shells" => "個", "thin_shells" => "kg"}
 		japanese[type]
 	end
 
@@ -84,6 +92,14 @@ class OysterSupply < ApplicationRecord
 	def small_shucked_eggy_total
 		total = 0
 		self.oysters['eggy'].each do |supplier, amounts|
+			total += amounts["volume"].to_f
+		end
+		total
+	end
+
+	def thin_shells_total
+		total = 0
+		self.oysters['thin_shells'].each do |supplier, amounts|
 			total += amounts["volume"].to_f
 		end
 		total
@@ -177,19 +193,27 @@ class OysterSupply < ApplicationRecord
 			end
 		end
 		completion["okayama"] = Array.new if completion["okayama"].nil?
-		((completion["okayama"] << "hinase") if self.oysters[:okayama]["hinase"]["price"].to_s == "0") if self.oysters[:okayama]["hinase"]["subtotal"].to_s != "0"
-		((completion["okayama"] << "iri") if self.oysters[:okayama]["iri"]["price"].to_s == "0" ) if self.oysters[:okayama]["iri"]["subtotal"].to_s != "0"
-		self.oysters[:okayama]["tamatsu"].each do |sup_num, sup_hash|
-			if sup_hash.is_a?(Hash)
-				if (sup_hash["小"] != "0") || (sup_hash["小"] != "0")
-					(completion["okayama"].to_s << "tamatsu") if sup_hash["price"].to_s == "0" 
+		if self.oysters[:okayama]["hinase"]["subtotal"].to_i > 0
+			((completion["okayama"] << "hinase") if self.oysters[:okayama]["hinase"]["price"].to_s == "0") if self.oysters[:okayama]["hinase"]["subtotal"].to_s != "0"
+		end
+		if self.oysters[:okayama]["iri"]["subtotal"].to_i > 0
+			((completion["okayama"] << "iri") if self.oysters[:okayama]["iri"]["price"].to_s == "0" ) if self.oysters[:okayama]["iri"]["subtotal"].to_s != "0"
+		end
+		if self.oysters[:okayama]["tamatsu"]["subtotal"].to_i > 0
+			self.oysters[:okayama]["tamatsu"].each do |sup_num, sup_hash|
+				if sup_hash.is_a?(Hash)
+					if (sup_hash["小"] != "0") || (sup_hash["小"] != "0")
+						(completion["okayama"].to_s << "tamatsu") if sup_hash["price"].to_s == "0"
+					end
 				end
 			end
 		end
-		self.oysters[:okayama]["mushiage"].each do |sup_num, sup_hash|
-			if sup_hash.is_a?(Hash)
-				if sup_hash["volume"].to_s != "0"
-					(completion["okayama"].to_s << "mushiage") if sup_hash["price"].to_s == "0" 
+		if self.oysters[:okayama]["mushiage"]["subtotal"].to_i > 0
+			self.oysters[:okayama]["mushiage"].each do |sup_num, sup_hash|
+				if sup_hash.is_a?(Hash)
+					if sup_hash["volume"].to_s != "0"
+						(completion["okayama"].to_s << "mushiage") if sup_hash["price"].to_s == "0"
+					end
 				end
 			end
 		end
@@ -238,7 +262,7 @@ class OysterSupply < ApplicationRecord
 		@receiving_times.each do |time|
 			self[:oysters][time] = Hash.new if self[:oysters][time].nil?
 			@types.each do |type|
-				self[:oysters][time][type] = Hash.new if self[:oysters][time][type].nil? 
+				self[:oysters][time][type] = Hash.new if self[:oysters][time][type].nil?
 				@supplier_numbers.each do |number|
 					self[:oysters][time][type][number] = Hash.new if self[:oysters][time][type][number].nil?
 					if (type == "large") || (type == "small")
@@ -246,18 +270,18 @@ class OysterSupply < ApplicationRecord
 							self[:oysters][time][type][number][i.to_s] = 0 if self[:oysters][time][type][number][i.to_s] == nil
 						end
 					else
-						self[:oysters][time][type][number]["0"] = 0 if self[:oysters][time][type][number]["0"] == nil 
+						self[:oysters][time][type][number]["0"] = 0 if self[:oysters][time][type][number]["0"] == nil
 					end
 					self[:oysters][time][type][number]["subtotal"] = 0 if self[:oysters][time][type][number]["subtotal"].nil?
 
-					self[:oysters][type] = Hash.new if self[:oysters][type].nil? 
-					self[:oysters][type][number] = Hash.new if self[:oysters][type][number].nil? 
-					self[:oysters][type][number]["volume"] = 0 if self[:oysters][type][number]["volume"].nil? 
-					self[:oysters][type][number]["price"] = 0 if self[:oysters][type][number]["price"].nil? 
-					self[:oysters][type][number]["invoice"] = 0 if self[:oysters][type][number]["invoice"].nil? 
+					self[:oysters][type] = Hash.new if self[:oysters][type].nil?
+					self[:oysters][type][number] = Hash.new if self[:oysters][type][number].nil?
+					self[:oysters][type][number]["volume"] = 0 if self[:oysters][type][number]["volume"].nil?
+					self[:oysters][type][number]["price"] = 0 if self[:oysters][type][number]["price"].nil?
+					self[:oysters][type][number]["invoice"] = 0 if self[:oysters][type][number]["invoice"].nil?
 				end
 			end
-		end		
+		end
 		okayama_setup
 	end
 
@@ -524,7 +548,7 @@ class OysterSupply < ApplicationRecord
 				# document set up
 				pdf.font_families.update(PrawnPDF.fonts)
 				# set utf-8 japanese font
-				pdf.font "SourceHan"
+				pdf.font "MPLUS1p"
 				pdf.font_size 10
 				# Set up the table data and header
 				table_data = Array.new
@@ -570,7 +594,7 @@ class OysterSupply < ApplicationRecord
 										if volume != 0
 											subtotal_row = Array.new
 											if is == 0
-												subtotal_row << d.strftime('%m') + "." + d.strftime('%d') + "（" + weekday_japanese(d.strftime("%w").to_i) + "）"
+												subtotal_row << d.strftime('%m') + "." + d.strftime('%d') + "(" + weekday_japanese(d.strftime("%w").to_i) + ")"
 												is += 1
 											else
 												subtotal_row << '　'
@@ -696,7 +720,7 @@ class OysterSupply < ApplicationRecord
 				# set utf-8 japanese font
 				pdf.font_families.update(PrawnPDF.fonts)
 
-				pdf.font "SourceHan"
+				pdf.font "MPLUS1p"
 				pdf.font_size 10
 
 				suppliers.each_with_index do |supplier, i|
@@ -728,7 +752,7 @@ class OysterSupply < ApplicationRecord
 						if !oyster_supply.nil?
 							data = oyster_supply.oysters
 							d = Date.strptime(date, "%Y年%m月%d日")
-							gapi = d.strftime('%m').to_s + "." + d.strftime('%d').to_s + "（" + weekday_japanese(d.strftime("%w").to_i).to_s + "）"
+							gapi = d.strftime('%m').to_s + "." + d.strftime('%d').to_s + "(" + weekday_japanese(d.strftime("%w").to_i).to_s + ")"
 							daily_data = Array.new
 							# Just do the header once
 							if i == 0
@@ -900,7 +924,7 @@ class OysterSupply < ApplicationRecord
 			# document set up
 			pdf.font_families.update(PrawnPDF.fonts)
 			# set utf-8 japanese font
-			pdf.font "SourceHan"
+			pdf.font "MPLUS1p"
 			pdf.font_size 10
 			am_or_pm.each_with_index do |am_or_pm, i|
 				if i != 0
@@ -909,10 +933,10 @@ class OysterSupply < ApplicationRecord
 				table_data = Array.new
 				table_data << [{:content => guidelines, :colspan => 3, :rowspan => 3, :size => 9, :align => :center, :valign => :center}, {:content => "(マガキ)生牡蠣原料受入表①（兵庫県産）", :colspan => 5, :rowspan => 3, :size => 14, :padding => 7, :align => :center, :valign => :center, :font_style => :bold}, {:content => "確認日付", :colspan => 2, :size => 7, :padding => 1, :align => :left, :valign => :center}]
 				table_data << ["社長", "品管"]
-				table_data << [" <br> ", " <br> "]
-				table_data << [{:content => "", :colspan => 10, :padding => 3}]
+				table_data << [{:content => " <br> ", :padding => 3}, {:content => " <br> ", :padding => 3}]
+				table_data << [{:content => "", :colspan => 10, :padding => 2}]
 				table_data << [ {:content => self.supply_date, :colspan => 5, :size => 10, :align => :center}, {:content => am_or_pm, :colspan => 2, :size => 10, :align => :center}, {:content => "時刻:", :colspan => 3, :size => 10, :align => :left}]
-				table_data << ["海域", "生産者", "数量(㎏)", "セル数", "官能検査", "温度(℃)", "pH", "塩分(%)", "最終判定", "確認者"]
+				table_data << ["海域", "生産者", "数量(kg)", "セル数", "官能検査", "温度(℃)", "pH", "塩分(%)", "最終判定", "確認者"]
 				suppliers = [@sakoshi_suppliers, @aioi_suppliers]
 				suppliers.each do |area_suppliers|
 					large_total = 0
@@ -933,13 +957,13 @@ class OysterSupply < ApplicationRecord
 							supplier_top_row << { :content => supplier.location[0] + "<br>" + supplier.location[1] + "<font size='11'><br><br>大<br>" + large_total.to_s + "<br><br>小<br>" + small_total.to_s + "</font>", :rowspan => (area_suppliers.length * 2), :size => 28, :valign => :center, :align => :center}
 						end
 						#set up totals for shucked oysters
-						supplier_top_row << { :content => number_to_circular(supplier.supplier_number.to_s), :size => 12, :align => :center, background_color: (darken ? darker : 'ffffff')}
+						supplier_top_row << { :content => number_to_circular(supplier.supplier_number.to_s), :size => 11, :align => :center, background_color: (darken ? darker : 'ffffff')}
 						supplier_total = (self.oysters.dig(kanji_am_pm(am_or_pm), "large", supplier.id.to_s, "subtotal").to_f + self.oysters.dig(kanji_am_pm(am_or_pm), "small", supplier.id.to_s, "subtotal").to_f + self.oysters.dig(kanji_am_pm(am_or_pm), "eggy", supplier.id.to_s, "subtotal").to_f).to_s
 						#set up totals for shells
 						shells = Array.new
 						shells << (self.oysters.dig(kanji_am_pm(am_or_pm), "large_shells", supplier.id.to_s, "0").to_i + self.oysters.dig(kanji_am_pm(am_or_pm), "small_shells", supplier.id.to_s, "0").to_i).to_s
 						shells << self.oysters.dig(kanji_am_pm(am_or_pm), "thin_shells", supplier.id.to_s, "0")
-						supplier_top_row.push({:content => '<font size="7">合計   </font><b>' + (darken ? 'なし' : supplier_total) + "<b>", :size => 10}, {:content => (darken ? 'なし' : (shells.join("個／") + "㎏")), size: 7, :align => :center}, "", {:content => "℃", :align => :right, :size => 7}, "", {:content => "%", :align => :right, :size => 7}, "", "")
+						supplier_top_row.push({:content => '<font size="7">合計  </font><b>' + (darken ? 'なし' : supplier_total) + "<b>", :size => 9}, {:content => (darken ? 'なし' : (shells.join("個／") + "kg")), size: 7, :align => :center}, "", {:content => "℃", :align => :right, :size => 7}, "", {:content => "%", :align => :right, :size => 7}, "", "")
 						supplier_buckets = Array.new
 						bucket_types = ["large", "small", "eggy"]
 						bucket_types.each do |type|
@@ -949,7 +973,7 @@ class OysterSupply < ApplicationRecord
 							end
 						end
 						supplier_buckets.reject! {|x| x == "0" || x == ""}
-						supplier_bottom_row = [{ :content => supplier.company_name, :size => 7, :align => :center, :padding => 2, background_color: (darken ? darker : 'ffffff') }, { :content => supplier_buckets.join("　　") + " ", :colspan => 6, :size => 8, :font_style => :light}, { :content => ":数量小計/備考", :colspan => 1, :size => 6, :padding => 2, :align => :right, valign: :center}, '']
+						supplier_bottom_row = [{ :content => supplier.company_name, :size => 7, :align => :center, :padding => 1, background_color: (darken ? darker : 'ffffff') }, { :content => supplier_buckets.join("　　") + " ", :colspan => 6, :size => 8, :font_style => :light}, { :content => ":数量小計/備考", :colspan => 1, :size => 6, :padding => 1, :align => :right, valign: :center}, '']
 						table_data << supplier_top_row
 						table_data << supplier_bottom_row
 					end
@@ -967,7 +991,7 @@ class OysterSupply < ApplicationRecord
 					最終判定：上記項目およびその他に異常がなく、原料として受け入れられるもの。"
 				table_data << [{:content => "", :colspan => 10, :padding => 3}]
 				table_data << [{:content => guidelines_one, :colspan => 5, :padding => 5, :size => 8}, {:content => guidelines_two, :colspan => 5, :padding => 5, :size => 8}]
-				table_data << [{:content => "", :colspan => 10, :padding => 15}]
+				table_data << [{:content => "", :colspan => 10, :padding => 8}]
 				table_data << [funabiki_info, logo_cell, created_info]
 				pdf.table(table_data, :position => :center, :cell_style => { :inline_format => true, :border_width => 0 }, :width => pdf.bounds.width, :column_widths => {0..9 => (pdf.bounds.width / 10)} ) do |t|
 					t.row(3).size = 12

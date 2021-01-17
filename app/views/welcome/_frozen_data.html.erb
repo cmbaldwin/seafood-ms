@@ -25,36 +25,29 @@
 <div class="card mb-2">
 	<div class="card-body">
 		<div class="row">
-			<div class="col-6">
+			<div class="col-12">
 				<% if @frozen_oyster.id %>
-					<div class="container-flex clearfix border rounded mb-2 p-2">
-						<div class="row text-center">
-							<% @frozen_totals.each do |product_id, total| %>
-								<div class="col">
-									<b><%= print_frozen_product_name(product_id) %></b><br>
-									<%= frozen_packs_to_boxes(product_id, total) %>
-								</div>
-							<% end %>
-						</div>
-					</div>
 					<% if current_user.admin? %>
 						<% stats = @frozen_oyster.stats %>
 						<div class="container-flex clearfix border rounded p-2 mb-2">
 							<div class="row">
-								<div class="col-xl-5 d-none d-xl-block">
-									<span class="ml-3"><b><%= @frozen_oyster.manufacture_date %>(<%= ampm_s(@frozen_oyster.ampm) %>)</b>: <%= stats[:raw_total] %>㎏</span>
-									<%= pie_chart @frozen_oyster.chart_stats, width: "300px", height: "300px" %>
+								<div class="col-xl-6 d-none d-xl-block">
+									<span class="ml-3">
+										<b><%= @frozen_oyster.manufacture_date %>(<%= ampm_s(@frozen_oyster.ampm) %>)</b>:
+										<%= stats[:raw_total] %>㎏
+									</span><br>
+									<%= pie_chart @frozen_oyster.chart_stats, width: "100%", height: "300px" %>
 								</div>
-								<div class="col-xl-7 col-lg-12">
+								<div class="col-xl-6 col-lg-12">
 									<div class="btn-group float-right mt-1" role="group">
 										<%= link_to '追加', insert_frozen_data_path(frozen_oyster: 'new'), remote: true, class: 'btn btn-sm btn-success', 'data-toggle' => 'modal', 'data-target' => '#formModal' %>
-										<%= link_to ('<i class="far fa-file-alt"></i>').html_safe, @frozen_oyster, class: 'btn btn-sm btn-info' %>
+										<%= link_to icon('file'), @frozen_oyster, class: 'btn btn-sm btn-info' %>
 										<%= link_to '修正', insert_frozen_data_path(frozen_oyster: @frozen_oyster), remote: true, class: 'btn btn-sm btn-success', 'data-toggle' => 'modal', 'data-target' => '#formModal' %>
 									</div>
-									<p>
-										<strong>冷凍済原料:</strong>
-										<br>
-										<% @frozen_oyster.frozen_l.each do |k, v| %>
+									<div class="container">
+									<strong>冷凍済原料:</strong>
+									<br>
+									<% @frozen_oyster.frozen_l.each do |k, v| %>
 											<% if v.to_i != 0 %>
 												<%= k %>: <%= v %><br>
 											<% end %>
@@ -83,16 +76,28 @@
 												<%= k %>: <%= v.to_s %><br>
 											<% end %>
 										<% end %>
-									</p>
+									</div>
 								</div>
 							</div>
 						</div>
 					<% end %>
+
+					<div class="container-flex clearfix border rounded mb-2 p-2">
+						<div class="row text-center">
+							<% @frozen_totals.each do |product_id, total| %>
+								<div class="col-4">
+									<b><%= print_frozen_product_name(product_id) %></b><br>
+									<%= frozen_packs_to_boxes(product_id, total) %>
+								</div>
+							<% end %>
+						</div>
+					</div>
+
 				<% else %>
 						<%= link_to '冷凍データ追加', insert_frozen_data_path(frozen_oyster: 'new'), remote: true, class: 'btn btn-success', 'data-toggle' => 'modal', 'data-target' => '#formModal' %>
 				<% end %>
 			</div>
-			<div class="col-6">
+			<div class="col-12">
 				<div class="container-flex clearfix border rounded p-2">
 					<div class="w-100">
 						日ごとの加工(パック数)

@@ -7,7 +7,7 @@
 	</button>
 </div>
 <div class="modal-body">
-<% unless @profit.figures[0] == 0 %>
+<% unless @profit.figures[0] == 0 || @profit.volumes.nil? %>
 	<% volumes = @profit.volumes %>
 	<div class="card mb-3">
 		<div class="card-body pl-0 pr-0 pt-1 pb-1">
@@ -168,7 +168,7 @@
 		</div>
 	</div>
 <% else %>
-	売り上げ無し
+	未計算
 <% end %>
 </div>
 

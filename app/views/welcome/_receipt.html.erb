@@ -1,28 +1,32 @@
-<%= simple_form_for @rakuten, url: reciept_path(@rakuten.id, expense_name: :expense_name, purchaser: :purchaser, order_id: :order_id, sales_date: :sales_date), method: :get, html: { class: "row", id: 'receipt_form'} do |f| %>
-	<div class="col-8">
-		<div class="input-group input-group-sm mb-1">
-			<div class="input-group-prepend">
-				<span class="input-group-text form-control form-control-sm">日付</span>
+<%= javascript_pack_tag 'partials', 'data-turbolinks-track': 'reload' %>
+
+<%= simple_form_for @rakuten, url: reciept_path, remote: true, method: :get, html: { class: "row", id: 'receipt_form'} do |form| %>
+	<% simple_fields_for :reciept_options do |f| %>
+		<div class="col-8">
+			<div class="input-group input-group-sm mb-1">
+				<div class="input-group-prepend">
+					<span class="input-group-text form-control form-control-sm">日付</span>
+				</div>
+			<%= f.text_field :sales_date, 'data-behaviour' => 'datepicker', value: @sales_date, class: "form-control form-control-sm datepicker mb-2 p-2", label: false, wrapper: false %>
 			</div>
-		<%= f.text_field :sales_date, 'data-behaviour' => 'datepicker', value: @sales_date, class: "form-control form-control-sm datepicker mb-2 p-2", label: false, wrapper: false %>
 		</div>
-	</div>
-	<%= f.input :order_id, label: false, :input_html => {:readonly => 'readonly', class: 'readonly form-control-sm', value: @order_id || '注文番後'}, wrapper_html: { class: 'col-4 mb-1' } %>
-	<%= f.input :purchaser, :input_html => {value: @purchaser || '名前・会社名'}, label: false, wrapper_html: { class: 'col-8 mb-1' }  %>
-	<%= f.input :title, collection: ['様', '御中'], selected: 0, label: false, wrapper_html: { class: 'col-4 mb-1' } %>
-	<div class="col-8 mb-1">
-		<div class="input-group input-group-sm mb-1">
-			<div class="input-group-prepend">
-				<span class="input-group-text input-group-text form-control form-control-sm">￥</span>
+		<%= f.input :order_id, label: false, :input_html => {:readonly => 'readonly', class: 'readonly form-control-sm', value: @order_id || '注文番後'}, wrapper_html: { class: 'col-4 mb-1' } %>
+		<%= f.input :purchaser, :input_html => {value: @purchaser || '名前・会社名'}, label: false, wrapper_html: { class: 'col-8 mb-1' }  %>
+		<%= f.input :title, collection: ['様', '御中'], selected: 0, label: false, wrapper_html: { class: 'col-4 mb-1' } %>
+		<div class="col-8 mb-1">
+			<div class="input-group input-group-sm mb-1">
+				<div class="input-group-prepend">
+					<span class="input-group-text input-group-text form-control form-control-sm">￥</span>
+				</div>
+				<%= f.input_field :amount, value: @amount || '値段', label: false, class: 'form-control form-control-sm' %>
 			</div>
-			<%= f.input_field :amount, value: @amount || '値段', label: false, class: 'form-control form-control-sm' %>
+			<%= f.input :expense_name, label: false, :input_html => {value: 'お品代として'}, wrapper_html: { class: 'mb-1' } %>
 		</div>
-		<%= f.input :expense_name, label: false, :input_html => {value: 'お品代として'}, wrapper_html: { class: 'mb-1' } %>
-	</div>
-	<div class="col-4 mb-1 text-center">
-		オイシス領収証？
-		<%= f.check_box :oysis, checked_value: true, unchecked_value: false, checked: (@oysis == 'true' ? true : false) || false, label: false %>
-		<br>
-		<%= link_to '作成', "#", :onclick => "$('#receipt_form').submit()", class: 'btn btn-sm btn-success mt-3', :target => "_blank" %>
-	</div>
+		<div class="col-4 mb-1 text-center">
+			オイシス領収証？
+			<%= f.check_box :oysis, checked_value: true, unchecked_value: false, checked: (@oysis == 'true' ? true : false) || false, label: false %>
+			<br>
+			<%= f.submit '作成', class: 'btn btn-sm btn-success mt-3' %>
+		</div>
+	<% end %>
 <% end %>

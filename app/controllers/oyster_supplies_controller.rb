@@ -1,7 +1,8 @@
 class OysterSuppliesController < ApplicationController
-	before_action :set_oyster_supply, only: [:show, :edit, :update, :destroy, :supply_check]
+	before_action :set_oyster_supply, only: [:show, :edit, :tippy_stats, :update, :destroy, :supply_check]
 	before_action :check_status
-	before_action :set_info, except: [:fetch_invoice, :fetch_supplies, :index]
+	before_action :set_info, only: [:show, :edit, :new_by, :update, :destroy, :supply_check]
+	before_action :set_action_params, only: [:supply_action_nav, :supply_previews_actions, :supply_invoice_actions, :supply_price_actions, :supply_stats, :tippy_stats]
 
 	def check_status
 		return unless !current_user.approved? || current_user.supplier? || current_user.user? || current_user.employee?
@@ -34,17 +35,67 @@ class OysterSuppliesController < ApplicationController
 	# GET /oyster_supplies/fetch_invoice/:id
 	def fetch_invoice
 		@invoice = OysterInvoice.find(params[:id])
-		
+
 		respond_to do |format|
 			format.js { render layout: false }
 		end
 	end
 
-	# GET /oyster_supplies/new_invoice/:start_date/:end_date
-	def new_invoice
+	def set_action_params
+		@start_date = params[:start_date]
+		@end_date = params[:end_date]
+
+	end
+
+	def supply_action_nav
+		invoice_setup(@start_date, @end_date)
+	end
+
+	def supply_previews_actions
+		respond_to do |format|
+			format.js { render layout: false }
+		end
+	end
+
+	def supply_invoice_actions
+		invoice_setup(@start_date, @end_date)
+
+		respond_to do |format|
+			format.js { render layout: false }
+		end
+	end
+
+	def supply_price_actions
+		respond_to do |format|
+			format.js { render layout: false }
+		end
+	end
+
+	def supply_stats
+		respond_to do |format|
+			format.js { render layout: false }
+		end
+	end
+
+	def tippy_stats
+		@stat = params[:stat]
+		last_year_three_day_period = [to_nengapi(@oyster_supply.date - 1.year), to_nengapi(@oyster_supply.date - 1.year - 1.day), to_nengapi(@oyster_supply.date - 1.year - 2.days)]
+
+		@previous_supply = @oyster_supply.previous
+		@two_previous_supply = @previous_supply.previous
+		@ly_supply = OysterSupply.where(supply_date: last_year_three_day_period).first
+		@ly_next_supply = @ly_supply.next
+		@ly_prev_supply = @ly_supply.previous
+
+		respond_to do |format|
+			format.html { render layout: false }
+		end
+	end
+
+	def invoice_setup(start_date, end_date)
 		@invoice = OysterInvoice.new(
-			start_date: params[:start_date],
-			end_date: params[:end_date],
+			start_date: start_date,
+			end_date: end_date,
 			aioi_emails: ENV['AIOI_EMAILS'],
 			sakoshi_emails: ENV['SAKOSHI_EMAILS'],
 			data: {
@@ -55,7 +106,10 @@ class OysterSuppliesController < ApplicationController
 					"aioi_seperated_password" => SecureRandom.hex(4).to_s} },
 			completed: false
 			)
-		
+	end
+
+	def new_invoice
+		invoice_setup(params[:start_date], params[:end_date])
 		respond_to do |format|
 			format.js { render layout: false }
 		end
@@ -92,7 +146,7 @@ class OysterSuppliesController < ApplicationController
 		start_date = Date.parse(params[:start_date])
 		end_date = Date.parse(params[:end_date])
 		location = params[:location]
-		export_format = params[:format]
+		export_format = params[:export_format]
 		message = Message.new(user: current_user.id, model: 'oyster_invoice', state: false, message: '牡蠣原料仕切りプレビュー作成中…', data: {invoice_id: 0, expiration: (DateTime.now + 1.day), invoice_preview: {start_date: start_date, end_date: end_date, location: location, export_format: export_format}})
 		message.save
 		InvoicePreviewWorker.perform_async(start_date, end_date, location, export_format, current_user.id, message.id)
@@ -106,7 +160,7 @@ class OysterSuppliesController < ApplicationController
 	# GET /oyster_supplies/1/edit
 	def edit
 	end
-	
+
 	def new
 		@oyster_supply = OysterSupply.new
 	end
@@ -180,6 +234,10 @@ class OysterSuppliesController < ApplicationController
 		def set_oyster_supply
 			@oyster_supply = OysterSupply.find(params[:id])
 			@oyster_supply.okayama_setup if @oyster_supply.oysters["okayama"].nil? #in case we're viewing a pre-okayama supply
+		end
+
+		def oyster_supply_action_params
+			params.permit(:start_date, :end_date)
 		end
 
 		# Never trust parameters from the scary internet, only allow the white list through.

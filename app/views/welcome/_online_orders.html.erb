@@ -1,92 +1,8 @@
-<script> tippy('[data-tippy-content]', {allowHTML: true, animation: 'scale', duration: [300,0] }); </script>
+<script type="text/javascript">
+	<%= render partial: 'sharedjs', formats: [:js] %>
+</script>
 
 <% shinki = @online_orders.shinki_im_orders %>
-
-<% if shinki[:total] > 0 || @wc_shinki %>
-	<div class="modal fade" id="manifest_shinki_modal" tabindex="-1" aria-labelledby="manifest_shinki_modal_label" aria-hidden="true">
-		<div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="manifest_shinki_modal_label">InfoMart/Funabiki.infoの新規注文</h5>
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true">&times;</span>
-					</button>
-				</div>
-				<div class="modal-body">
-					<% if @wc_shinki && !@wc_shinki.empty? %>
-						<h4 class="mr-1">WooCommerce 新規注文</h4>
-						<div class="row bg-info text-white p-3 m-1 h5">
-							<div class="col-lg-1 col-md-12 small">
-								注文番号
-							</div>
-							<div class="col-lg-3 col-md-12 small">
-								注文者・届け先
-							</div>
-							<div class="col-lg-8 col-md-12">
-								商品
-							</div>
-						</div>
-						<% @wc_shinki.each do |order| %>
-							<div class="row ml-1 mr-1 <%= cycle_table_rows %>">
-								<div class="col-lg-1 col-md-6 col-sm-12 small">
-									<%= link_to order["id"], "https://funabiki.info/wp-admin/post.php?post=#{order["number"]}&action=edit", target: "_blank" %>
-								</div>
-								<div class="col-lg-3 col-md-6 col-sm-12 small">
-									<%= order["billing"]["last_name"] + order["billing"]["first_name"] %>・<%= order["shipping"]["last_name"] + order["shipping"]["first_name"] %>
-								</div>
-								<div class="col-lg-8 col-md-6 col-sm-12">
-									<% order["line_items"].each_with_index do |item, i| %>
-										<b><%= item["name"] %></b><%= ("× #{item['quantity']}").html_safe if item['quantity'].to_i > 1 %><%= ("<br>").html_safe if i > 0 %>
-									<% end %>
-								</div>
-							</div>
-						<% end %>
-					<% end %>
-					<% if shinki[:total] > 0 %>
-					<% [:raw, :frozen].each do |key| %>
-						<% unless shinki[key].empty? %>
-							<h4 class="mr-1">InfoMart <%= key == :raw ? "生食" : "冷凍" %></h4>
-							<div class="row bg-info text-white p-3 m-1 h5">
-								<div class="col-lg-1 col-md-12 small">
-									注文番号
-								</div>
-								<div class="col-lg-3 col-md-12 small">
-									注文者・届け先
-								</div>
-								<div class="col-lg-8 col-md-12">
-									商品
-								</div>
-							</div>
-							<% shinki[key].each do |order_id, order_details| %>
-								<div class="row ml-1 mr-1 <%= cycle_table_rows %>">
-									<div class="col-lg-1 col-md-6 col-sm-12 small">
-										<%= link_to order_id, get_infomart_backend_link(order_details[:backend_id]), target: "_blank" %>
-									</div>
-									<div class="col-lg-3 col-md-6 col-sm-12 small">
-										<%= order_details[:client] %>
-									</div>
-									<div class="col-lg-8 col-md-6 col-sm-12">
-										<% order_details[:items].each do |item| %>
-											<% item.each_with_index do |item, i| %>
-												<% if item.is_a?(Hash) %>
-													<b><%= item[:item_name].gsub('軽減', '') %></b><%= ("× #{item[:item_count]}").html_safe if item[:item_count].to_i > 1 %><%= ("<br>").html_safe if i > 0 %>
-												<% end %>
-											<% end %>
-										<% end %>
-									</div>
-								</div>
-							<% end %>
-						<% end %>
-					<% end %>
-					<% end %>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-dismiss="modal">閉じる</button>
-				</div>
-			</div>
-		</div>
-	</div>
-<% end %>
 
 <div class="card m-0 p-0 border-white">
 	<div class="card-header p-3">
@@ -94,20 +10,20 @@
 		<span class="mb-3">&nbsp</span>
 		<div class="btn-group float-right mt-n2">
 			<% if shinki[:total] > 0 %>
-				<span class="btn btn-sm btn-info m-0 p-0" data-tippy-content="<center>通販新規注文</center>">
+				<span class="btn btn-sm btn-info m-0 p-0 tippy" data-tippy-content="<center>通販新規注文</center>">
 					<button type="button" class="btn btn-info" data-toggle="modal" data-target="#manifest_shinki_modal">
 						<%= icon("asterisk", class: 'text-white') %><span class="badge badge-warning ml-1"><%= @wc_shinki ? (shinki[:total] + @wc_shinki.length) : shinki[:total] %></span>
 					</button>
 				</span>
 			<% end %>
-			<span class="btn btn-sm btn-info m-0 p-0" data-tippy-content="<center><%= @online_orders.sales_date %>の<br>出荷個別ページ</center>">
+			<span class="btn btn-sm btn-info m-0 p-0 tippy" data-tippy-content="<center><%= @online_orders.sales_date %>の<br>出荷個別ページ</center>">
 				<%= link_to icon("card-list", class: 'text-white'), @online_orders, :alt => "個別ページ", class: 'btn btn-info' %>
 			</span>
-			<span class="btn btn-sm btn-info m-0 p-0" data-tippy-content="<center><%= @online_orders.sales_date %>の<br>データを取込む</center>">
+			<span class="btn btn-sm btn-info m-0 p-0 tippy" data-tippy-content="<center><%= @online_orders.sales_date %>の<br>データを取込む</center>">
 				<%= link_to icon("arrow-counterclockwise", class: "text-success"), edit_manifest_path(@online_orders), :alt => "データを編集", class: 'btn btn-info' %>
 			</span>
-			<span class="btn btn-sm btn-info m-0 p-0" data-tippy-content="<center><%= @online_orders.sales_date %>の<br>出荷表PDFを開く</center>">
-				<%= link_to icon("file-earmark-arrow-down", class: 'text-white'), manifest_pdf_path(@online_orders), :method => :get, class: 'btn btn-info', target: "_blank" %>
+			<span class="btn btn-sm btn-info m-0 p-0 tippy" data-tippy-content="<center><%= @online_orders.sales_date %>の<br>出荷表PDFを開く</center>">
+				<%= link_to icon("file-earmark-arrow-down", class: 'text-white'), manifest_pdf_path(@online_orders), :method => :get, class: 'btn btn-info', remote: true, 'data-turbolinks' => "false" %>
 			</span>
 		</div>
 	</div>
@@ -189,8 +105,8 @@
 			<% previous_day = @online_orders.manifest_query.previous %>
 			<% next_day = @online_orders.manifest_query.next %>
 		<div class="btn-group float-right mt-n2 mb-1" role="group" aria-label="Basic">
-			<%= link_to icon("arrow-left-circle"), load_online_order_path(previous_day.id), :alt => "前", class: 'btn btn-sm btn-secondary', remote: true, "data-tippy-content" => "<center>#{previous_day.sales_date}の<br>データを見る</center>" %>
-			<%= link_to icon("arrow-right-circle"), load_online_order_path(next_day.id), :alt => "次", class: 'btn btn-sm btn-secondary', remote: true, "data-tippy-content" => "<center>#{next_day.sales_date}の<br>データを見る</center>" %>
+			<%= link_to icon("arrow-left-circle"), load_online_order_path(previous_day.id), :alt => "前", class: 'btn btn-sm btn-secondary tippy', remote: true, "data-tippy-content" => "<center>#{previous_day.sales_date}の<br>データを見る</center>" %>
+			<%= link_to icon("arrow-right-circle"), load_online_order_path(next_day.id), :alt => "次", class: 'btn btn-sm btn-secondary tippy', remote: true, "data-tippy-content" => "<center>#{next_day.sales_date}の<br>データを見る</center>" %>
 		</div>
 	</div>
 </div>

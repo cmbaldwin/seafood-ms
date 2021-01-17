@@ -38,7 +38,7 @@ class Manifest < ApplicationRecord
 	end
 
 	def wc_sender(wc_order)
-		wc_order[:sender]["last_name"] + wc_order[:sender]["first_name"] 
+		wc_order[:sender]["last_name"] + wc_order[:sender]["first_name"]
 	end
 
 	def wc_recipent(wc_order)
@@ -47,71 +47,71 @@ class Manifest < ApplicationRecord
 
 
 	def wc_item_counts(item)
-		shells = { 
-			437 => [0, 0, 10, 0, 0], 
-			516 => [0, 0, 20, 0, 0], 
-			517 => [0, 0, 30, 0, 0], 
-			519 => [0, 0, 40, 0, 0], 
-			520 => [0, 0, 50, 0, 0], 
-			521 => [0, 0, 60, 0, 0], 
-			838 => [0, 0, 70, 0, 0], 
-			522 => [0, 0, 80, 0, 0], 
-			837 => [0, 0, 90, 0, 0], 
+		shells = {
+			437 => [0, 0, 10, 0, 0],
+			516 => [0, 0, 20, 0, 0],
+			517 => [0, 0, 30, 0, 0],
+			519 => [0, 0, 40, 0, 0],
+			520 => [0, 0, 50, 0, 0],
+			521 => [0, 0, 60, 0, 0],
+			838 => [0, 0, 70, 0, 0],
+			522 => [0, 0, 80, 0, 0],
+			837 => [0, 0, 90, 0, 0],
 			523 => [0, 0, 100, 0, 0] }
-		small_shells = { 
-			13867 => [0, 0, 0, 0, 1], 
-			13883 => [0, 0, 0, 0, 2], 
-			13884 => [0, 0, 0, 0, 3], 
+		small_shells = {
+			13867 => [0, 0, 0, 0, 1],
+			13883 => [0, 0, 0, 0, 2],
+			13884 => [0, 0, 0, 0, 3],
 			13885 => [0, 0, 0, 0, 5], }
-		mukimi = { 
-			583 => [1, 0, 0, 0, 0], 
-			581 => [2, 0, 0, 0, 0], 
-			580 => [3, 0, 0, 0, 0], 
-			579 => [4, 0, 0, 0, 0], 
-			578 => [5, 0, 0, 0, 0], 
-			577 => [6, 0, 0, 0, 0], 
-			6555 => [7, 0, 0, 0, 0], 
-			6556 => [8, 0, 0, 0, 0], 
-			6557 => [9, 0, 0, 0, 0], 
-			6558 => [10, 0, 0, 0, 0], 
-			6559 => [11, 0, 0, 0, 0], 
+		mukimi = {
+			583 => [1, 0, 0, 0, 0],
+			581 => [2, 0, 0, 0, 0],
+			580 => [3, 0, 0, 0, 0],
+			579 => [4, 0, 0, 0, 0],
+			578 => [5, 0, 0, 0, 0],
+			577 => [6, 0, 0, 0, 0],
+			6555 => [7, 0, 0, 0, 0],
+			6556 => [8, 0, 0, 0, 0],
+			6557 => [9, 0, 0, 0, 0],
+			6558 => [10, 0, 0, 0, 0],
+			6559 => [11, 0, 0, 0, 0],
 			6560 => [12, 0, 0, 0, 0] }
-		sets = { 
-			584 => [1, 0, 10, 0, 0], 
-			590 => [1, 0, 20, 0, 0], 
-			591 => [1, 0, 30, 0, 0], 
-			592 => [2, 0, 20, 0, 0], 
-			593 => [2, 0, 30, 0, 0], 
+		sets = {
+			584 => [1, 0, 10, 0, 0],
+			590 => [1, 0, 20, 0, 0],
+			591 => [1, 0, 30, 0, 0],
+			592 => [2, 0, 20, 0, 0],
+			593 => [2, 0, 30, 0, 0],
 			594 => [2, 0, 40, 0, 0] }
-		dekapuri = { 
-			524 => [0, 1, 0, 0, 0], 
-			645 => [0, 2, 0, 0, 0], 
-			646 => [0, 3, 0, 0, 0], 
-			6554 => [0, 4, 0, 0, 0], 
-			13551 => [0, 10, 0, 0, 0], 
+		dekapuri = {
+			524 => [0, 1, 0, 0, 0],
+			645 => [0, 2, 0, 0, 0],
+			646 => [0, 3, 0, 0, 0],
+			6554 => [0, 4, 0, 0, 0],
+			13551 => [0, 10, 0, 0, 0],
 			13552 => [0, 20, 0, 0, 0] }
-		rshells = { 
-			13585 => [0, 0, 10, 0, 0], 
-			13584 => [0, 0, 20, 0, 0], 
-			13583 => [0, 0, 30, 0, 0], 
-			13582 => [0, 0, 40, 0, 0], 
-			13580 => [0, 0, 50, 0, 0], 
-			13579 => [0, 0, 60, 0, 0], 
-			13577 => [0, 0, 70, 0, 0], 
-			13586 => [0, 0, 80, 0, 0], 
-			13587 => [0, 0, 90, 0, 0], 
+		rshells = {
+			13585 => [0, 0, 10, 0, 0],
+			13584 => [0, 0, 20, 0, 0],
+			13583 => [0, 0, 30, 0, 0],
+			13582 => [0, 0, 40, 0, 0],
+			13580 => [0, 0, 50, 0, 0],
+			13579 => [0, 0, 60, 0, 0],
+			13577 => [0, 0, 70, 0, 0],
+			13586 => [0, 0, 80, 0, 0],
+			13587 => [0, 0, 90, 0, 0],
 			13588 => [0, 0, 100, 0, 0] }
-		other = { 
-			596 => [0, 0, 0, "干えび(ムキ) 100g×3袋", 0], 
-			595 => [0, 0, 0, "干えび(ムキ) 100g×5袋", 0], 
-			598 => [0, 0, 0, "干えび(殻付)100g×10袋", 0], 
-			599 => [0, 0, 0, "干えび(殻付)100g×3袋", 0], 
-			600 => [0, 0, 0, "干えび(殻付)100g×5袋", 0], 
-			597 => [0, 0, 0, "干えび(ムキ) 100g×2袋 + (殻付) 100g×2袋", 0], 
-			572 => [0, 0, 0, "焼穴子 400g入", 0], 
-			575 => [0, 0, 0, "焼穴子 550g入", 0], 
-			576 => [0, 0, 0, "焼穴子 700g入", 0], 
-			500 => [0, 0, 0, "牡蠣ナイフ", 0], 
+		other = {
+			596 => [0, 0, 0, "干えび(ムキ) 100g×3袋", 0],
+			595 => [0, 0, 0, "干えび(ムキ) 100g×5袋", 0],
+			598 => [0, 0, 0, "干えび(殻付)100g×10袋", 0],
+			599 => [0, 0, 0, "干えび(殻付)100g×3袋", 0],
+			600 => [0, 0, 0, "干えび(殻付)100g×5袋", 0],
+			597 => [0, 0, 0, "干えび(ムキ) 100g×2袋 + (殻付) 100g×2袋", 0],
+			572 => [0, 0, 0, "焼穴子 400g入", 0],
+			575 => [0, 0, 0, "焼穴子 550g入", 0],
+			576 => [0, 0, 0, "焼穴子 700g入", 0],
+			500 => [0, 0, 0, "牡蠣ナイフ", 0],
 			6319 => [0, 0, 0, "熨斗", 0] }
 		hashes = [shells, small_shells, mukimi, sets, dekapuri, rshells, other]
 		all_items = hashes.inject(&:merge)
@@ -143,7 +143,7 @@ class Manifest < ApplicationRecord
 				if same_day(order_data) || two_days(order_data) || fresh_order(order_data)
 					order_data[:items].each do |item, item_data|
 						item_data[:item_name].include?("500g") ? (totals[:gohyaku] += item_data[:item_count].to_i) : ()
-						if item_data[:item_name].include?("殻付き") 
+						if item_data[:item_name].include?("殻付き")
 							totals[:shells] += item_data[:item_count].to_i
 							totals[:cards] += 1
 						end
@@ -174,11 +174,11 @@ class Manifest < ApplicationRecord
 	end
 
 	def same_day(order_details)
-		( expected_arrival == order_details[:arrival][/\d.*\/+\d./] && order_details[:client].exclude?("ｏｃｅａｎ") && order_details[:client].exclude?("那覇") )  
+		( expected_arrival == order_details[:arrival][/\d.*\/+\d./] && order_details[:client].exclude?("ｏｃｅａｎ") && order_details[:client].exclude?("那覇") )
 	end
 
 	def two_days(order_details)
-		if expected_arrival != order_details[:arrival][/\d.*\/+\d./] 
+		if expected_arrival != order_details[:arrival][/\d.*\/+\d./]
 			if order_details[:client].include?("ｏｃｅａｎ") || order_details[:client].include?("那覇")
 				two_day_arrival == order_details[:arrival][/\d.*\/+\d./]
 			end
@@ -209,7 +209,7 @@ class Manifest < ApplicationRecord
 		[:raw, :frozen].each do |key|
 			orders[key] = Hash.new unless orders[key].is_a?(Hash)
 			self.infomart_orders[key].each do |order_id, order_details|
-				if order_details[:fresh] 
+				if order_details[:fresh]
 					orders[key][order_id] = order_details
 					i += 1
 				end
@@ -263,14 +263,14 @@ class Manifest < ApplicationRecord
 			#document set up
 			pdf_data.font_families.update(PrawnPDF.fonts)
 			#set utf-8 japanese font
-			pdf_data.font "SourceHan" 
+			pdf_data.font "MPLUS1p"
 			#first page for raw oysters
 				#print the date
-				pdf_data.font_size 16
-				pdf_data.font "SourceHan", :style => :bold
+				pdf_data.font_size 14
+				pdf_data.font "MPLUS1p", :style => :bold
 				pdf_data.text self.type + (self.type == '生食用' ? (( ' ' * (168))) : (' ' * (141))) + Date.today.strftime('%Y年%m月%d日')
 				pdf_data.move_down 5
-				pdf_data.font "SourceHan", :style => :normal
+				pdf_data.font "MPLUS1p", :style => :normal
 
 				#set up the data, make the header
 				data_table = Array.new
@@ -281,7 +281,7 @@ class Manifest < ApplicationRecord
 					data_table << ['　'] * rows
 				end
 				25.times { add_row(data_table, 12) }
-				pdf_data.font_size 10
+				pdf_data.font_size 8
 				pdf_data.table( data_table, :cell_style => {:border_width => 0.25, :padding => 4 }, :column_widths => { 0 => 18, 1 => 100, 2 => 70, 3 => 50, 4 => 50, 5 => 100, 6 => 50, 7 => 50, 8 => 65, 9 => 50, 10 => 40 }, :width => 780 ) do
 					rows(0..-1).each do |r|
 						r.height = 20 if r.height < 20
@@ -361,7 +361,7 @@ class Manifest < ApplicationRecord
 
 		puts "Loading..."
 		agent = Mechanize.new
-		#today's date 
+		#today's date
 		slash_date = DateTime.now.strftime("%Y/%m/%d")
 		puts "Scraping CSV download link for " + slash_date
 		page = agent.get('https://www2.infomart.co.jp/trade/download/bat_detail.pagex?1')
@@ -398,7 +398,7 @@ class Manifest < ApplicationRecord
 		require 'mechanize'
 
 		agent = Mechanize.new
-		#today's date 
+		#today's date
 		scrape_date = DateTime.strptime(self.sales_date, '%Y年%m月%d日')
 		start_date = (scrape_date - 1).strftime("%Y/%m/%d")
 		end_date = (scrape_date + 2).strftime("%Y/%m/%d")
@@ -532,15 +532,15 @@ class Manifest < ApplicationRecord
 			#document set up
 			pdf.font_families.update(PrawnPDF.fonts)
 			#set utf-8 japanese font
-			pdf.font "SourceHan" 
+			pdf.font "MPLUS1p"
 
 			#first page for raw oysters
 				#print the date
-				pdf.font_size 16
-				pdf.font "SourceHan", :style => :bold
-				pdf.text  '生食用 InfoMart/WooCommerce 発送表' + ( ' ' * 99 ) + self.sales_date
+				pdf.font_size 14
+				pdf.font "MPLUS1p", :style => :bold
+				pdf.text  '生食用 InfoMart/WooCommerce 発送表' + ( ' ' * 94 ) + self.sales_date
 				pdf.move_down 7
-				pdf.font "SourceHan", :style => :normal
+				pdf.font "MPLUS1p", :style => :normal
 
 				#set up the data, make the header
 				data_table = Array.new
@@ -659,7 +659,7 @@ class Manifest < ApplicationRecord
 					end
 				end
 
-				pdf.font_size 10
+				pdf.font_size 8
 				pdf.table( data_table, :header => true, :cell_style => {:border_width => 0.25, :padding => 4 }, :column_widths => { 0 => 18, 1 => 100, 2 => 70, 3 => 50, 4 => 50, 5 => 100, 6 => 50, 7 => 50, 8 => 65, 9 => 50, 10 => 40 }, :width => 780 ) do
 					rows(0..-1).each do |r|
 						r.height = 20 if r.height < 20
@@ -688,11 +688,11 @@ class Manifest < ApplicationRecord
 			#second page for frozen oysters
 				pdf.start_new_page
 				#print the date
-				pdf.font_size 16
-				pdf.font "SourceHan", :style => :bold
+				pdf.font_size 14
+				pdf.font "MPLUS1p", :style => :bold
 				pdf.text  'プロトン凍結冷凍用 InfoMart/WooCommerce 発送表' + ( ' ' * 73 ) + self.sales_date
 				pdf.move_down 7
-				pdf.font "SourceHan", :style => :normal
+				pdf.font "MPLUS1p", :style => :normal
 
 				#set up the data, make the header
 				data_table = Array.new
@@ -728,7 +728,7 @@ class Manifest < ApplicationRecord
 							end
 							#500LL size
 							if details[:item_name].include?("デカプリオイスター") && (details[:item_name].include?("大粒") or details[:item_name].include?("LL")) && order[:client].exclude?("ブリーズオブ東京") && order[:client].exclude?("オイスターバー品川店") or details[:item_name].include?("岡山県産") && details[:item_name].include?("デカプリオイスター")
-								order_data_row << ( (details[:item_name].include? "岡山") ? ('㊐ ') : ('') ) + ( if details[:item_name].include? "×20" then '20 × ' + details[:item_count] elsif details[:item_name].include? "×10" then '10 × ' + details[:item_count] else '500g ×' + details[:item_count] end )
+								order_data_row << ( (details[:item_name].include? "岡山") ? ('㋔ ') : ('') ) + ( if details[:item_name].include? "×20" then '20 × ' + details[:item_count] elsif details[:item_name].include? "×10" then '10 × ' + details[:item_count] else '500g ×' + details[:item_count] end )
 							else
 								order_data_row << ''
 							end
@@ -740,7 +740,7 @@ class Manifest < ApplicationRecord
 							end
 							#shells
 							if details[:item_name].include?("冷凍殻付き牡蠣サムライオイスター")
-								order_data_row << '100個 × ' + details[:item_count]
+								order_data_row << "#{'小 ' if details[:item_name].include?('小')}100個 × #{details[:item_count]}"
 							elsif details[:item_name].include?("冷凍　殻付き牡蠣サムライオイスター")
 								order_data_row << details[:item_count] + '個 × 1'
 							else
@@ -802,7 +802,7 @@ class Manifest < ApplicationRecord
 					end
 				end
 
-				pdf.font_size 10
+				pdf.font_size 8
 				pdf.table( data_table, :header => true, :cell_style => {:border_width => 0.25, :padding => 4}, :column_widths => { 0 => 18, 1 => 180, 2 => 50, 3 => 60, 4 => 60, 5 => 60, 6 => 55, 7 => 55, 8 => 55, 9 => 60 }, :width => 780 ) do
 					rows(0..-1).each do |r|
 						r.height = 20 if r.height < 20
@@ -819,14 +819,14 @@ class Manifest < ApplicationRecord
 					header_cells.font_style = :bold
 				end
 
-				#Extra rows to fill up the sheet for frozen 
+				#Extra rows to fill up the sheet for frozen
 				data_table = Array.new
 				fill_rows = (pdf.page_count - first_table_page_count) * 22
 				(fill_rows - used_row_count).times { add_row(data_table, 11) }
 				if !data_table.empty?
 					pdf.table( data_table, :cell_style => {:border_width => 0.25, :padding => 4}, :column_widths => { 0 => 18, 1 => 180, 2 => 50, 3 => 60, 4 => 60, 5 => 60, 6 => 55, 7 => 55, 8 => 55, 9 => 60 }, :width => 780 )
 				end
-				
+
 			#render in the browser (takes server ram until closed)
 			return pdf
 		end
@@ -855,7 +855,7 @@ class Manifest < ApplicationRecord
 		end
 		new_associations
 	end
-	
+
 	def check_for_links(product_name)
 		links = Array.new
 		self.infomart_orders.each do |type, orders|

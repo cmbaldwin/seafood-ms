@@ -24,7 +24,7 @@ class YahooOrdersController < ApplicationController
 		User.find(current_user.id).reload
 		if client.login_code?
 			client.acquire_auth_token unless client.authorized?
-			if client.get_status(true) && client.update_existing(5.days)
+			if client.get_status(true) && client.update_processing
 				flash[:notice] = 'ヤフーからデータを更新完了。'
 				redirect_to yahoo_orders_path
 			else
@@ -97,13 +97,10 @@ class YahooOrdersController < ApplicationController
 	# GET /yahoo_shipping_list
 	# GET /yahoo_shipping_list
 	def yahoo_shipping_list
-		filename = "Yahoo-#{params[:ship_date]}-#{DateTime.now.to_s}.pdf"
-		pdf = PrawnPDF.yahoo_shipping_pdf(params[:ship_date], filename)
-		send_data pdf.render,
-			type: 'application/pdf'
-		pdf = nil
-		File.delete(Rails.root + filename) if File.exist?(Rails.root + filename)
-		GC.start
+		@filename = "Yahoo-#{params[:ship_date]}-#{DateTime.now.to_s}.pdf"
+		message = Message.new(user: current_user.id, model: 'yahoo_shipping_list', state: false, message: "ヤフー出荷表を作成中…", data: {ship_date: params[:ship_date], filename: @filename, expiration: (DateTime.now + 1.day)})
+		message.save
+		YahooShippingListWorker.perform_async(params[:ship_date], message.id, @filename)
 	end
 
 	# GET /yahoo_orders/1

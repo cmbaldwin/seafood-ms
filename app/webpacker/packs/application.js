@@ -14,12 +14,19 @@
 //
 // const images = require.context('../images', true)
 // const imagePath = (name) => images(name, true)
-// 
+//
 
 // JQuery setup
 require('jquery')
 require("@rails/ujs").start()
 require('jquery-ui')
+
+//require("@rails/activestorage").start()
+require("channels")
+
+// Setup Turbolinks
+var Turbolinks = require("turbolinks")
+Turbolinks.start()
 
 // Moment.js setup
 const moment = require('moment');
@@ -32,10 +39,9 @@ require("fullcalendar/fullcalendar.js")
 
 //Setup Bootstrap
 import 'bootstrap'
-require('bootstrap-datepicker')
-//Tempusdominus
-import "@fortawesome/fontawesome-free/js/all";
-require('tempusdominus-bootstrap-4')
+var datepicker = require('bootstrap-datepicker')
+
+import Shuffle from 'shufflejs';
 
 //Tippy.js for tooltips
 import tippy from 'tippy.js';
@@ -45,24 +51,39 @@ import 'tippy.js/animations/scale.css';
 
 // Bootstrap Popovers, Datepickers, and Tippy.js intialization
 $(document).on('turbolinks:load', function () {
-	tippy('[data-tippy-content]', {allowHTML: true, animation: 'scale', duration: [300,0] });
+	// Shuffle for frontpage
+	if ($('#grid').length) {
+		const shuffleInstance = new Shuffle(document.getElementById('grid'), {
+			itemSelector: '.shuffle-brick',
+			sizer: '.shuffle-sizer'
+		});
+		// Update shuffle instance when partial is rendered via render_async
+		$(document).on('render_async_load', function(event) {
+			shuffleInstance.update()
+		});
+	}
+	// Tippys
+	tippy('.tippy', {
+		allowHTML: true,
+		animation: 'scale',
+		duration: [300,0],
+		touch: true,
+		touch: 'hold'
+	});
+	tippy('.exp_card', {
+		allowHTML: true,
+		animation: 'scale',
+		interactive: true,
+		duration: [300,0],
+		theme: 'exp_card',
+		touch: true,
+		touch: 'hold'
+	});
+	//Toasts
+	$('.toast').toast()
+	// Popovers
 	$('[data-toggle="popover"]').popover()
-	$.fn.datetimepicker.Constructor.Default = $.extend({}, $.fn.datetimepicker.Constructor.Default, {
-		icons: {
-			time: 'far fa-clock',
-			date: 'far fa-calendar',
-			up: 'fas fa-arrow-up',
-			down: 'fas fa-arrow-down',
-			previous: 'fas fa-chevron-left',
-			next: 'fas fa-chevron-right',
-			today: 'far fa-calendar-check-o',
-			clear: 'far fa-trash',
-			close: 'far fa-times'
-		},
-		allowInputToggle: true,
-		showClose: true
-	 });
-	$('.datetimepicker').datetimepicker({});
+	//Basic Bootstrap Datepicker
 	var datepicker = require('bootstrap-datepicker')
 	$('.datepicker').datepicker({
 		maxViewMode: 2,
@@ -78,10 +99,3 @@ $(document).on('turbolinks:load', function () {
 
 //Chartkick init
 require("chartkick/chartkick.js")
-
-//require("@rails/activestorage").start()
-require("channels")
-
-// Setup Turbolinks
-var Turbolinks = require("turbolinks")
-Turbolinks.start()

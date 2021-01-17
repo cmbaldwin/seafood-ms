@@ -1,4 +1,5 @@
-$("#partial").html("<%= escape_javascript(render partial: 'edit_partial_form', locals: { market: @market, profit: @profit } ) %>");
+$("#market_partial").html("<%= escape_javascript(render partial: 'edit_partial_form', locals: { market: @market, profit: @profit } ) %>");
+// select linked market link
 $('#market-pills .nav-link.active').removeClass('active');
 $("#navBtn<%= escape_javascript(@market.id.to_s) %>").addClass('active');
 // animate active pill/market
