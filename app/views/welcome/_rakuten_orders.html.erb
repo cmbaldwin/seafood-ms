@@ -1,50 +1,53 @@
-<script type="text/javascript">
-	<%= render partial: 'sharedjs', formats: [:js] %>
-</script>
+<%= javascript_pack_tag 'partials', 'data-turbolinks-track': 'reload' %>
 
 <div class="card m-0 p-0 border-white">
-	<div class="card-header p-3">
-		<h4 class="card-title float-left">
-			<%= @rakuten.sales_date %>
-		</h4>
-		<span class="mb-3">&nbsp</span>
-		<div class="btn-group float-right mt-n2" role="group" aria-label="Basic">
-			<% if @rakuten_shinki %>
-				<span class="btn btn-sm btn-info m-0 p-0 tippy" data-tippy-content="楽天新規注文">
-					<button type="button" class="btn btn-info" data-toggle="modal" data-target="#rakuten_shinki_modal">
-						<%= icon("asterisk", class: 'text-white') %><span class="badge badge-warning ml-1"><%= @rakuten_shinki.flatten.length %></span>
-					</button>
-				</span>
-			<% end %>
-			<span class="btn btn-sm btn-info m-0 p-0 tippy" data-tippy-content="<center><%= @rakuten.sales_date %>の<br>出荷個別ページ</center>">
-				<%= link_to icon("card-list", class: 'text-white'), @rakuten, :alt => "個別ページ", class: 'btn btn-info', 'data-turbolinks' => "false" %>
-			</span>
-			<span class="btn btn-sm btn-info m-0 p-0 tippy" data-tippy-content="<center><%= @rakuten.sales_date %>の<br>楽天データを取込む</center>">
-				<%= link_to icon("arrow-counterclockwise", class: "text-success"), edit_r_manifest_path(@rakuten), :alt => "データ更新", class: 'btn btn-info', 'data-turbolinks' => "false" %>
-			</span>
-			<span class="btn btn-sm btn-info m-0 p-0 tippy load" data-tippy-content="<center><%= @rakuten.sales_date %>の<br>出荷表PDFを作成</center>">
-				<%= link_to icon("file-earmark-arrow-down", class: 'text-white'), generate_rakuten_pdf_path(id: @rakuten.id, seperated: 0, include_yahoo: 0), class: 'btn btn-info', remote: true, 'data-turbolinks' => "false" %>
-			</span>
-			<span class="btn btn-sm btn-info m-0 p-0 tippy load" data-tippy-content="<center><%= @rakuten.sales_date %>の<br>楽天とヤフーの<br>出荷表PDFを作成</center>">
-				<%= link_to icon("file-earmark-diff", class: 'text-white'), generate_rakuten_pdf_path(id: @rakuten.id, seperated: 0, include_yahoo: 1), class: 'btn btn-info', remote: true, 'data-turbolinks' => "false" %>
-			</span>
-			<span class="btn btn-sm btn-info m-0 p-0 tippy load" data-tippy-content="<center><%= @rakuten.sales_date %>の<br>商品分別した<br>出荷表PDFを作成</center>">
-				<%= link_to icon("file-earmark-ruled", class: 'text-white'), generate_rakuten_pdf_path(id: @rakuten.id, seperated: 1, include_yahoo: 0), class: 'btn btn-info', remote: true, 'data-turbolinks' => "false" %>
-			</span>
+	<div class="card-header p-1">
+		<div class="row">
+			<div class="col-lg-6 col-md-12 text-center d-table-cell align-middle mb-1">
+				<h4 class="mb-0 mt-1 card-title">
+					<%= to_nengapiyoubi(@rakuten.date) %>
+				</h4>
+			</div>
+			<div class="col-lg-6 col-md-12 text-center d-table-cell align-middle mb-1">
+				<div class="btn-group" role="group" aria-label="Basic">
+					<% if @rakuten_shinki %>
+						<span class="btn btn-sm btn-info m-0 p-0 tippy" data-tippy-content="楽天新規注文">
+							<button type="button" class="btn btn-info" data-toggle="modal" data-target="#rakuten_shinki_modal">
+								<%= icon("asterisk", class: 'text-white') %><span class="badge badge-warning ml-1"><%= @rakuten_shinki.flatten.length %></span>
+							</button>
+						</span>
+					<% end %>
+					<span class="btn btn-sm btn-info m-0 p-0 tippy" data-tippy-content="<center><%= @rakuten.sales_date %>の<br>出荷個別ページ</center>">
+						<%= link_to icon("card-list", class: 'text-white'), @rakuten, :alt => "個別ページ", class: 'btn btn-info', 'data-turbolinks' => "false" %>
+					</span>
+					<span class="btn btn-sm btn-info m-0 p-0 tippy" data-tippy-content="<center><%= @rakuten.sales_date %>の<br>楽天データを取込む</center>">
+						<%= link_to icon("arrow-counterclockwise", class: "text-success"), edit_r_manifest_path(@rakuten), :alt => "データ更新", class: 'btn btn-info', 'data-turbolinks' => "false" %>
+					</span>
+					<span class="btn btn-sm btn-info m-0 p-0 tippy load" data-tippy-content="<center><%= @rakuten.sales_date %>の<br>出荷表PDFを作成</center>">
+						<%= link_to icon("file-earmark-arrow-down", class: 'text-white'), generate_rakuten_pdf_path(id: @rakuten.id, seperated: 0, include_yahoo: 0), class: 'btn btn-info', remote: true, 'data-turbolinks' => "false" %>
+					</span>
+					<span class="btn btn-sm btn-info m-0 p-0 tippy load" data-tippy-content="<center><%= @rakuten.sales_date %>の<br>楽天とヤフーの<br>出荷表PDFを作成</center>">
+						<%= link_to icon("file-earmark-diff", class: 'text-white'), generate_rakuten_pdf_path(id: @rakuten.id, seperated: 0, include_yahoo: 1), class: 'btn btn-info', remote: true, 'data-turbolinks' => "false" %>
+					</span>
+					<span class="btn btn-sm btn-info m-0 p-0 tippy load" data-tippy-content="<center><%= @rakuten.sales_date %>の<br>商品分別した<br>出荷表PDFを作成</center>">
+						<%= link_to icon("file-earmark-ruled", class: 'text-white'), generate_rakuten_pdf_path(id: @rakuten.id, seperated: 1, include_yahoo: 0), class: 'btn btn-info', remote: true, 'data-turbolinks' => "false" %>
+					</span>
+				</div>
+			</div>
 		</div>
 	</div>
 		<div class="card-text text-center">
 			<% counts = @rakuten.new_order_counts %>
 			<% work_totals = @rakuten.prep_work_totals %>
-			<div class="row text-center m-1 p-1">
-				<div class="btn-group w-100" role="group">
-					<div class="btn col-3 btn-light d-block mb-1 strong">
+			<div class="text-center m-1 p-1">
+				<div class="btn-group w-100 row" role="group">
+					<div class="btn col-lg-3 col-md-12 btn-light d-block mb-1 strong">
 						<h6>むき身</h6>
 						<span class="badge badge-<%= counts[:mizukiri] > 0 ? 'primary' : 'light' %> p-2">
 							<%= if counts[:mizukiri] > 0 then ('<b>').html_safe + counts[:mizukiri].to_s + ('<small>パック</small></b>').html_safe else ('　') end %>
 						</span>
 					</div>
-					<div class="btn col-3 btn-light d-block mb-1 strong">
+					<div class="btn col-lg-3 col-md-12 btn-light d-block mb-1 strong">
 						<h6>セル 大・小・カード</h6>
 						<span class="badge badge-<%= counts[:shells] > 0 ? 'primary' : 'light' %> p-2">
 							<%=  ("<b>#{counts[:shells].to_s}<small>個</small></b> ・ ").html_safe if (counts[:shells] > 0) %>
@@ -52,13 +55,13 @@
 							<%= (('<b>').html_safe + work_totals[:shell_cards].to_s + ('<small>枚</small></b>').html_safe) if (work_totals[:shell_cards] > 0) %>
 						</span>
 					</div>
-					<div class="btn col-3 btn-light d-block mb-1 strong">
+					<div class="btn col-lg-3 col-md-12 btn-light d-block mb-1 strong">
 						<h6>デカプリ</h6>
 						<span class="badge badge-<%= counts[:dekapuri] > 0 ? 'primary' : 'light' %> p-2">
 							<%= if counts[:dekapuri] > 0 then ('<b>').html_safe + counts[:dekapuri].to_s + ('<small>パック</small></b>').html_safe else ('　') end %>
 						</span>
 					</div>
-					<div class="btn col-3 btn-light d-block mb-1 strong">
+					<div class="btn col-lg-3 col-md-12 btn-light d-block mb-1 strong">
 						<h6>冷凍セル</h6>
 						<span class="badge badge-<%= counts[:reitou_shells] > 0 ? 'primary' : 'light' %> p-2">
 							<%= if counts[:reitou_shells] > 0 then ('<b>').html_safe + counts[:reitou_shells].to_s + ('<small>個</small></b>').html_safe else ('　') end %>
@@ -66,25 +69,25 @@
 					</div>
 				</div>
 				<div class="btn-group w-100" role="group">
-					<div class="btn col-3 btn-light d-block mb-1 strong">
+					<div class="btn col-lg-3 col-md-12 btn-light d-block mb-1 strong">
 						<h6>穴子</h6>
 						<span class="badge badge-<%= counts[:anago] > 0 ? 'primary' : 'light' %> p-2">
 							<%= if counts[:anago] > 0 then ('<b>').html_safe + counts[:anago].to_s + ('<small>件</small></b>').html_safe else ('　') end %>
 						</span>
 					</div>
-					<div class="btn col-3 btn-light d-block mb-1 strong">
+					<div class="btn col-lg-3 col-md-12 btn-light d-block mb-1 strong">
 						<h6>タコ</h6>
 						<span class="badge badge-<%= counts[:tako] > 0 ? 'primary' : 'light' %> p-2">
 							<%= if counts[:tako] > 0 then ('<b>').html_safe + counts[:tako].to_s + ('<small>件</small></b>').html_safe else ('　') end %>
 						</span>
 					</div>
-					<div class="btn col-3 btn-light d-block mb-1 strong">
+					<div class="btn col-lg-3 col-md-12 btn-light d-block mb-1 strong">
 						<h6>干しエビ</h6>
 						<span class="badge badge-<%= counts[:ebi] > 0 ? 'primary' : 'light' %> p-2">
 							<%= if counts[:ebi] > 0 then ('<b>').html_safe + counts[:ebi].to_s + ('<small>件</small></b>').html_safe else ('　') end %>
 						</span>
 					</div>
-					<div class="btn col-3 btn-light d-block mb-1 strong">
+					<div class="btn col-lg-3 col-md-12 btn-light d-block mb-1 strong">
 						<h6>ナイフ</h6>
 						<span class="badge badge-<%= work_totals[:knife_count] > 0 ? 'primary' : 'light' %> p-2">
 							<%= if work_totals[:knife_count] > 0 then ('<b>').html_safe + work_totals[:knife_count].to_s + ('<small>個</small></b>').html_safe else ('　') end %>
@@ -273,13 +276,13 @@
 				</div>
 			<% end %>
 		</div>
-	<div class="card-footer bg-white">
-		<small class="text-muted float-left">(<%= @rakuten.updated_at.in_time_zone('Tokyo') %>)に更新された</small>
-		<div class="btn-group float-right mt-n2 mb-1" role="group" aria-label="Basic">
+	<div class="card-footer bg-white d-table-cell align-middle">
+		<small class="text-muted"><%= to_nengapijibun(@rakuten.updated_at.in_time_zone('Tokyo')) %>時点</small>
+		<div class="btn-group float-right" role="group" aria-label="Basic">
 			<% previous_day = @rakuten.r_manifest_query.previous %>
 			<% next_day = @rakuten.r_manifest_query.next %>
-			<%= link_to icon("arrow-left-circle"), load_rakuten_order_path(previous_day.id), :alt => "前", class: 'btn btn-sm btn-secondary tippy', remote: true, "data-tippy-content" => "<center>#{previous_day.sales_date}の<br>データを見る</center>" %>
-			<%= link_to icon("arrow-right-circle"), load_rakuten_order_path(next_day.id), :alt => "次", class: 'btn btn-sm btn-secondary tippy', remote: true, "data-tippy-content" => "<center>#{next_day.sales_date}の<br>データを見る</center>" %>
+			<%= link_to icon("arrow-left-circle"), load_rakuten_order_path(previous_day.id), :alt => "前", class: 'btn btn-sm btn-secondary tippy load', 'data-target' => '#rakuten_partial', remote: true, "data-tippy-content" => "<center>#{previous_day.sales_date}の<br>データを見る</center>" %>
+			<%= link_to icon("arrow-right-circle"), load_rakuten_order_path(next_day.id), :alt => "次", class: 'btn btn-sm btn-secondary tippy load', 'data-target' => '#rakuten_partial', remote: true, "data-tippy-content" => "<center>#{next_day.sales_date}の<br>データを見る</center>" %>
 		</div>
 	</div>
 </div>

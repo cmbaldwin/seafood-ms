@@ -1,14 +1,14 @@
-<% title "Funabiki Online - 楽天市・出荷表" %>
+<% title "Funabiki Online - 楽天市場・出荷表" %>
 
 <div class="container manifest_index">
 	<div class="row align-middle">
 		<div class="col">
-<% if current_user.admin? || current_user.vip? %>
-			<div class="btn-group float-right" role="group" aria-label="Basic">
-				<%= link_to icon('plus-circle-fill', class: 'text-success'), new_r_manifest_path, :class => "btn btn-info tippy", "data-tippy-content" => "<center>新しいデータを<br>取込む</center>" %>
-			</div>
-<% end %> 
-		<hr/>
+			<% if current_user.admin? || current_user.vip? %>
+				<div class="btn-group float-right" role="group" aria-label="Basic">
+					<%= link_to icon('plus-circle-fill', class: 'text-success'), new_r_manifest_path, :class => "btn btn-info tippy", "data-tippy-content" => "<center>新しいデータを<br>取込む</center>" %>
+				</div>
+			<% end %> 
+			<hr/>
 
 			<h1>楽天・出荷表</h1>
 			
@@ -17,57 +17,89 @@
 	
 	<hr/>
 
-	<div class="row rowhead">
-			<div class="col-md-3 col-sm-12 right-border text-center">
+	<div class="row rowhead text-center">
+			<div class="col-lg-3 col-md-12 d-lg-inline d-none">
 				<strong><h4>発送日</h4></strong>
 			</div>
-			<div class="col-md-1 col-sm-12">
-				<strong>むき身</strong>
+			<div class="col-lg-6 col-md-12 d-lg-inline d-none">
+				<div class="row mb-2 p-1">
+					<div class="col-lg-2 col-md-4">
+						<strong>むき身</strong>
+					</div>
+					<div class="col-lg-2 col-md-4">
+						<strong>セル</strong>
+					</div>
+					<div class="col-lg-2 col-md-4">
+						<strong>デカプリ</strong>
+					</div>
+					<div class="col-lg-2 col-md-4">
+						<strong>穴子</strong>
+					</div>
+					<div class="col-lg-2 col-md-4">
+						<strong>干しエビ</strong>
+					</div>
+					<div class="col-lg-2 col-md-4">
+						<strong>タコ</strong>
+					</div>
+				</div>
 			</div>
-			<div class="col-md-1 col-sm-12">
-				<strong>セル</strong>
-			</div>
-			<div class="col-md-1 col-sm-12">
-				<strong>デカプリ</strong>
-			</div>
-			<div class="col-md-1 col-sm-12">
-				<strong>穴子</strong>
-			</div>
-			<div class="col-md-1 col-sm-12 right-border">
-				<strong>干しエビ</strong>
-			</div>
-			<div class="col-md-4 col-sm-12 text-center">
+			<div class="col-lg-3 col-md-12 d-lg-inline d-none">
 				<strong><h4>操作</h4></strong>
 			</div>
 	</div>
 	<% @r_manifests.order(sales_date: :desc).each do |r_manifest| %>
 		<% counts = r_manifest.new_order_counts %>
-		<div class="row small <%= cycle_table_rows %> <%= if today_warn(r_manifest) then 'bg-warning' end %>">
-			<div class="col-md-3 col-sm-12 clearfix right-border text-center">
-				<<%= if today_warn(r_manifest) then 'h4' else 'h5' end %>> 
-					<%= r_manifest.sales_date %>
-				<span class="float-right">
+		<div class="row small <%= cycle_table_rows %><%= if today_warn(r_manifest) then ' bg-dark text-white' end %>">
+			<div class="col-lg-3 col-md-12 align-self-center">
+				<span class="h5"> 
+					<%= to_nengapiyoubi(r_manifest.date) %>
+				</span>
+				<span class="h6 float-right mt-1 mb-1">
 					<b><%= if !r_manifest.new_orders_hash.nil? then r_manifest.new_orders_hash.length end %></b>件
 				</span>
-				</<%= if today_warn(r_manifest) then 'h4' else 'h5' end %>>
 			</div>
-			<div class="col-md-1 col-sm-12">
-				<%= if counts[:mizukiri] > 0 then ('<h6><b>').html_safe + counts[:mizukiri].to_s + ('<small>パック</small></b></h6>').html_safe end %>
+			<div class="col-lg-6 col-md-12 text-center">
+				<div class="row border rounded border-secondary mb-2 p-1 my-2">
+					<div class="col-4 d-lg-none d-md-block border-bottom border-secondary align-self-center">
+						<strong>むき身</strong>
+					</div>
+					<div class="col-4 d-lg-none d-md-block border-bottom border-secondary align-self-center">
+						<strong>セル<small> (大個/小kg)</small></strong>
+					</div>
+					<div class="col-4 d-lg-none d-md-block border-bottom border-secondary align-self-center">
+						<strong>デカプリ</strong>
+					</div>
+					<div class="col-lg-2 col-4 align-self-center">
+						<%= (counts[:mizukiri] > 0) ? (('<b>').html_safe + counts[:mizukiri].to_s + ('<small>パック</small></b>').html_safe) : '　' %>
+					</div>
+					<div class="col-lg-2 col-4 align-self-center">
+						<%= ("<b>#{counts[:shells].to_s}<small>個</small></b> #{('<br>').html_safe unless counts[:barakara].zero?}").html_safe if (counts[:shells] > 0) %> 
+						<%= ("<b>#{counts[:barakara].to_s}<small>㎏</small></b>").html_safe if (counts[:barakara] > 0) %> 
+					</div>
+					<div class="col-lg-2 col-4 align-self-center">
+						<%= (counts[:dekapuri] > 0) ? (('<b>').html_safe + counts[:dekapuri].to_s + ('<small>p</small></b>').html_safe) : '　' %>
+					</div>
+					<div class="col-4 d-lg-none d-md-block border-bottom mt-1 border-secondary align-self-center">
+						<strong>穴子</strong>
+					</div>
+					<div class="col-4 d-lg-none d-md-block border-bottom mt-1 border-secondary align-self-center">
+						<strong>干しエビ</strong>
+					</div>
+					<div class="col-4 d-lg-none d-md-block border-bottom mt-1 border-secondary align-self-center">
+						<strong>タコ</strong>
+					</div>
+					<div class="col-lg-2 col-4 align-self-center">
+						<%= (counts[:anago] > 0) ? (('<b>').html_safe + counts[:anago].to_s + ('<small>件</small></b>').html_safe) : '　' %>
+					</div>
+					<div class="col-lg-2 col-4 align-self-center">
+						<%= (counts[:ebi] > 0) ? (('<b>').html_safe + counts[:ebi].to_s + ('<small>件</small></b>').html_safe) : '　' %>
+					</div>
+					<div class="col-lg-2 col-4 align-self-center">
+						<%= (counts[:tako] > 0) ? (('<b>').html_safe + counts[:tako].to_s + ('<small>件</small></b>').html_safe) : '　' %>
+					</div>
+				</div>
 			</div>
-			<div class="col-md-1 col-sm-12">
-				<%= ("<b>#{counts[:shells].to_s}<small>個</small></b> #{'・' unless counts[:barakara].zero?}").html_safe if (counts[:shells] > 0) %> 
-				<%= ("<b>#{counts[:barakara].to_s}<small>㎏</small></b>").html_safe if (counts[:barakara] > 0) %> 
-			</div>
-			<div class="col-md-1 col-sm-12">
-				<%= if counts[:dekapuri] > 0 then ('<b>').html_safe + counts[:dekapuri].to_s + ('<small>パック</small></b>').html_safe end %>
-			</div>
-			<div class="col-md-1 col-sm-12">
-				<%= if counts[:anago] > 0 then ('<b>').html_safe + counts[:anago].to_s + ('<small>件</small></b>').html_safe end %>
-			</div>
-			<div class="col-md-1 col-sm-12 right-border">
-				<%= if counts[:ebi] > 0 then ('<b>').html_safe + counts[:ebi].to_s + ('<small>件</small></b>').html_safe end %>
-			</div>
-			<div class="col-md-4 col-sm-12 text-center">
+			<div class="col-lg-3 col-md-12 text-center align-self-center">
 				<div class="btn-group">
 					<%= link_to icon("card-list"), r_manifest, :alt => "個別ページ", class: 'btn btn-info tippy', "data-tippy-content" => "<center>#{r_manifest.sales_date}の<br>個別ページ</center>" %>
 					<%= link_to icon("file-earmark-arrow-down"), generate_rakuten_pdf_path(id: r_manifest.id, seperated: 0, include_yahoo: 0), :method => :get, remote: true, class: 'btn btn-info tippy', "data-tippy-content" => "<center>#{r_manifest.sales_date}の<br>出荷表PDFを作成</center>" %>

@@ -14,13 +14,13 @@
 			maxWidth: 'none',
 			content: '読み込み中...',
 			onShow(instance) {
-			fetch('/oyster_supplies/tippy_stats/' + <%= @oyster_supply.id %> + '/' + $(instance.reference).attr('data-stat-name'))
-				.then(response => response.text())
-				.then(result => instance.setContent(result))
-				.catch((error) => {
-					instance._error = error;
-					instance.setContent(`エラー： ${error}`);
-				})
+				fetch('/oyster_supplies/tippy_stats/' + <%= @oyster_supply.id %> + '/' + $(instance.reference).attr('data-stat-name'))
+					.then(response => response.text())
+					.then(result => instance.setContent(result))
+					.catch((error) => {
+						instance._error = error;
+						instance.setContent(`エラー： ${error}`);
+					})
 			},
 		});
 		<% end %>
@@ -158,16 +158,27 @@
 			});
 
 			// Sakoshi grand total and am/pm totals
-			var hyogo_grand_total = 0
-			$('#nav-am').add('#nav-pm').add('#nav-aioi').each(function() {
+			var aioi_subtotal = 0
+			$('#nav-aioi').each(function() {
 				var tab_total = 0
 				$(this).find('.mukimi.subtotal_row input').each(function() {
 					tab_total += parseFloat($(this).val());
 				})
-				hyogo_grand_total += tab_total
+				aioi_subtotal += tab_total
 				$(this).find('#total').html(tab_total)
 			});
-			$('#hyogo_grand_total').html(Math.round(hyogo_grand_total))
+			var sakoshi_subtotal = 0
+			$('#nav-am').add('#nav-pm').each(function() {
+				var tab_total = 0
+				$(this).find('.mukimi.subtotal_row input').each(function() {
+					tab_total += parseFloat($(this).val());
+				})
+				sakoshi_subtotal += tab_total
+				$(this).find('#total').html(tab_total)
+			});
+			$('#sakoshi_subtotal').html(Math.round(sakoshi_subtotal))
+			$('#aioi_subtotal').html(Math.round(aioi_subtotal))
+			$('#hyogo_grand_total').html(Math.round(sakoshi_subtotal + aioi_subtotal))
 
 			// If Volume Subtotal isn't 0 and Price Input IS 0 (or out of range) then give a visual alert for the input
 			price_input.each(function() {
@@ -460,7 +471,7 @@
 
 		<div class="row align-middle">
 			<div class="col-md-8 text-center">
-				<h4 class='d-inline float-left'>牡蠣原料入力表</h4>
+				<h4 class='d-inline float-left'>牡蠣供給入力表</h4>
 				<div class="tippy_container d-inline">
 					<div class="badge badge-success tab_totals p-2 cursor-help supply_tippy" data-stat-name="grand_total">
 						総合計：<span id="grand_total"></span>
@@ -469,6 +480,16 @@
 				<div class="tippy_container d-inline">
 					<div class="badge badge-primary tab_totals p-2 cursor-help supply_tippy" data-stat-name="hyogo_grand_total">
 						兵庫：<span id="hyogo_grand_total"></span>
+					</div>
+				</div>
+				<div class="tippy_container d-inline">
+					<div class="badge badge-primary tab_totals p-2 cursor-help supply_tippy" data-stat-name="sakoshi_subtotal">
+						坂越：<span id="sakoshi_subtotal"></span>
+					</div>
+				</div>
+				<div class="tippy_container d-inline">
+					<div class="badge badge-primary tab_totals p-2 cursor-help supply_tippy" data-stat-name="aioi_subtotal">
+						相生：<span id="aioi_subtotal"></span>
 					</div>
 				</div>
 				<div class="tippy_container d-inline">
@@ -483,7 +504,7 @@
 				</div>
 			</div>
 			<div class="col-md-2 text-right">
-				<h5><%= f.label :supply_date, '原料受入日付:' %></h5>
+				<h5><%= f.label :supply_date, '供給受入日付:' %></h5>
 			</div>
 			<div class="col-md-2">
 				<%= f.text_field :supply_date, 'data-behaviour' => 'datepicker', class: "form-control form-control-sm datepicker" %>

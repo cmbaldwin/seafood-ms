@@ -1,26 +1,5 @@
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/eonasdan-bootstrap-datetimepicker/4.17.49/js/bootstrap-datetimepicker.min.js" integrity="sha512-jPwanAeILSRxZLeyP1XYBOo67+how4C1Ij54LQSa8xIOP3hKyeWRe24C0scI4QrTeQywKd1meF4Pak/Glv34vA==" crossorigin="anonymous"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/eonasdan-bootstrap-datetimepicker/4.17.49/css/bootstrap-datetimepicker-standalone.css" integrity="sha512-UrJeFwwm3LtRacRyPhKve/pV0pgMznDum4Hrfl48H5Myzx9qPZWtYXV6aosv7tTzhRy94K29Kl5lsiP2pc1EHw==" crossorigin="anonymous" />
-<script type="text/javascript">
-	$.extend(true, $.fn.datetimepicker.defaults, {
-		icons: {
-			time: 'fa fa-clock-o',
-			date: 'fa fa-calendar',
-			up: 'fa fa-chevron-up',
-			down: 'fa fa-chevron-down',
-			previous: 'fa fa-chevron-left',
-			next: 'fa fa-chevron-right',
-			today: 'fa fa-calendar',
-			clear: 'fa fa-trash',
-			close: 'fa fa-calendar-times-o'
-		},
-		format: 'YYYY年MM月DD日 HH:mm'
-	});
-	$(function () {
-		$('.datetimepicker').datetimepicker();
-	});
-</script>
+<%= javascript_pack_tag 'datetimepicker', 'data-turbolinks-track': 'reload' %>
+<%= stylesheet_pack_tag "application", media: 'all', 'data-turbolinks-track': 'reload' %>
 
 <% if @invoice.start_date %>
 	<div class="card">
@@ -34,7 +13,7 @@
 		</div>
 		<div class="card-body">
 			<% if @invoice.id %>
-				<table class="table">
+				<table class="table small">
 					<thead>
 						<tr>
 							<th scope="col">場所</th>
@@ -90,7 +69,7 @@
 					<div class="input-group-prepend">
 						<span class="input-group-text mr-2">送信予約日時</span>
 					</div>
-					<%= f.text_field :send_at, 'data-target' => "##{@invoice.id ? @invoice.id : 'new'}", class: 'form-control datetimepicker', value: (@invoice.send_at.nil? ? (DateTime.now.monday + 1.week + 9.hours) : (@invoice.send_at)) %>
+					<%= f.text_field :send_at, 'data-target' => "##{@invoice.id ? @invoice.id : 'new'}", class: 'form-control datetimepicker', value: (@invoice.send_at.nil? ? (DateTime.now.monday + 1.week + 9.hours) : (@invoice.send_at)), 'readonly' => 'false' %>
 				</div>
 				<div class="form-group mb-2 mx-auto mb-1">
 					<%= f.label :completed, '送信済？' %>

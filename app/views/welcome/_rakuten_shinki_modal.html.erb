@@ -38,7 +38,8 @@
 							<div class="col-lg-2 col-md-6 col-sm-12">
 								<%= order["OrdererModel"]["familyName"] + order["OrdererModel"]["firstName"] %> ・
 								<% order["PackageModelList"].each do |package| %>
-									<%= package["SenderModel"]["familyName"] %><%= package["SenderModel"]["firstName"] %>
+									<%= package["SenderModel"]["familyName"] if package["SenderModel"]["familyName"] %>
+									<%= package["SenderModel"]["firstName"] if package["SenderModel"]["firstName"] %>
 								<% end %>
 							</div>
 							<div class="col-lg-2 col-md-6 col-sm-12">

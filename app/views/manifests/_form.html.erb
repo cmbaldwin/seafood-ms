@@ -1,30 +1,31 @@
+<%= javascript_pack_tag 'datetimepicker', 'data-turbolinks-track': 'reload' %>
+<%= stylesheet_pack_tag "application", media: 'all', 'data-turbolinks-track': 'reload' %>
 	
-	<%= simple_form_for(@manifest) do |f| %>
-	<%= f.error_notification %>
+<%= simple_form_for(@manifest) do |f| %>
 	<%= f.error_notification message: f.object.errors[:base].to_sentence if f.object.errors[:base].present? %>
-<div class="row text-center">
-	<div class="col-6 offset-3 mb-2">
-		<div class="card">
-			<span class="card-header bg_bisque">
-				<h5><%= f.label :sales_date, '発送日' %></h5>
-			</span>
-			<div class="card-body">
-				<div class="input-group sales_date mb-4">
-					<div class="input-group-prepend lg-prepend-fix">
-						<div class="input-group-text">
-							<i class="far fa-calendar-alt fa-sm"></i>
+	<div class="row text-center">
+		<div class="col-lg-6 col-12 offset-lg-3 mb-2">
+			<div class="card">
+				<span class="card-header bg_bisque">
+					<h5>発送日</h5>
+				</span>
+				<div class="card-body">
+					<div class="input-group sales_date mb-4">
+						<div class="input-group-prepend lg-prepend-fix">
+							<div class="input-group-text">
+								<%= icon('calendar') %>
+							</div>
 						</div>
+						<%= f.text_field :sales_date, value: Date.today.strftime("%Y年%m月%d日"), class: "form-control form-control-lg datepicker mb-2", label: false, wrapper: false %>
 					</div>
-					<%= f.text_field :sales_date, 'data-behaviour' => 'datepicker', class: "form-control form-control-lg datepicker mb-2" %>
 				</div>
 			</div>
 		</div>
-	</div>
 
-	<div class="col-12 mb-2 btn-lg">
-		<%= f.button :submit, '作成', class: 'btn btn-primary' %>
-	</div>
+		<div class="col-12 mb-2 btn-lg">
+			<%= f.button :submit, '作成', class: 'btn btn-primary' %>
+		</div>
 
-</div>
-	<% end %>
+	</div>
+<% end %>
 

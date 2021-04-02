@@ -25,8 +25,8 @@
 	</head>
 
 	<body data-spy="scroll">
-		<nav id="top_nav" class="navbar navbar-dark bg-dark navbar-expand-lg mb-3 d-print-none" data-turbolinks-permanent>
-			<a class="navbar-brand" href="/"><div id="logo"></div></a>
+		<nav id="top_nav" class="navbar navbar-dark bg-dark navbar-expand-lg mb-3 d-print-none">
+			<a class="navbar-brand" href="/" data-turbolinks="false"><div id="logo"></div></a>
 			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
 				<span class="navbar-toggler-icon"></span>
 			</button>
@@ -38,11 +38,11 @@
 							<a class="nav-link light_link" href="/profits">計算</a>
 						</li>
 						<li class="nav-item">
-							<a class="nav-link light_link" href="/oyster_supplies">牡蠣の供給</a>
+							<a class="nav-link light_link" href="/oyster_supplies">牡蠣</a>
 						</li>
 						<li class="nav-item dropdown">
 							<a class="nav-link light_link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-								設定等
+								設定
 							</a>
 							<div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
 								<% if current_user.admin? %>
@@ -60,12 +60,14 @@
 						</li>
 						<li class="nav-item dropdown">
 							<a class="nav-link light_link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-								通販・EC
+								通販
 							</a>
 							<div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-								<a class="dropdown-item dark_link" href="/manifests">IM/WC・発送表</a>
-								<a class="dropdown-item dark_link" href="/r_manifests">楽天・発送表</a>
-								<a class="dropdown-item dark_link" href="/yahoo_orders">ヤフー・発送表</a>
+								<a class="dropdown-item dark_link" href="/r_manifests">楽天</a>
+								<a class="dropdown-item dark_link" href="/infomart_orders">Infomart</a>
+								<a class="dropdown-item dark_link" href="/online_orders">Funabiki.info</a>
+								<a class="dropdown-item dark_link" href="/yahoo_orders" data-turbolinks="false">ヤフー・発送表</a>
+								<a class="dropdown-item dark_link" href="/manifests">IM/WC・発送表（旧）</a>
 								<a class="dropdown-item dark_link" href="/noshis">熨斗作成</a>
 							</div>
 						</li>

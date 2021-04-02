@@ -15,7 +15,7 @@ gem 'dotenv-rails', groups: [:development, :test], :require => 'dotenv/rails-now
 gem 'sidekiq'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails' 
-gem 'rails', '~> 6.0.3.1'
+gem 'rails', '~> 6.1.3.1'
 
 # Use postgresql as the database for Active Record
 gem 'pg'
@@ -95,6 +95,7 @@ gem 'mini_magick'
 #Auto-upload setup for Google
 gem 'carrierwave'
 gem 'carrierwave-google-storage'
+gem 'google-api-client'
 
 # Easy Categories for Manual Articles
 gem 'ancestry'

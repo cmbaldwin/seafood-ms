@@ -56,6 +56,9 @@
 							<%= f.input_field :approved, as: :boolean, boolean_style: :inline %>
 						</div>
 						<%= f.submit '更新', :class => 'btn btn-sm btn-secondary' %>
+						<% unless user.admin? %>
+							<%= link_to "削除", user_path(user), method: :delete, data: { confirm: '削除?' }, class: 'btn btn-sm btn-danger' %>
+						<% end %>
 					</div>
 				<% end %>
 			</div>

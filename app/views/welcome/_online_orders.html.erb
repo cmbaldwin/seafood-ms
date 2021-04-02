@@ -1,112 +1,67 @@
-<script type="text/javascript">
-	<%= render partial: 'sharedjs', formats: [:js] %>
-</script>
-
-<% shinki = @online_orders.shinki_im_orders %>
+<%= javascript_pack_tag 'partials', 'data-turbolinks-track': 'reload' %>
 
 <div class="card m-0 p-0 border-white">
-	<div class="card-header p-3">
-		<h4 class="card-title float-left"><%= @online_orders.sales_date %></h4>
-		<span class="mb-3">&nbsp</span>
-		<div class="btn-group float-right mt-n2">
-			<% if shinki[:total] > 0 %>
-				<span class="btn btn-sm btn-info m-0 p-0 tippy" data-tippy-content="<center>通販新規注文</center>">
-					<button type="button" class="btn btn-info" data-toggle="modal" data-target="#manifest_shinki_modal">
-						<%= icon("asterisk", class: 'text-white') %><span class="badge badge-warning ml-1"><%= @wc_shinki ? (shinki[:total] + @wc_shinki.length) : shinki[:total] %></span>
-					</button>
-				</span>
-			<% end %>
-			<span class="btn btn-sm btn-info m-0 p-0 tippy" data-tippy-content="<center><%= @online_orders.sales_date %>の<br>出荷個別ページ</center>">
-				<%= link_to icon("card-list", class: 'text-white'), @online_orders, :alt => "個別ページ", class: 'btn btn-info' %>
-			</span>
-			<span class="btn btn-sm btn-info m-0 p-0 tippy" data-tippy-content="<center><%= @online_orders.sales_date %>の<br>データを取込む</center>">
-				<%= link_to icon("arrow-counterclockwise", class: "text-success"), edit_manifest_path(@online_orders), :alt => "データを編集", class: 'btn btn-info' %>
-			</span>
-			<span class="btn btn-sm btn-info m-0 p-0 tippy" data-tippy-content="<center><%= @online_orders.sales_date %>の<br>出荷表PDFを開く</center>">
-				<%= link_to icon("file-earmark-arrow-down", class: 'text-white'), manifest_pdf_path(@online_orders), :method => :get, class: 'btn btn-info', remote: true, 'data-turbolinks' => "false" %>
-			</span>
+	<div class="card-header p-1 mb-1">
+		<div class="row">
+			<div class="col-lg-6 col-md-12 text-center d-table-cell align-middle mb-1">
+				<h4 class="mb-0 mt-1 card-title"><%= to_nengapiyoubi(@search_date) %></h4>
+			</div>
+			<div class="col-lg-6 col-md-12 text-center d-table-cell align-middle mb-1">
+				<div class="btn-group">
+					<% unless @new_online_orders.empty? %>
+						<button type="button" class="btn btn-sm btn-info tippy" data-toggle="modal" data-target="#online_shinki_modal" data-tippy-content="<center>Funabiki.info 新規注文</center>">
+							<%= icon("asterisk") %><span class="badge badge-warning ml-1"><%= @new_online_orders.length %></span>
+						</button>
+					<% end %>
+					<span class="btn btn-sm btn-info m-0 p-0 tippy" data-tippy-content="個別ページ">
+						<%= link_to icon("card-list", class: "text-white"), online_orders_path(date: @search_date), :alt => "個別ページ", class: 'btn btn-info', 'data-turbolinks' => "false" %>
+					</span>
+					<span class="btn btn-sm btn-info m-0 p-0 tippy" data-tippy-content="データ更新">
+						<%= link_to icon("arrow-counterclockwise", class: "text-success"), refresh_online_orders_path, :alt => "データ更新", class: 'btn btn-info' %>
+					</span>
+					<span class="btn btn-sm btn-info m-0 p-0 tippy load" data-tippy-content="Funabiki.info 出荷データCSVを作成">
+						<%# link_to icon("file-earmark-spreadsheet", class: 'text-white'), online_orders_csv_path(ship_date: @search_date), :method => :get, data: {turbolinks: false}, class: "btn btn-info" %>
+					</span>
+					<span class="btn btn-sm btn-info m-0 p-0 tippy load" data-tippy-content="Funabiki.info 出荷表を作成">
+						<%= link_to icon("file-earmark-arrow-down", class: 'text-white'), online_orders_shipping_list_path(ship_date: @search_date), :method => :get, remote: true, class: "btn btn-info" %>
+					</span>
+				</div>
+			</div>
 		</div>
 	</div>
-		<% infomart_count(@online_orders) %>
-		<% tsuhan_count(@online_orders) %>
-		<% counts = @online_orders.display_totals %>
-		<div class="card-text text-center">
-			<div class="row h5 text-center mb-1 w-100">
-				<div class="col-md-4 col-sm-12 mb-2 pb-1">
-					<span class="d-block m-1 strong">むき身</span>
-					<%= counts[:gohyaku] %>
-				</div>
-				<div class="col-md-4 col-sm-12 mb-2 pb-1">
-					<span class="d-block m-1 strong">セル／セルカード</span>
-					<b><%= counts[:shells] %> ・ <%= counts[:cards] %></b>
-				</div>
-				<div class="col-md-4 col-sm-12 mb-2 pb-1">
-					<span class="d-block m-1 strong">バラ牡蠣</span>
-					<%= counts[:bara] %>
+
+	<div class="card-text text-center">
+		<% if !@daily_orders.empty? %>
+			<div class="card p-2">
+				<div class="row d-flex justify-content-center align-items-center">
+					<% counts = online_order_counts(@daily_orders) %>
+					<% counts[:headers].each_with_index do |header, i| %>
+						<% value = counts[:values][i] %>
+						<% unless value.zero? %>
+							<div class="col text-center">
+								<h6 class="font-weight-bolder p-2"><%= header %></h6>
+								<span class="btn btn-sm btn-primary"><%= value %><%= counts_counter(i) %></span>
+							</div>
+						<% end %>
+					<% end %>
 				</div>
 			</div>
-			<div class="table-responsive">
-				<table class="table table-sm table-striped small">
-					<tr>
-						<th colspan="2" class="border-right">
-							インフォマート
-						</th>
-						<th colspan="4">
-							自社サイト
-						</th>
-					</tr>
-					<tr>
-						<th>
-							生牡蠣
-						</th>
-						<th class="border-right">
-							冷凍牡蠣
-						</th>
-						<th>
-							冷蔵便
-						</th>
-						<th>
-							冷凍便
-						</th>
-						<th>
-							干しエビ
-						</th>
-						<th>
-							焼きアナゴ
-						</th>
-					</tr>
-					<tr>
-						<td>
-							<%= non_zero_print(@infomart[:raw]) %>
-						</td>
-						<td class="border-right">
-							<%= non_zero_print(@infomart[:frozen]) %>
-						</td>
-						<td>
-							<%= non_zero_print(@tsuhan[:fridge]) %>
-						</td>
-						<td>
-							<%= non_zero_print(@tsuhan[:frozen]) %>
-						</td>
-						<td>
-							<%= non_zero_print(@tsuhan[:ebi]) %>
-						</td>
-						<td>
-							<%= non_zero_print(@tsuhan[:anago]) %>
-						</td>
-					</tr>
-				</table>
+		<% else %>
+			<div class="m-3">
+				Funabiki.info発送なし
 			</div>
-		</div>
-	<div class="card-footer bg-white">
-		<small class="text-muted float-left">
-			(<%= @online_orders.updated_at.in_time_zone('Tokyo') %>)に更新された
+		<% end %>
+	</div>
+
+	<div class="card-footer bg-white d-table-cell align-middle">
+		<small class="text-muted">
+			<%= "#{to_nengapijibun(@daily_orders.last.updated_at)}時点" unless @daily_orders.empty? %>
 		</small>
-			<% previous_day = @online_orders.manifest_query.previous %>
-			<% next_day = @online_orders.manifest_query.next %>
-		<div class="btn-group float-right mt-n2 mb-1" role="group" aria-label="Basic">
-			<%= link_to icon("arrow-left-circle"), load_online_order_path(previous_day.id), :alt => "前", class: 'btn btn-sm btn-secondary tippy', remote: true, "data-tippy-content" => "<center>#{previous_day.sales_date}の<br>データを見る</center>" %>
-			<%= link_to icon("arrow-right-circle"), load_online_order_path(next_day.id), :alt => "次", class: 'btn btn-sm btn-secondary tippy', remote: true, "data-tippy-content" => "<center>#{next_day.sales_date}の<br>データを見る</center>" %>
+		<div class="btn-group float-right" role="group" aria-label="Basic">
+			<%= link_to icon("arrow-left-circle"), load_online_orders_path(@search_date - 1.day), :alt => "前", class: 'btn btn-sm btn-secondary tippy load', 'data-target' => '#tsuhan_partial', remote: true, "data-tippy-content" => "<center>#{to_nengapi(@search_date - 1.day)}の<br>データを見る</center>"  %>
+			<%= link_to icon("arrow-right-circle"), load_online_orders_path(@search_date + 1.day), :alt => "次", class: 'btn btn-sm btn-secondary tippy load', 'data-target' => '#tsuhan_partial', remote: true, "data-tippy-content" => "<center>#{to_nengapi(@search_date + 1.day)}の<br>データを見る</center>" %>
 		</div>
 	</div>
 </div>
+
+

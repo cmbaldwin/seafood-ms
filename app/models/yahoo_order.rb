@@ -5,6 +5,10 @@ class YahooOrder < ApplicationRecord
 
 	serialize :details, Hash
 
+	def order_time
+		DateTime.parse(self.details["OrderTime"])
+	end
+
 	def order_status(for_print = true)
 		status = self.details["OrderStatus"]
 		unless self.ship_date == nil
@@ -25,6 +29,10 @@ class YahooOrder < ApplicationRecord
 
 	def url
 		"https://pro.store.yahoo.co.jp/pro.oystersisters/order/manage/detail/" + self.order_id
+	end
+
+	def contact_url
+		'https://pro.store.yahoo.co.jp/pro.oystersisters/order/manage/detail/mail_and_form/' + self.order_id
 	end
 
 	def yahoo_id
@@ -227,6 +235,14 @@ class YahooOrder < ApplicationRecord
 
 	def arrival_time
 		(self.shipping_details["ShipRequestTime"].nil? ? "指定無し" : self.shipping_details["ShipRequestTime"])
+	end
+
+	def tracking
+		self.shipping_details["ShipInvoiceNumber1"]
+	end
+
+	def tracking_url
+		'https://jizen.kuronekoyamato.co.jp/jizen/servlet/crjz.b.NQ0010?id=' + self.tracking
 	end
 
 	def yamato_shipping_format

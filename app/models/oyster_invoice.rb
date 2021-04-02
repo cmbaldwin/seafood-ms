@@ -1,6 +1,7 @@
 class OysterInvoice < ApplicationRecord
 	has_many :oyster_invoices_supply
 	has_many :oyster_supplies, through: :oyster_invoices_supply, validate: false
+	
 	after_destroy :destroy_message
 
 	mount_uploader :aioi_all_pdf, OysterInvoiceUploader

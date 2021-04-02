@@ -93,15 +93,11 @@ class ManifestsController < ApplicationController
 	end
 
 	def empty_manifest
-		@manifest = Manifest.new
-		@manifest.type = params[:type]
-		#render in the browser (takes server ram until closed)
-		send_data @manifest.generate_empty_manifest.render,
+		filename = "（#{params[:type]}）無字発送リスト"
+
+		send_data PrawnPDF.empty_manifest(filename, params[:type]).render,
 			type: 'application/pdf', 
 			disposition: :inline
-		pdf = nil
-		GC.start
-		File.delete(Rails.root + 'PDF.pdf') if File.exist?(Rails.root + 'PDF.pdf')
 	end
 
 	def pdf

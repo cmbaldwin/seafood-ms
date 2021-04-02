@@ -50,7 +50,7 @@ class MessagesController < ApplicationController
 	# DELETE /message/1
 	def destroy
 		@id = @message.id
-    @message.destroy
+		@message.destroy
 		respond_to do |format|
 			format.js { render 'destroy_message', layout: false }
 		end

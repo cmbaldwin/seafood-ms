@@ -11,12 +11,12 @@ document.addEventListener('turbolinks:load', () => {
 		connected() {
 			// Called when the subscription is ready for use on the server
 			// console.log("User with ID " + user_id + " connected to notifications...")
+			Turbolinks.clearCache()
 			$.ajax({
 				type: "GET",
 				url: "/messages/display_messages",
 				data: {'user': user_id},
 			});
-			Turbolinks.clearCache()
 		},
 
 		disconnected() {

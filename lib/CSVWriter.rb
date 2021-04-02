@@ -20,7 +20,7 @@ class CSVWriter
 				zip_code.to_s
 			end
 		end
-		series = start_date..end_date
+		series = start_date - 2.weeks..end_date + 1.day #in case some orders took longer to arrive and be registered
 		nengapi_series = series.map{|date| nengapi(date)}
 		yamato_numbers_list = Array.new
 

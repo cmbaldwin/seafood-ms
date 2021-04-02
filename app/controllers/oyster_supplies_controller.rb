@@ -1,7 +1,7 @@
 class OysterSuppliesController < ApplicationController
 	before_action :set_oyster_supply, only: [:show, :edit, :tippy_stats, :update, :destroy, :supply_check]
 	before_action :check_status
-	before_action :set_info, only: [:show, :edit, :new_by, :update, :destroy, :supply_check]
+	before_action :set_info, only: [:show, :edit, :new_by, :update, :destroy, :supply_check, :supply_price_actions]
 	before_action :set_action_params, only: [:supply_action_nav, :supply_previews_actions, :supply_invoice_actions, :supply_price_actions, :supply_stats, :tippy_stats]
 
 	def check_status
@@ -71,7 +71,94 @@ class OysterSuppliesController < ApplicationController
 		end
 	end
 
+	# POST set_prices/:start_date/:end_date
+	def set_prices
+		@start_date = set_price_params[:start_date]
+		@end_date = set_price_params[:end_date]
+		dates = (DateTime.parse(@start_date)..DateTime.parse(@end_date)).map{|d| d.strftime('%Y年%m月%d日')}
+		supplies = OysterSupply.where(supply_date: dates)
+		prices = set_price_params[:prices]
+		@altered = Hash.new
+		supplies.each do |supply|
+			new_hash = supply.oysters
+			prices.each do |prefecture, price_set_hash|
+				if prefecture == 'hyogo'
+					price_set_hash.each do |index, price_hash|
+						unless price_hash['ids'].reject{|id| id.empty? }.empty?
+							price_hash['prices'].each do |type, price|
+								unless price.empty?
+									price_hash['ids'].each do |supplier_id|
+										unless supplier_id.empty?
+											unless supply.oysters[type][supplier_id]["volume"].to_i.zero?
+												new_hash[type][supplier_id]["price"] = price
+
+												@altered[supply.id] = Hash.new unless @altered[supply.id].is_a?(Hash)
+												@altered[supply.id]["hyogo"] = Hash.new unless @altered[supply.id]["hyogo"].is_a?(Hash)
+												@altered[supply.id]["hyogo"][type] = Hash.new unless @altered[supply.id]["hyogo"][type].is_a?(Hash)
+												@altered[supply.id]["hyogo"][type][price] = Array.new unless @altered[supply.id]["hyogo"][type][price].is_a?(Array)
+												@altered[supply.id]["hyogo"][type][price] << supplier_id
+											end
+										end
+									end
+								end
+							end
+						end
+					end
+				elsif prefecture == "okayama"
+					if (supply.oysters["okayama"]["hinase"]["subtotal"].to_i > 0) && (price_set_hash["hinase"].to_i > 0)
+						new_hash["okayama"]["hinase"]["price"] = price_set_hash["hinase"]
+
+						@altered[supply.id] = Hash.new unless @altered[supply.id].is_a?(Hash)
+						@altered[supply.id]["okayama"] = Hash.new unless @altered[supply.id]["okayama"].is_a?(Hash)
+						@altered[supply.id]["okayama"]["hinase"] = price_set_hash["hinase"]
+					end
+					if (supply.oysters["okayama"]["iri"]["subtotal"].to_i > 0) && (price_set_hash["iri"].to_i > 0)
+						new_hash["okayama"]["iri"].each do |k, vh|
+							vh["price"] = price_set_hash["iri"] if vh["price"]
+						end
+						new_hash["okayama"]["iri"]["price"] = price_set_hash["iri"]
+
+						@altered[supply.id] = Hash.new unless @altered[supply.id].is_a?(Hash)
+						@altered[supply.id]["okayama"] = Hash.new unless @altered[supply.id]["okayama"].is_a?(Hash)
+						@altered[supply.id]["okayama"]["iri"] = price_set_hash["iri"]
+					end
+					if (supply.oysters["okayama"]["tamatsu"]["subtotal"].to_i > 0) && (price_set_hash["tamatsu"]["large"].to_i > 0)
+						new_hash["okayama"]["tamatsu"].each do |k, vh|
+							vh["price"] = price_set_hash["tamatsu"]["large"] if vh["price"]
+						end
+						new_hash["okayama"]["tamatsu"]["price"] = price_set_hash["tamatsu"]["large"]
+
+						@altered[supply.id] = Hash.new unless @altered[supply.id].is_a?(Hash)
+						@altered[supply.id]["okayama"] = Hash.new unless @altered[supply.id]["okayama"].is_a?(Hash)
+						@altered[supply.id]["okayama"]["tamatsu"] = Hash.new unless @altered[supply.id]["okayama"]["tamatsu"].is_a?(Hash)
+						@altered[supply.id]["okayama"]["tamatsu"]["large"] = price_set_hash["tamatsu"]["large"]
+					end
+					if (supply.oysters["okayama"]["tamatsu"]["subtotal"].to_i > 0) && (price_set_hash["tamatsu"]["small"].to_i > 0)
+						new_hash["okayama"]["tamatsu"]["small_price"] = price_set_hash["tamatsu"]["small"]
+
+						@altered[supply.id] = Hash.new unless @altered[supply.id].is_a?(Hash)
+						@altered[supply.id]["okayama"] = Hash.new unless @altered[supply.id]["okayama"].is_a?(Hash)
+						@altered[supply.id]["okayama"]["tamatsu"] = Hash.new unless @altered[supply.id]["okayama"]["tamatsu"].is_a?(Hash)
+						@altered[supply.id]["okayama"]["tamatsu"]["small"] = price_set_hash["tamatsu"]["small"]
+					end
+				end
+			end
+			supply.oysters = new_hash
+			supply.save
+		end
+		respond_to do |format|
+			format.js { render layout: false }
+		end
+	end
+
 	def supply_stats
+		@start_date = DateTime.parse(set_price_params[:start_date])
+		@end_date = DateTime.parse(set_price_params[:end_date]) - 1.day
+		dates = (@start_date..@end_date).map{ |d| d.strftime('%Y年%m月%d日') }
+		@supplies = OysterSupply.where(supply_date: dates)
+		@profits = Profit.where(sales_date: dates)
+		@rakuten_orders = RManifest.where(sales_date: dates)
+		
 		respond_to do |format|
 			format.js { render layout: false }
 		end
@@ -82,10 +169,10 @@ class OysterSuppliesController < ApplicationController
 		last_year_three_day_period = [to_nengapi(@oyster_supply.date - 1.year), to_nengapi(@oyster_supply.date - 1.year - 1.day), to_nengapi(@oyster_supply.date - 1.year - 2.days)]
 
 		@previous_supply = @oyster_supply.previous
-		@two_previous_supply = @previous_supply.previous
+		@two_previous_supply = @previous_supply.previous if @previous_supply
 		@ly_supply = OysterSupply.where(supply_date: last_year_three_day_period).first
-		@ly_next_supply = @ly_supply.next
-		@ly_prev_supply = @ly_supply.previous
+		@ly_next_supply = @ly_supply.next if @ly_supply
+		@ly_prev_supply = @ly_supply.previous if @ly_supply
 
 		respond_to do |format|
 			format.html { render layout: false }
@@ -191,7 +278,6 @@ class OysterSuppliesController < ApplicationController
 	def create
 		@oyster_supply = OysterSupply.new(oyster_supply_params)
 		@oyster_supply[:oysters_last_update] = DateTime.now
-		@oyster_supply.set_totals
 		respond_to do |format|
 			if @oyster_supply.save
 				format.html { redirect_to @oyster_supply, notice: '牡蠣原料を更新しました' }
@@ -251,5 +337,9 @@ class OysterSuppliesController < ApplicationController
 
 		def calendar_params
 			params.permit(:place, :start, :end, :_, :format)
+		end
+
+		def set_price_params
+			params.permit(:authenticity_token, :start_date, :end_date, :commit, prices: {} )
 		end
 end

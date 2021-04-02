@@ -14,9 +14,9 @@ import interactionPlugin from "@fullcalendar/interaction";
 // solves the error problem, but renders from previous calendar settings
 
 var calendar_load = `
-<div class="calendar_load container d-flex align-items-center justify-content-center">
+<div class="loading_overlay calendar_overlay container d-flex align-items-center justify-content-center">
 	<div class="spinner-grow text-primary" role="status">
-  	<span class="sr-only">読み込み中...</span>
+		<span class="sr-only">読み込み中...</span>
 	</div>
 </div>
 `;
@@ -108,7 +108,7 @@ document.addEventListener('turbolinks:load', function() {
 				if (loading) {
 					$(calendarEl).prepend( calendar_load );
 				} else {
-					$('.calendar_load').remove()
+					$('.loading_overlay').remove()
 				}
 			}
 	  });
@@ -161,7 +161,7 @@ document.addEventListener('turbolinks:load', function() {
 				if (loading) {
 					$(calendarEl).prepend( calendar_load );
 				} else {
-					$('.calendar_load').remove()
+					$('.loading_overlay').remove()
 				}
 			}
 	  	});
@@ -175,6 +175,113 @@ document.addEventListener('turbolinks:load', function() {
 	};
 });
 
+// Infomart Orders Calendar
+document.addEventListener('turbolinks:load', function() {
+
+	var calendarEl = document.getElementById('infomart_orders_calendar');
+
+	if (calendarEl) {
+		var calendar = new Calendar(calendarEl, {
+		    plugins: [ dayGridPlugin, interactionPlugin ],
+			locale: 'ja',
+			contentHeight: 450,
+			aspectRatio: 1,
+			headerToolbar: {
+				left: 'prevYear,prev,next,nextYear',
+				center: '',
+				right: 'title'
+			},
+			customButtons: {
+			},
+			selectable: true,
+			events: '/infomart_orders.json',
+			eventClick: function(info) {
+				$.ajax({
+					type: "GET",
+					url: '/fetch_infomart_list/' + encodeURI(moment(info.event.start).format('YYYY-MM-DD')),
+					dataType: "script",
+					data: info.event.start
+				});
+			},
+			dateClick: function(info) {
+				$.ajax({
+					type: "GET",
+					url: '/fetch_infomart_list/' + encodeURI(moment(info.date).format('YYYY-MM-DD')),
+					dataType: "script",
+					data: info.date
+				});
+			},
+			loading: function (loading) {
+				if (loading) {
+					$(calendarEl).prepend( calendar_load );
+				} else {
+					$('.loading_overlay').remove()
+				}
+			}
+	  	});
+	  };
+
+
+	if (calendarEl) {
+		calendar.destroy();
+		calendar.render();
+		calendar.updateSize()
+	};
+});
+
+// Funabiki.info Orders Calendar
+document.addEventListener('turbolinks:load', function() {
+
+	var calendarEl = document.getElementById('online_orders_calendar');
+
+	if (calendarEl) {
+		var calendar = new Calendar(calendarEl, {
+		    plugins: [ dayGridPlugin, interactionPlugin ],
+			locale: 'ja',
+			contentHeight: 450,
+			aspectRatio: 1,
+			headerToolbar: {
+				left: 'prevYear,prev,next,nextYear',
+				center: '',
+				right: 'title'
+			},
+			customButtons: {
+			},
+			selectable: true,
+			events: '/online_orders.json',
+			eventClick: function(info) {
+				$.ajax({
+					type: "GET",
+					url: '/fetch_online_orders_list/' + encodeURI(moment(info.event.start).format('YYYY-MM-DD')),
+					dataType: "script",
+					data: info.event.start
+				});
+			},
+			dateClick: function(info) {
+				$.ajax({
+					type: "GET",
+					url: '/fetch_online_orders_list/' + encodeURI(moment(info.date).format('YYYY-MM-DD')),
+					dataType: "script",
+					data: info.date
+				});
+			},
+			loading: function (loading) {
+				if (loading) {
+					$(calendarEl).prepend( calendar_load );
+				} else {
+					$('.loading_overlay').remove()
+				}
+			}
+	  	});
+	  };
+
+
+	if (calendarEl) {
+		calendar.destroy();
+		calendar.render();
+		calendar.updateSize()
+	};
+});
 
 // New Profit Calendar
 document.addEventListener('turbolinks:load', function() {
@@ -202,7 +309,7 @@ document.addEventListener('turbolinks:load', function() {
 				if (loading) {
 					$(calendarEl).prepend( calendar_load );
 				} else {
-					$('.calendar_load').remove()
+					$('.loading_overlay').remove()
 				}
 			}
 	  	});
@@ -241,7 +348,7 @@ document.addEventListener('turbolinks:load', function() {
 				if (loading) {
 					$(calendarEl).prepend( calendar_load );
 				} else {
-					$('.calendar_load').remove()
+					$('.loading_overlay').remove()
 				}
 			}
 	  	});

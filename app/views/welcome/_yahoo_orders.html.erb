@@ -1,46 +1,55 @@
-<script type="text/javascript">
-	<%= render partial: 'sharedjs', formats: [:js] %>
-</script>
+<%= javascript_pack_tag 'partials', 'data-turbolinks-track': 'reload' %>
 
 <div class="card m-0 p-0 border-white">
-	<div class="card-header p-3">
-		<h4 class="card-title float-left"><%= to_nengapi(@yahoo_date) %></h4>
-		<span class="mb-3">&nbsp</span>
-		<div class="btn-group float-right mt-n2">
-			<% if @new_yahoo_orders %>
-				<button type="button" class="btn btn-sm btn-info tippy" data-toggle="modal" data-target="#yahoo_shinki_modal" data-tippy-content="<center>ヤフー新規注文</center>">
-					<%= icon("asterisk") %><span class="badge badge-warning ml-1"><%= @new_yahoo_orders.length %></span>
-				</button>
-			<% end %>
-			<%= link_to icon("card-list"), yahoo_orders_path(date: @yahoo_date), :alt => "個別ページ", class: 'btn btn-info tippy', "data-tippy-content" => "<center>#{to_nengapi(@yahoo_date)}の<br>個別ページ</center>" %>
-			<%= link_to icon("arrow-counterclockwise", class: "text-success"), refresh_yahoo_path, :alt => "ヤフーから<br>データを取込み", class: 'btn btn-info tippy', "data-tippy-content" => "<center>ヤフーからデータを<br>取込み</center>" %>
-			<%= link_to icon("file-earmark-arrow-down"), yahoo_shipping_list_path(ship_date: @yahoo_date.strftime("%Y-%m-%d")), class: 'btn btn-info tippy', remote: true, "data-tippy-content" => "<center>#{to_nengapi(@yahoo_date)}の<br>出荷表PDFを開く</center>", 'data-turbolinks' => "false" %>
-		</div>
-	</div>
-		<div class="card-text text-center">
-			<% counts = yahoo_order_counts(@yahoo_orders) %>
-			<div class="btn-group w-100 mt-1" role="group">
-				<% counts[:headers].each_with_index do |header, i| %>
-					<div class="btn col-3 btn-light d-block mb-1 strong">
-						<h6><%= header %></h6>
-						<span class="badge badge-<%= counts[:values][i] > 0 ? 'primary' : 'light' %> p-2">
-							<%= counts[:values][i] %>
-						</span>
-					</div>
-					<% if i == 3 %>
-					</div>
-					<div class="btn-group w-100" role="group">
+	<div class="card-header p-1 mb-1,b,mnbm,nbn">
+		<div class="row">
+			<div class="col-lg-6 col-md-12 text-center d-table-cell align-middle mb-1">
+				<h4 class="mb-0 mt-1 card-title"><%= to_nengapiyoubi(@yahoo_date) %></h4>
+			</div>
+			<div class="col-lg-6 col-md-12 text-center d-table-cell align-middle mb-1">
+				<div class="btn-group">
+					<% if @new_yahoo_orders %>
+						<button type="button" class="btn btn-sm btn-info tippy" data-toggle="modal" data-target="#yahoo_shinki_modal" data-tippy-content="<center>ヤフー新規注文</center>">
+							<%= icon("asterisk") %><span class="badge badge-warning ml-1"><%= @new_yahoo_orders.length %></span>
+						</button>
 					<% end %>
-				<% end %>
+					<%= link_to icon("card-list"), yahoo_orders_path(date: @yahoo_date), :alt => "個別ページ", class: 'btn btn-info tippy', "data-tippy-content" => "<center>#{to_nengapi(@yahoo_date)}の<br>個別ページ</center>", 'data-turbolinks' => "false" %>
+					<%= link_to icon("arrow-counterclockwise", class: "text-success"), refresh_yahoo_path, :alt => "ヤフーから<br>データを取込み", class: 'btn btn-info tippy', "data-tippy-content" => "<center>ヤフーからデータを<br>取込み</center>" %>
+					<%= link_to icon("file-earmark-arrow-down"), yahoo_shipping_list_path(ship_date: @yahoo_date.strftime("%Y-%m-%d")), class: 'btn btn-info tippy', remote: true, "data-tippy-content" => "<center>#{to_nengapi(@yahoo_date)}の<br>出荷表PDFを開く</center>", 'data-turbolinks' => "false" %>
+				</div>
 			</div>
 		</div>
-	<div class="card-footer bg-white">
-		<small class="text-muted float-left">
-			<%= "(#{@yahoo_orders.last.updated_at})に更新された" unless @yahoo_orders.empty? %>
+	</div>
+
+	<div class="card-text text-center">
+		<% if @yahoo_orders.length > 0 %>
+			<div class="card p-2">
+				<% counts = yahoo_order_counts(@yahoo_orders) %>
+				<div class="row d-flex justify-content-center align-items-center">
+					<% counts[:headers].each_with_index do |header, i| %>
+						<% if counts[:values][i] > 0 %>
+							<div class="col text-center">
+								<h6 class="font-weight-bolder p-2"><%= header %></h6>
+								<span class="btn btn-sm btn-primary"><%= counts[:values][i] %><small><%= counts_counter(i) %></small></span>
+							</div>
+						<% end %>
+					<% end %>
+				</div>
+			</div>
+		<% else %>
+			<div class="m-3">
+				ヤフーショッピング発送なし
+			</div>
+		<% end %>
+	</div>
+	
+	<div class="card-footer bg-white d-table-cell align-middle">
+		<small class="text-muted">
+			<%= "#{to_nengapijibun(@yahoo_orders.last.updated_at)}時点" unless @yahoo_orders.empty? %>
 		</small>
-		<div class="btn-group float-right mt-n2 mb-1" role="group" aria-label="Basic">
-			<%= link_to icon("arrow-left-circle"), load_yahoo_orders_path(@yahoo_date - 1.day), :alt => "前", class: 'btn btn-sm btn-secondary tippy', remote: true, "data-tippy-content" => "<center>#{to_nengapi(@yahoo_date - 1.day)}の<br>データを見る</center>"  %>
-			<%= link_to icon("arrow-right-circle"), load_yahoo_orders_path(@yahoo_date + 1.day), :alt => "次", class: 'btn btn-sm btn-secondary tippy', remote: true, "data-tippy-content" => "<center>#{to_nengapi(@yahoo_date + 1.day)}の<br>データを見る</center>" %>
+		<div class="btn-group float-right" role="group" aria-label="Basic">
+			<%= link_to icon("arrow-left-circle"), load_yahoo_orders_path(@yahoo_date - 1.day), :alt => "前", class: 'btn btn-sm btn-secondary tippy load', 'data-target' => '#yahoo_partial', remote: true, "data-tippy-content" => "<center>#{to_nengapi(@yahoo_date - 1.day)}の<br>データを見る</center>"  %>
+			<%= link_to icon("arrow-right-circle"), load_yahoo_orders_path(@yahoo_date + 1.day), :alt => "次", class: 'btn btn-sm btn-secondary tippy load', 'data-target' => '#yahoo_partial', remote: true, "data-tippy-content" => "<center>#{to_nengapi(@yahoo_date + 1.day)}の<br>データを見る</center>" %>
 		</div>
 	</div>
 </div>

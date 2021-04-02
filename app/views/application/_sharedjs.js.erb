@@ -5,3 +5,24 @@ tippy('.tippy', {
 	touch: true,
 	touch: 'hold'
 });
+$('.load').on('click', function() {
+	var loading_overlay = `
+	<div class="loading_overlay partial_overlay container d-flex align-items-center justify-content-center">
+		<div class="spinner-grow text-primary" role="status">
+			<span class="sr-only">読み込み中...</span>
+		</div>
+	</div>
+	`;
+	target = $($(this).attr('data-target'))
+	target.prepend( loading_overlay );
+})
+if ($('#grid').length) {
+	const shuffleInstance = new Shuffle(document.getElementById('grid'), {
+		itemSelector: '.shuffle-brick',
+		sizer: '.shuffle-sizer'
+	});
+	// Update shuffle instance when partial is rendered via render_async
+	$(document).on('render_async_load', function(event) {
+		shuffleInstance.update()
+	});
+}

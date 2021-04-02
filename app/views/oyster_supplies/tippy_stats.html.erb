@@ -13,19 +13,19 @@
 		<tbody>
 			<tr>
 				<th scope="row">年月日</th>
-				<td class="border-left"><%= @previous_supply.supply_date %></td>
-				<td><%= @two_previous_supply.supply_date %></td>
-				<td class="border-left"><%= @ly_prev_supply.supply_date %></td>
-				<td><%= @ly_supply.supply_date %></td>
-				<td><%= @ly_next_supply.supply_date %></td>
+				<td class="border-left"><%= @previous_supply.supply_date if @previous_supply %></td>
+				<td><%= @two_previous_supply.supply_date if @two_previous_supply%></td>
+				<td class="border-left"><%= @ly_prev_supply.supply_date if @ly_prev_supply %></td>
+				<td><%= @ly_supply.supply_date if @ly_supply %></td>
+				<td><%= @ly_next_supply.supply_date if @ly_next_supply %></td>
 			</tr>
 			<tr>
 				<th scope="row"><%= stat_column_title(@stat) %></th>
-				<td class="border-left"><%= get_supply_stat(@stat, @previous_supply) %></td>
-				<td><%= get_supply_stat(@stat, @two_previous_supply) %></td>
-				<td class="border-left"><%= get_supply_stat(@stat, @ly_prev_supply) %></td>
-				<td><%= get_supply_stat(@stat, @ly_supply) %></td>
-				<td><%= get_supply_stat(@stat, @ly_next_supply) %></td>
+				<td class="border-left"><%= get_supply_stat(@stat, @previous_supply) if @previous_supply %></td>
+				<td><%= get_supply_stat(@stat, @two_previous_supply) if @two_previous_supply%></td>
+				<td class="border-left"><%= get_supply_stat(@stat, @ly_prev_supply) if @ly_prev_supply %></td>
+				<td><%= get_supply_stat(@stat, @ly_supply) if @ly_supply %></td>
+				<td><%= get_supply_stat(@stat, @ly_next_supply) if @ly_next_supply %></td>
 			</tr>
 		</tbody>
 	</table>

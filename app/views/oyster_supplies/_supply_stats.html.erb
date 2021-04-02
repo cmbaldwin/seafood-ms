@@ -1,1 +1,68 @@
-牡蠣の供給統計ツールは工事中です。
+<% if current_user.admin? %>
+	<div class="card">
+		<% stat_hash = stat_hash(supplies) %>
+		<div class="card-header">
+			<h5>
+				<%= start_date.to_date.to_formatted_s(:db) %> ~ <%= end_date.to_date.to_formatted_s(:db) %> 統計
+			</h5>
+		</div>
+		<div class="card-body">
+			<div class="row align-items-center text-center">
+				<% period_stats(stat_hash).each do |key, int| %>
+					<div class="col-lg-4 col-12 mb-1">
+						<b><%= stat_key_to_japanese(key) %></b><br>
+						<% if stat_key_to_unit(key) == "¥" %>
+							<%= stat_key_to_unit(key) %> <%= int.is_a?(Array) ? number_with_delimiter((int.sum / int.length).to_i) : number_with_delimiter(int.to_i) %><br>
+						<% else %>
+							<%= int.is_a?(Array) ? number_with_delimiter((int.sum / int.length).to_i) : number_with_delimiter(int.to_i) %> <%= stat_key_to_unit(key) %><br>
+						<% end %>
+					</div>
+				<% end %>
+				<% market_profit = @profits.inject(0){|memo, profit| memo += profit.totals[:profits]} %>
+				<% rakuten_profit = @rakuten_orders.inject(0){|memo, orders| memo += orders.without_raw_subtotal } %>
+				<div class="col-lg-4 col-12 mb-1">
+					<b>市場利益小計</b><br>
+					¥ <%= number_with_delimiter(market_profit.to_i) %><br>
+				</div>
+				<div class="col-lg-4 col-12 mb-1">
+					<b>楽天利益小計</b><br>
+					¥ <%= number_with_delimiter(rakuten_profit.to_i) %><br>
+				</div>
+				<div class="col-lg-4 col-12 mb-1">
+					<b>総小計</b><br>
+					<% profit_subtotal = (market_profit + rakuten_profit) %>
+					¥ <%= number_with_delimiter(profit_subtotal.to_i) %><br>
+				</div>
+				<div class="col-lg-4 col-12 mb-1 bg-dark text-white rounded">
+					<b>利益見積もり（キロ儲け）</b><br>
+					<% profit_total = profit_subtotal - period_stats(stat_hash)[:cost_total] %>
+					<% profit_kilo_total = profit_total / period_stats(stat_hash)[:mukimi_total] %>
+					¥ <%= number_with_delimiter(profit_total.to_i) %>（¥ <%= number_with_delimiter(profit_kilo_total.to_i) %>）<br>
+				</div>
+			</div>
+			<div class="row d-flex">
+				<% stat_hash.each do |supply| %>
+					<div class="card mb-2">
+						<div class="card-header text-center">
+							<div class="h6 m-0"><%= supply[:date] %></div>
+						</div>
+						<div class="card-body">
+							<div class="row align-items-center text-center">
+								<% supply[:data].each do |key, int| %>
+									<div class="col-lg-6 col-12">
+										<b><%= stat_key_to_japanese(key) %></b><br>
+										<%= int.round(0) %> <%= stat_key_to_unit(key) %><br>
+									</div>
+								<% end %>
+							</div>
+						</div>
+					</div>
+				<% end %>
+			</div>
+		</div>
+	</div>
+<% else %>
+	<div class="card">
+		このツールを使用制限されています。	
+	</div>
+<% end %>

@@ -1,0 +1,63 @@
+<%= javascript_pack_tag 'partials', 'data-turbolinks-track': 'reload' %>
+
+<div class="card-body text-center">
+	<div class="row d-flex justify-content-center align-items-center">
+		<div class="col-12 col-md-4 mb-2">
+			<div class="btn-group cursor-help" role="group">
+				<button type="button" class="btn btn-sm btn-secondary"><b>天気</b></button>
+				<button type="button" class="btn btn-sm btn-info"><%= @weather["weather_code"]["value"] %></button>
+			</div>
+		</div>
+		<div class="col-12 col-md-4 mb-2">
+			<div class="btn-group cursor-help" role="group">
+				<button type="button" class="btn btn-sm btn-secondary"><b>気温</b></button>
+				<button type="button" class="btn btn-sm btn-info"><%= @weather["temp"]["value"] %>°<%= @weather["temp"]["units"] %></button>
+			</div>
+		</div>
+		<div class="col-12 col-md-4 mb-2">
+			<div class="btn-group cursor-help" role="group">
+				<button type="button" class="btn btn-sm btn-secondary"><b>風</b></button>
+				<button type="button" class="btn btn-sm btn-info"><%= @weather["wind_speed"]["value"] %>~<%= @weather["wind_gust"]["value"] %> <%= @weather["wind_gust"]["units"] %></button>
+			</div>
+		</div>
+		<div class="col-12 col-md-4 mb-2">
+			<div class="btn-group cursor-help" role="group">
+				<button type="button" class="btn btn-sm btn-secondary"><b>気圧</b></button>
+				<button type="button" class="btn btn-sm btn-info"><%= @weather["baro_pressure"]["value"].round(1) %> <%= @weather["baro_pressure"]["units"] %></button>
+			</div>
+		</div>
+		<div class="col-12 col-md-4 mb-2">
+			<div class="btn-group cursor-help" role="group">
+				<button type="button" class="btn btn-sm btn-secondary"><b>降水量</b></button>
+				<button type="button" class="btn btn-sm btn-info"><%= @weather["precipitation"]["value"].to_i %> <%= @weather["precipitation"]["units"] %><%= " （#{@weather["precipitation_type"]["value"]}）" if @weather["precipitation_type"]["value"] %></button>
+			</div>
+		</div>
+		<div class="col-12 col-md-4 mb-2">
+			<div class="btn-group cursor-help" role="group">
+				<button type="button" class="btn btn-sm btn-secondary"><b>湿度</b></button>
+				<button type="button" class="btn btn-sm btn-info"><%= @weather["humidity"]["value"] %> <%= @weather["humidity"]["units"] %></button>
+			</div>
+		</div>
+		<div class="col-12 col-md-4 mb-2">
+			<div class="btn-group cursor-help" role="group">
+				<button type="button" class="btn btn-sm btn-secondary"><b>雲</b></button>
+				<button type="button" class="btn btn-sm btn-info"><%= @weather["cloud_cover"]["value"] %> <%= @weather["cloud_cover"]["units"] %></button>
+			</div>
+		</div>
+		<div class="col-12 col-md-4 mb-2">
+			<div class="btn-group cursor-help" role="group">
+				<button type="button" class="btn btn-sm btn-secondary"><b>日の出</b></button>
+				<button type="button" class="btn btn-sm btn-info"><%= to_jibun(DateTime.parse(@weather["sunrise"]["value"]).in_time_zone('Tokyo')) %></button>
+			</div>
+		</div>
+		<div class="col-12 col-md-4 mb-2">
+			<div class="btn-group cursor-help" role="group">
+				<button type="button" class="btn btn-sm btn-secondary"><b>日の入り</b></button>
+				<button type="button" class="btn btn-sm btn-info"><%= to_jibun(DateTime.parse(@weather["sunset"]["value"]).in_time_zone('Tokyo')) %></button>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="card-footer">
+	<small class="text-muted">時刻: <%= DateTime.parse(@weather["observation_time"]["value"]) %></small>
+</div>

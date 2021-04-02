@@ -1,5 +1,7 @@
+<%= javascript_pack_tag 'partials', 'data-turbolinks-track': 'reload' %>
+
 <div class="nav nav-tabs" id="nav-tab" role="tablist">
-	<%= link_to("仕切り作成・送信", supply_invoice_actions_path(start_date: @start_date, end_date: @end_date, invoice: @invoice), class: "nav-link active", 'data-toggle' => "tab", 'aria-controls' => "nav-partial",  'aria-selected' => "true", remote: true ) %>
-	<%= link_to("単価入力ツール", supply_price_actions_path(start_date: @start_date, end_date: @end_date), class: "nav-link", 'data-toggle' => "tab", 'aria-controls' => "nav-partial",  'aria-selected' => "false", remote: true ) %>
-	<%= link_to("統計", supply_stats_partial_path(start_date: @start_date, end_date: @end_date), class: "nav-link", 'data-toggle' => "tab", 'aria-controls' => "nav-partial",  'aria-selected' => "false", remote: true ) %>
+	<%= link_to("仕切り作成・送信", supply_invoice_actions_path(start_date: @start_date, end_date: @end_date, invoice: @invoice), class: "nav-link active load", 'data-target' => '#supply_action_partial', 'data-toggle' => "tab", 'data-overlay-class' => 'ml-n3 p-0', 'aria-controls' => "nav-partial",  'aria-selected' => "true", remote: true ) %>
+	<%= link_to("単価入力ツール", supply_price_actions_path(start_date: @start_date, end_date: @end_date), class: "nav-link load", 'data-target' => '#supply_action_partial', 'data-toggle' => "tab", 'data-overlay-class' => 'ml-n3 p-0', 'aria-controls' => "nav-partial",  'aria-selected' => "false", remote: true ) %>
+	<%= link_to("統計", supply_stats_partial_path(start_date: @start_date, end_date: @end_date), class: "nav-link load", 'data-target' => '#supply_action_partial', 'data-toggle' => "tab", 'data-overlay-class' => 'ml-n3 p-0', 'aria-controls' => "nav-partial",  'aria-selected' => "false", remote: true ) %>
 </div>

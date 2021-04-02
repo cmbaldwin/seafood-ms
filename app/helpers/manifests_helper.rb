@@ -61,16 +61,12 @@ module ManifestsHelper
 		end
 	end
 
-	def to_nengapi(date)
-		date.strftime("%Y年%m月%d日")
-	end
-
 	def today_warn(manifest)
 		if manifest.sales_date == to_nengapi(Date.today) then true else false end
 	end
 
 	def non_zero_print(value)
-		if value != 0 then '~ ' + value.to_s + ' 件' end
+		if value > 0 then '~ ' + value.to_s + ' 件' end
 	end
 
 	# Mainly Used in Controller

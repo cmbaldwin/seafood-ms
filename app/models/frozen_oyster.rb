@@ -43,16 +43,20 @@ class FrozenOyster < ApplicationRecord
 		stats[:frozen_total] = (self.frozen_l["坂越　L"].to_f) + self.frozen_ll["坂越　LL"].to_f + self.frozen_ll["日生　LL"].to_f
 		stats[:finished_packs_total] = 0
 		stats[:finished_shells_total] = 0
+		product_name_hash = {"90"=>"デカプリオイスター（坂越L　1p）", "88"=>"デカプリオイスター（日生LL　1p）", "89"=>"デカプリオイスター（坂越LL　1p）", "91"=>"WDI デカプリオイスター（坂越L　1p）", "92"=>"プロトン冷凍セル　小　(ジャックポット用　坂越　120個) ", "46"=>"プロトン冷凍セル　(坂越　100個)"}
 		self.finished_packs.each do |k, v|
-			if !Product.find(k).namae.include?('セル')
+			if !product_name_hash[k].include?('セル')
 				stats[:finished_packs_total] += v.to_f
 			else
 				stats[:finished_shells_total] += v.to_f
 			end
 		end
-		stats["小"] = ((self.losses["小"].to_f / stats[:raw_total]) * 100).round(2).to_s + "%"
-		stats["ハネ"] = (((self.losses["ハネ"].to_f / 2) / stats[:raw_total]) * 100).round(2).to_s + "%"
-		stats[:raw_to_frozen_loss] = (-(((stats[:frozen_total] / (stats[:raw_total])) * 100) - 100).round(2)).to_s + "%"
+		small = ((self.losses["小"].to_f / stats[:raw_total]) * 100).round(2)
+		hane = (((self.losses["ハネ"].to_f / 2) / stats[:raw_total]) * 100).round(2)
+		raw_loss = (-(((stats[:frozen_total] / (stats[:raw_total])) * 100) - 100).round(2))
+		stats["小"] = (small.nil? ? small.to_s : "0") + "%"
+		stats["ハネ"] = (hane.nil? ? hane.to_s : "0") + "%"
+		stats[:raw_to_frozen_loss] = (raw_loss.nil? ? raw_loss.to_s : "0") + "%"
 		stats[:grams_to_pack] = stats[:raw_total] / stats[:finished_packs_total]
 		stats
 	end

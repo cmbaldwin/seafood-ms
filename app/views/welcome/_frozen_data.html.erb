@@ -1,27 +1,3 @@
-<div class="modal fade" id="formModal" tabindex="-1" role="dialog" aria-labelledby="formModalLabel" aria-hidden="true">
-	<div class="modal-dialog modal-xl" role="document">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h5 class="modal-title" id="formModalLabel">冷凍データ追加・修正</h5>
-				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-				<span aria-hidden="true">&times;</span>
-				</button>
-			</div>
-			<div id="receipt_card" class="card h-100">
-				<div class="card-body text-center">
-					<div id="frozen_data_partial">
-						<%= render 'frozen_oysters/form', remote: true, locals: {frozen_oyster: @frozen_oyster} %>
-					</div>
-				</div>
-			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-secondary" data-dismiss="modal">閉じる</button>
-			</div>
-		</div>
-	</div>
-</div>
-
-
 <div class="card mb-2">
 	<div class="card-body">
 		<div class="row">
@@ -36,7 +12,7 @@
 										<b><%= @frozen_oyster.manufacture_date %>(<%= ampm_s(@frozen_oyster.ampm) %>)</b>:
 										<%= stats[:raw_total] %>㎏
 									</span><br>
-									<%= pie_chart @frozen_oyster.chart_stats, width: "100%", height: "300px" %>
+									<%# pie_chart @frozen_oyster.chart_stats, width: "100%", height: "300px" %>
 								</div>
 								<div class="col-xl-6 col-lg-12">
 									<div class="btn-group float-right mt-1" role="group">
@@ -85,7 +61,7 @@
 					<div class="container-flex clearfix border rounded mb-2 p-2">
 						<div class="row text-center">
 							<% @frozen_totals.each do |product_id, total| %>
-								<div class="col-4">
+								<div class="col-lg-4 col-md-12">
 									<b><%= print_frozen_product_name(product_id) %></b><br>
 									<%= frozen_packs_to_boxes(product_id, total) %>
 								</div>
@@ -97,13 +73,13 @@
 						<%= link_to '冷凍データ追加', insert_frozen_data_path(frozen_oyster: 'new'), remote: true, class: 'btn btn-success', 'data-toggle' => 'modal', 'data-target' => '#formModal' %>
 				<% end %>
 			</div>
-			<div class="col-12">
+			<div class="col-12 d-lg-block d-none">
 				<div class="container-flex clearfix border rounded p-2">
 					<div class="w-100">
 						日ごとの加工(パック数)
 					</div>
 					<div class="float-left w-100">
-						<%= column_chart [{name: 'セル加工', data: @frozen_shelled_season}, {name: 'むき身加工', data: @frozen_shucked_season}], thousands: ",", suffix: "p・個", stacked: false %>
+						<%# column_chart [{name: 'セル加工', data: @frozen_shelled_season}, {name: 'むき身加工', data: @frozen_shucked_season}], thousands: ",", suffix: "p・個", stacked: false %>
 					</div>
 				</div>
 			</div>

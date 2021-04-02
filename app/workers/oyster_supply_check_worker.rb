@@ -3,8 +3,8 @@ class OysterSupplyCheckWorker
 
 	def perform(oyster_supply_id, message_id)
 		message = Message.find(message_id)
-		@oyster_supply = OysterSupply.find(oyster_supply_id)
-		pdf_data = @oyster_supply.generate_supply_check
+		supply = OysterSupply.find(oyster_supply_id)
+		pdf_data = PrawnPDF.oyster_supply_check(supply)
 		pdf = CarrierStringInvoiceIO.new(pdf_data.render)
 		message.update(document: pdf)
 		pdf_data = nil

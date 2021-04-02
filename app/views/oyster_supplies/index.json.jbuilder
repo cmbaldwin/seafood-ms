@@ -25,25 +25,41 @@ json.array!(@oyster_supply) do |supply|
 					<tr>
 						<th scope='row'>兵庫</th>
 						<td>
-							#{supply.totals[:sakoshi_total].round(0).to_s}㎏<br>
-							( 大#{supply.large_shucked_total.round(0)}㎏ / 小#{supply.small_shucked_total.round(0)}㎏)
+							#{supply.totals[:hyogo_total].round(0)}㎏<br>
+							( 大#{supply.hyogo_large_shucked_total.round(0)}㎏ / 小#{supply.hyogo_small_shucked_total.round(0)}㎏)
 						</td>
-						<td>@#{supply.totals[:sakoshi_avg_kilo].round(0).to_s}㎏</td>
+						<td>@#{supply.totals[:hyogo_avg_kilo].round(0)}㎏</td>
+					</tr>
+					<tr>
+						<th scope='row'>坂越</th>
+						<td>
+							#{supply.totals[:sakoshi_muki_volume].round(0)}㎏<br>
+							( 大#{supply.totals[:sakoshi_large_volume].round(0)}㎏ / 小#{supply.totals[:sakoshi_small_volume].round(0)}㎏)
+						</td>
+						<td>@#{supply.totals[:sakoshi_avg_kilo].round(0)}㎏</td>
+					</tr>
+					<tr>
+						<th scope='row'>相生</th>
+						<td>
+							#{supply.totals[:aioi_muki_volume].round(0)}㎏<br>
+							( 大#{supply.totals[:aioi_large_volume].round(0)}㎏ / 小#{supply.totals[:aioi_small_volume].round(0)}㎏)
+						</td>
+						<td>@#{supply.totals[:aioi_avg_kilo].round(0)}㎏</td>
 					</tr>
 					<tr>
 						<th scope='row'>岡山</th>
-						<td>#{supply.totals[:okayama_total].round(0).to_s}㎏</td>
-						<td>@#{supply.totals[:okayama_avg_kilo].round(0).to_s}</td>
+						<td>#{supply.totals[:okayama_total].round(0)}㎏</td>
+						<td>@#{supply.totals[:okayama_avg_kilo].round(0)}</td>
 					</tr>
 					<tr>
 						<th scope='row'>殻付</th>
-						<td>#{supply.totals[:shell_total].round(0).to_s}個 / #{supply.thin_shells_total}㎏</td>
-						<td>@#{supply.totals[:big_shell_avg_cost].round(0).to_s}</td>
+						<td>#{supply.totals[:shell_total].round(0)}個 / #{supply.hyogo_thin_shells_total.round(0)}㎏</td>
+						<td>@#{supply.totals[:big_shell_avg_cost].round(0)}</td>
 					</tr>
 					<tr>
 						<th scope='row'>合計</th>
-						<td>#{supply.totals[:mukimi_total].round(0).to_s}㎏</td>
-						<td>@#{supply.totals[:total_kilo_avg].round(0).to_s}㎏</td>
+						<td>#{supply.totals[:mukimi_total].round(0)}㎏</td>
+						<td>@#{supply.totals[:total_kilo_avg].round(0)}㎏</td>
 					</tr>
 				</tbody>
 			</table>

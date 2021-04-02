@@ -3,7 +3,7 @@ class YahooShippingListWorker
 
 	def perform(ship_date, message_id, filename)
 		message = Message.find(message_id)
-		pdf_data = PrawnPDF.yahoo_shipping_pdf(ship_date, filename)
+		pdf_data = PrawnPDF.yahoo(ship_date, filename)
 		pdf = CarrierStringInvoiceIO.new(pdf_data.render)
 		message.update(document: pdf)
 		message.update(state: true, message: 'ヤフー出荷表作成完了')

@@ -1,15 +1,17 @@
 <!-- Modals -->
 <%= render_async 'noshi_modal' %>
-<%= render_async 'rakuten_shinki_modal', locals: {rakuten_shinki: @rakuten_shinki} %>
-<%= render_async 'online_orders_modal', locals: {tsuhan: @online_orders} %>
-<%= render_async 'new_yahoo_orders_modal', locals: {yahoo_orders: @yahoo_orders, yahoo_date: @yahoo_date} %>
+<%= render_async 'rakuten_shinki_modal' %>
+<%= render_async 'infomart_shinki_modal' %>
+<%= render_async 'online_orders_modal' %>
+<%= render_async 'new_yahoo_orders_modal' %>
+<%= render_async 'frozen_data_modal' %>
 
 <div id="index" class="container-fluid">
 	<div id="grid" class="shuffle-sizer row" style="margin-right: 0px;">
 
 		<% if current_user.vip? || current_user.admin? || current_user.employee? %>
-			<div class="shuffle-brick col-6 pr-0">
-				<div class="card border-dark mb-2" style="min-height: 300px;">
+			<div class="shuffle-brick col-lg-6 col-md-12 pr-0">
+				<div class="card border-dark mb-2">
 					<div class="card-header py-1 px-2  bg-dark text-white">
 						<span class="mb-0 float-left">楽天市場</span>
 						<span>&nbsp</span>
@@ -17,22 +19,7 @@
 					</div>
 					<div class="card-body m-0 p-0">
 						<div id="rakuten_partial" class="partial">
-							<%= render 'rakuten_orders', locals: {rakuten: @rakuten, order: @order_id, rakuten_shinki: @rakuten_shinki} %>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<div class="shuffle-brick col-6 pr-0">
-				<div class="card border-dark mb-2" style="min-height: 300px;">
-					<div class="card-header py-1 px-2  bg-dark text-white">
-						<span class="mb-0 float-left">InfoMart / Funabiki.info</span>
-						<span>&nbsp</span>
-						<span class="mb-0 float-right"><%= icon("calendar-check") %></span>
-					</div>
-					<div class="card-body m-0 p-0">
-						<div id="tsuhan_partial" class="partial">
-							<%= render_async 'online_orders', locals: {tsuhan: @online_orders} do %>
+							<%= render_async 'rakuten_orders' do %>
 								<div class="d-flex justify-content-center my-3 py-3">
 									<div class="spinner-border spinner-border-sm" role="status">
 										<span class="sr-only">読み込み中...</span>
@@ -44,8 +31,50 @@
 				</div>
 			</div>
 
-			<div class="shuffle-brick col-6 pr-0">
-				<div class="card border-dark mb-2" style="min-height: 300px;">
+			<div class="shuffle-brick col-lg-6 col-md-12 pr-0">
+				<div class="card border-dark mb-2">
+					<div class="card-header py-1 px-2  bg-dark text-white">
+						<span class="mb-0 float-left">Infomart</span>
+						<span>&nbsp</span>
+						<span class="mb-0 float-right"><%= icon("calendar-check") %></span>
+					</div>
+					<div class="card-body m-0 p-0">
+						<div id="infomart_partial" class="partial">
+							<%= render_async 'front_infomart_orders' do %>
+								<div class="d-flex justify-content-center my-3 py-3">
+									<div class="spinner-border spinner-border-sm" role="status">
+										<span class="sr-only">読み込み中...</span>
+									</div>
+								</div>
+							<% end %>
+						</div>
+					</div>
+				</div>
+			</div>
+
+ 			<div class="shuffle-brick col-lg-6 col-md-12 pr-0">
+				<div class="card border-dark mb-2">
+					<div class="card-header py-1 px-2  bg-dark text-white">
+						<span class="mb-0 float-left">Funabiki.info</span>
+						<span>&nbsp</span>
+						<span class="mb-0 float-right"><%= icon("calendar-check") %></span>
+					</div>
+					<div class="card-body m-0 p-0">
+						<div id="tsuhan_partial" class="partial">
+							<%= render_async 'front_online_orders' do %>
+								<div class="d-flex justify-content-center my-3 py-3">
+									<div class="spinner-border spinner-border-sm" role="status">
+										<span class="sr-only">読み込み中...</span>
+									</div>
+								</div>
+							<% end %>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="shuffle-brick col-lg-6 col-md-12 pr-0">
+				<div class="card border-dark mb-2">
 					<div class="card-header py-1 px-2  bg-dark text-white">
 						<span class="mb-0 float-left">Yahoo!ショッピング</span>
 						<span>&nbsp</span>
@@ -53,7 +82,7 @@
 					</div>
 					<div class="card-body m-0 p-0">
 						<div id="yahoo_partial" class="partial">
-							<%= render_async 'yahoo_orders_partial', locals: {yahoo_orders: @yahoo_orders, yahoo_date: @yahoo_date} do %>
+							<%= render_async 'yahoo_orders_partial' do %>
 								<div class="d-flex justify-content-center my-3 py-3">
 									<div class="spinner-border spinner-border-sm" role="status">
 										<span class="sr-only">読み込み中...</span>
@@ -65,7 +94,7 @@
 				</div>
 			</div>
 
-			<div class="shuffle-brick col-6 pr-0">
+			<div class="shuffle-brick col-lg-6 col-md-12 pr-0">
 				<div class="card border-dark mb-2">
 					<div class="card-header py-1 px-2  bg-dark text-white">
 						<span class="mb-0 float-left">
@@ -76,13 +105,19 @@
 					</div>
 					<div class="card-body text-center m-0 p-2">
 						<div id="receipt_partial" class="partial">
-							<%= render 'receipt', remote: true, locals: {rakuten: @rakuten, order: @order_id}, cached: true %>
+							<%= render_async 'receipt_partial' do %>
+								<div class="d-flex justify-content-center my-3 py-3">
+									<div class="spinner-border spinner-border-sm" role="status">
+										<span class="sr-only">読み込み中...</span>
+									</div>
+								</div>
+							<% end %>
 						</div>
 					</div>
 				</div>
 			</div>
 
-			<div class="shuffle-brick col-6 pr-0">
+			<div class="shuffle-brick col-lg-6 col-md-12 pr-0">
 				<div class="card border-dark mb-2">
 					<div class="card-header py-1 px-2  bg-dark text-white">
 						<span class="mb-0 float-left">
@@ -105,7 +140,7 @@
 		<% end %>
 
 		<% if current_user.admin? %>
-			<div class="shuffle-brick col-6 pr-0">
+			<div class="shuffle-brick col-lg-6 col-md-12 pr-0 d-none d-lg-block">
 				<div class="card border-dark mb-2">
 					<div class="card-header py-1 px-2  bg-dark text-white">
 						<span class="mb-0 float-left">現在の売上状態</span>
@@ -113,30 +148,36 @@
 						<span class="mb-0 float-right"><%= icon("building") %></span>
 					</div>
 					<div class="card-body m-0 p-0">
-						<%= render 'charts', locals: {chart_params: @chart_params}, cached: true %>
+						<%= render_async 'charts_partial' do %>
+							<div class="d-flex justify-content-center my-3 py-3">
+								<div class="spinner-border spinner-border-sm" role="status">
+									<span class="sr-only">読み込み中...</span>
+								</div>
+							</div>
+						<% end %>
 					</div>
 				</div>
 			</div>
-			<div class="shuffle-brick col-6 pr-0">
+<!-- 			<div class="shuffle-brick col-lg-6 col-md-12 pr-0">
 				<div class="card border-dark mb-2">
 					<div class="card-header py-1 px-2  bg-dark text-white">
 						<span class="mb-0 float-left">CSV</span>
 						<span>&nbsp</span>
 						<span class="mb-0 float-right"><%= icon("file-earmark-spreadsheet") %></span>
 					</div>
-					<div class="card-body d-flex text-center">
-						<%# link_to("送料無料キャンペーンCSV", shipping_data_csv_path, class: 'btn btn-primary m-auto') %>
-						<%= form_with(url: shipping_data_csv_path, remote: true, class: 'w-100 text-center') do |f| %>
-							ヤマト配送実績データCSV: <%= f.file_field :csv %><br><br>
-							<%= f.submit "販売実績データCSVを作成", class: 'btn btn-primary m-auto' %>
+					<div class="card-body d-flex">
+						<%= form_tag shipping_data_csv_path, multipart: true do %>
+							<%= select_tag :format, options_for_select([ "販売実績", "発送実績", "エラー" ], "販売実績") %><br><br>
+							ヤマト配送実績データCSV: <%= file_field_tag :csv %><br><br>
+							<%= submit_tag "実績データCSVを作成", class: 'btn btn-primary' %>
 						<% end %>
 					</div>
 				</div>
-			</div>
+			</div> -->
 		<% end %>
 
 		<% if current_user.supplier? %>
-			<div class="shuffle-brick col-6 pr-0">
+			<div class="shuffle-brick col-lg-6 col-md-12 pr-0">
 				<div class="card border-dark mb-2">
 					<div class="card-header py-1 px-2  bg-dark text-white">
 						<span class="mb-0 float-left">生産者パネル</span>
@@ -150,7 +191,7 @@
 			</div>
 		<% end %>
 
-		<div class="shuffle-brick col-6 pr-0">
+		<div class="shuffle-brick col-lg-6 col-md-12 pr-0">
 			<div class="card border-dark mb-2">
 				<div class="card-header py-1 px-2 bg-dark text-white">
 					<span class="mb-0 float-left">
@@ -160,13 +201,38 @@
 					<span class="mb-0 float-right"><%= icon("printer") %></span>
 				</div>
 				<div class="card-body text-center">
-					<%= render 'printables', cached: true %>
+					<%= render_async 'printables' do %>
+						<div class="d-flex justify-content-center my-3 py-3">
+							<div class="spinner-border spinner-border-sm" role="status">
+								<span class="sr-only">読み込み中...</span>
+							</div>
+						</div>
+					<% end %>
 				</div>
 			</div>
 		</div>
 
+		<div class="shuffle-brick col-lg-6 col-md-12 pr-0">
+			<div class="card border-dark mb-2">
+				<div class="card-header py-1 px-2 bg-dark text-white">
+					<span class="mb-0 float-left">
+						天気
+					</span>
+					<span>&nbsp</span>
+					<span class="mb-0 float-right"><%= icon("cloud-fill") %></span>
+				</div>
+				<%= render_async 'weather_partial' do %>
+					<div class="d-flex justify-content-center my-3 py-3">
+						<div class="spinner-border spinner-border-sm" role="status">
+							<span class="sr-only">読み込み中...</span>
+						</div>
+					</div>
+				<% end %>
+			</div>
+		</div>
+
 		<% if current_user.admin? %>
-			<div class="shuffle-brick col-6 pr-0">
+			<div class="shuffle-brick col-lg-6 col-md-12 pr-0">
 				<div class="card border-dark mb-2">
 					<div class="card-header py-1 px-2 bg-dark text-white">
 						<span class="mb-0 float-left">
@@ -176,13 +242,19 @@
 						<span class="mb-0 float-right"><%= icon("people-fill") %></span>
 					</div>
 					<div class="card-body" id="usercontrol">
-						<%= render 'usercontrol', cached: true %>
+						<%= render_async 'user_control' do %>
+							<div class="d-flex justify-content-center my-3 py-3">
+								<div class="spinner-border spinner-border-sm" role="status">
+									<span class="sr-only">読み込み中...</span>
+								</div>
+							</div>
+						<% end %>
 					</div>
 				</div>
 			</div>
 		<% end %>
 
-		<div class="shuffle-brick col-6 pr-0">
+		<div class="shuffle-brick col-lg-6 col-md-12 pr-0">
 			<div class="card border-dark mb-2">
 				<div class="card-header py-1 px-2 bg-dark text-white">
 					<span class="mb-0 float-left">冷凍データ・在庫管理</span>
@@ -190,7 +262,13 @@
 						<span class="mb-0 float-right"><%= icon("thermometer") %></span>
 				</div>
 				<div class="card-body scroll">
-					<%= render 'frozen_data' %>
+					<%= render_async 'frozen_data' do %>
+						<div class="d-flex justify-content-center my-3 py-3">
+							<div class="spinner-border spinner-border-sm" role="status">
+								<span class="sr-only">読み込み中...</span>
+							</div>
+						</div>
+					<% end %>
 				</div>
 			</div>
 		</div>

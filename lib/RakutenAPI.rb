@@ -92,28 +92,32 @@ class RakutenAPI
 	end
 
 	def get_details_by_ids(id_array)
-		puts "Getting details for #{id_array.length.to_s} order(s)..."
-		if id_array.length > 100
-			p '.'
-			orders_list_by_100 = id_array.each_slice(100).to_a
-			order_details = Array.new
-			messages = Array.new
-			orders_list_by_100.each do |sub_list|
+		if id_array.is_a?(Array)
+			puts "Getting details for #{id_array.length.to_s} order(s)..."
+			if id_array.length > 100
+				p '.'
+				orders_list_by_100 = id_array.each_slice(100).to_a
+				order_details = Array.new
+				messages = Array.new
+				orders_list_by_100.each do |sub_list|
+					get_order_details = HTTParty.post("https://api.rms.rakuten.co.jp/es/2.0/order/getOrder/",
+						:headers => @auth_header,
+						:body => {"orderNumberList" => sub_list}.to_json)
+					order_details << get_order_details["OrderModelList"]
+					messages << get_order_details["MessageModelList"]
+				end
+			else
 				get_order_details = HTTParty.post("https://api.rms.rakuten.co.jp/es/2.0/order/getOrder/",
 					:headers => @auth_header,
-					:body => {"orderNumberList" => sub_list}.to_json)
-				order_details << get_order_details["OrderModelList"]
-				messages << get_order_details["MessageModelList"]
+					:body => {"orderNumberList" => id_array}.to_json)
+				order_details = get_order_details["OrderModelList"]
+				messages = get_order_details["MessageModelList"]
 			end
+			puts 'Details acquired...'
+			order_details
 		else
-			get_order_details = HTTParty.post("https://api.rms.rakuten.co.jp/es/2.0/order/getOrder/",
-				:headers => @auth_header,
-				:body => {"orderNumberList" => id_array}.to_json)
-			order_details = get_order_details["OrderModelList"]
-			messages = get_order_details["MessageModelList"]
+			puts "ERROR: ID list is not an array"
 		end
-		puts 'Details acquired...'
-		order_details
 	end
 
 	def shipping_days(prefecture)
@@ -496,7 +500,7 @@ class RakutenAPI
 					elsif @arrival_date && memo_set_time.nil? #specified arrival date, but no time
 						@arrival_date = Date.parse(@arrival_date) unless @arrival_date.is_a?(Date)
 						shipping_date = (@arrival_date - earliest_arrival_array[0].days)
-					elsif @arrival_date && memo_set_time #specifie arrival date and time
+					elsif @arrival_date && memo_set_time #specified arrival date and time
 						@arrival_date = Date.parse(@arrival_date) unless @arrival_date.is_a?(Date)
 						def add_hours_enum(integer)
 							{
@@ -535,8 +539,23 @@ class RakutenAPI
 						new_hash["taxRate"] = 0.08
 						updated_item_list_model << new_hash
 					end
+					sender_model_fix = Hash.new
+					package["SenderModel"].each do |k,v|
+						fixed_v = v
+						unless fixed_v.nil?
+							error_characters = {
+								'&' => ' and ',
+								'・' => '.'
+							}
+							error_characters.each do |ec, fc|
+								fixed_v.gsub(ec, fc)
+							end
+							fixed_v = ' ' if fixed_v.nil?
+						end
+						sender_model_fix[k] = fixed_v
+					end
 					basket_hash = { 
-						sender_model: package["SenderModel"],
+						sender_model: sender_model_fix,
 						basket_id: package["basketId"],
 						noshi: package["noshi"],
 						delivery_cost: package["deliveryPrice"],
@@ -619,7 +638,7 @@ class RakutenAPI
 				frozen_check = @packages.map{|pkg| pkg[:items_list].map{|item| item_frozen?(item[:id])}}.flatten.compact.include?(true)
 				payment_method = order["SettlementModel"]["settlementMethod"]
 				remarks = order["remarks"].delete("\n")[/(?<=\[メッセージ添付希望・他ご意見、ご要望がありましたらこちらまで:\]).*/]
-				memo_product_names = @packages.map{|pkg| pkg[:items_list].map{|item| memo_product_name(item[:id])}}.flatten.join(' ')
+				memo_product_names = @packages.map{|pkg| pkg[:items_list].map{|item| memo_product_name(item[:id]) + "#{('x' + item[:count].to_s) if item[:count].to_i > 1}" }}.flatten.join(' ')
 				memo_date_memo = order["remarks"].delete("\n")[/(?<=\[配送日時指定:\]).*(?=\[メッセージ)/].sub(/[0-9]{4}-(1[0-2]|0[1-9])-(3[01]|[12][0-9]|0[1-9])/, '').sub(/\(.\)(午前中)/,'').sub(/\(.\)/,'').sub(/[0-9]{2}:[0-9]{2}-[0-9]{2}:[0-9]{2}/,'').sub('指定なし', '')
 				has_noshi = !@packages.map{|pkg| pkg[:noshi] }.compact.empty?
 				gift = !order["giftCheckFlag"].zero?
@@ -725,8 +744,12 @@ class RakutenAPI
 						new_hash["taxRate"] = 0.08
 						updated_item_list_model << new_hash
 					end
+					sender_model_fix = Hash.new
+					package["SenderModel"].each do |k,v|
+						sender_model_fix[k] = v.gsub('&', ' and ')
+					end
 					basket_hash = { 
-						sender_model: package["SenderModel"],
+						sender_model: sender_model_fix,
 						basket_id: package["basketId"],
 						noshi: package["noshi"],
 						delivery_cost: package["deliveryPrice"],
@@ -812,17 +835,16 @@ class RakutenAPI
 				unless coupon_model.nil? || coupon_model.empty?
 					new_sender_model["CouponModelList"]= order["CouponModelList"]
 				end
-				ap new_sender_model
-				response = HTTParty.post("https://api.rms.rakuten.co.jp/es/2.0/order/updateOrderSender/",
-					:headers => @auth_header,
-					:body => new_sender_model.to_json)
-				errors[:sender_model] = response.parsed_response unless response["MessageModelList"].first["messageType"] == "INFO"
+				# response = HTTParty.post("https://api.rms.rakuten.co.jp/es/2.0/order/updateOrderSender/",
+				# 	:headers => @auth_header,
+				# 	:body => new_sender_model.to_json)
+				# errors[:sender_model] = response.parsed_response unless response["MessageModelList"].first["messageType"] == "INFO"
 
 				## SET MEMO, SHIP DATE, MEMO(ERROR, PAYMENT METHOD, GIFT, COOL/FROZEN, COUNTS), AND UPDATE SUBSTATUS COMPLETE
 				frozen_check = @packages.map{|pkg| pkg[:items_list].map{|item| item_frozen?(item[:id])}}.flatten.compact.include?(true)
 				payment_method = order["SettlementModel"]["settlementMethod"]
 				remarks = order["remarks"].delete("\n")[/(?<=\[メッセージ添付希望・他ご意見、ご要望がありましたらこちらまで:\]).*/]
-				memo_product_names = @packages.map{|pkg| pkg[:items_list].map{|item| memo_product_name(item[:id])}}.flatten.join(' ')
+				memo_product_names = @packages.map{|pkg| pkg[:items_list].map{|item| memo_product_name(item[:id]) + "#{('x' + item[:count].to_s) if item[:count].to_i > 1}" }}.flatten.join(' ')
 				memo_date_memo = order["remarks"].delete("\n")[/(?<=\[配送日時指定:\]).*(?=\[メッセージ)/].sub(/[0-9]{4}-(1[0-2]|0[1-9])-(3[01]|[12][0-9]|0[1-9])/, '').sub(/\(.\)(午前中)/,'').sub(/\(.\)/,'').sub(/[0-9]{2}:[0-9]{2}-[0-9]{2}:[0-9]{2}/,'').sub('指定なし', '')
 				has_noshi = !@packages.map{|pkg| pkg[:noshi] }.compact.empty?
 				gift = !order["giftCheckFlag"].zero?

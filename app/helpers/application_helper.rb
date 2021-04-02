@@ -8,9 +8,11 @@ module ApplicationHelper
 		{
 			'oyster_supply' => '牡蠣原料',
 			'profit' => '計算表',
-			'manifest' => 'InfoMart/Funabiki.infoの出荷表',
+			'manifest' => 'Infomart/Funabiki.infoの出荷表',
 			'rakuten_manifest' => '楽天出荷表',
 			'yahoo_shipping_list' => 'ヤフー出荷表',
+			'infomart_shipping_list' => 'Infomart出荷表',
+			'online_orders_shipping_list' => 'Funabiki.info出荷表',
 			'oyster_invoice' => '牡蠣原料仕切り',
 			'reciept' => '領収証',
 			'noshi' => '熨斗'}[model]
@@ -64,6 +66,22 @@ module ApplicationHelper
 				begin
 					@manifest = Manifest.find(data[:manifest_id])
 					render html: (link_to("InfoMart/Funabiki.infoの出荷表（#{@manifest.sales_date})", message.document.url, class: 'card-link', target: '_blank')).html_safe
+				rescue
+					render html: ("<p class='small text-warning'>エラー:　出荷表##{data[:oyster_supply_id]}をみつけられませんでした。</p>").html_safe
+				end
+			end
+		elsif message.model == 'infomart_shipping_list'
+			if message.state
+				begin
+					render html: (link_to("Infomart出荷表（#{message.data[:ship_date]})", message.document.url, class: 'card-link', target: '_blank')).html_safe
+				rescue
+					render html: ("<p class='small text-warning'>エラー:　出荷表##{data[:oyster_supply_id]}をみつけられませんでした。</p>").html_safe
+				end
+			end
+		elsif message.model == 'online_orders_shipping_list'
+			if message.state
+				begin
+					render html: (link_to("Funabiki.info出荷表（#{message.data[:ship_date]})", message.document.url, class: 'card-link', target: '_blank')).html_safe
 				rescue
 					render html: ("<p class='small text-warning'>エラー:　出荷表##{data[:oyster_supply_id]}をみつけられませんでした。</p>").html_safe
 				end
@@ -153,6 +171,22 @@ module ApplicationHelper
 		weekdays[num]
 	end
 
+	def to_nengapi(date)
+		date.strftime("%Y年%m月%d日")
+	end
+
+	def to_nengapiyoubi(date)
+		date.strftime("%Y年%m月%d日 (#{weekday_japanese(date.wday)})")
+	end
+
+	def to_nengapijibun(date)
+		date.strftime("%Y年%m月%d日%H時%M分")
+	end
+
+	def to_jibun(date)
+		date.strftime("%H時%M分")
+	end
+
 	def yenify(number)
 		ActionController::Base.helpers.number_to_currency(number, locale: :ja, :unit => "")
 	end
@@ -191,6 +225,27 @@ module ApplicationHelper
 
 	def get_infomart_backend_link(backend_id)
 		'https://www2.infomart.co.jp/trade/trade_detail.page?14&tid=' + backend_id + '&del_hf=1&through_status_code&returned_flg'
+	end
+
+	def online_order_counts(orders)
+		counts = Hash.new
+		types_arr = %w{生むき身 生セル 小殻付 セルカード 冷凍むき身 冷凍セル 穴子(件) 穴子(g) 干しムキエビ(100g) 干し殻付エビ(100g) タコ}
+		types_arr.each {|w| counts[w] = 0}
+		orders.each do |order|
+			unless order.cancelled
+				order.counts.each_with_index do |count, i|
+					counts[types_arr[i]] += count
+				end
+			end
+		end
+		cards = counts.values[3]
+		anago = counts.values[7]
+		results = {headers: counts.keys, values: counts.values, anago: anago, cards: cards}
+		["セルカード", "穴子(g)"].each do |t|
+			i = results[:headers].index(t)
+			[:headers, :values].each {|k| results[k].delete_at(i)}
+		end
+		results
 	end
 
 	def yahoo_order_counts(orders)
@@ -250,6 +305,14 @@ module ApplicationHelper
 			[:headers, :values].each {|k| results[k].delete_at(i)}
 		end
 		results
+	end
+
+	def counts_counter(i)
+		["パック","個","kg","枚","パック","個","件","g","パック","パック","件",][i]
+	end
+
+	def infomart_counts(orders)
+		
 	end
 
 end

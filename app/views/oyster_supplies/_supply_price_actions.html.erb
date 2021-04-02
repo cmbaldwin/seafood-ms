@@ -1,1 +1,72 @@
-牡蠣の供給単価入力ツールは工事中です。
+<%= javascript_pack_tag 'supply_price_actions', 'data-turbolinks-track': 'reload' %>
+<%= javascript_pack_tag 'partials', 'data-turbolinks-track': 'reload' %>
+
+<div class="container">
+	<%= form_with url: set_prices_path, remote: true do |f| %>
+		<%= f.fields_for :prices do |price| %>
+			<%= price.fields_for :hyogo do |hyogo_prices| %>
+				<div class="row justify-content-center">
+					<div class="h4 pb-1 px-3 border-bottom">兵庫県（坂越・相生）</div>
+				</div>
+				<div class="row">
+					<% 5.times do |i| %>
+						<div id="suppliers_select_<%= i %>" class="col-6 mb-3 border-bottom pb-2<%= ' d-none' if i > 0 %>">
+							<%= hyogo_prices.select "#{i}[ids]", options_for_select(@all_suppliers.map{|s| ["#{s.location} #{s.supplier_number}番（#{s.company_name}）", s.id] }), {}, { class: 'custom-select', 'multiple' => 'multiple', 'size' => '7'} %>
+						</div>
+						<div id="suppliers_prices_<%= i %>" class="col-6 mb-3 border-bottom pb-2 form-group<%= ' d-none' if i > 0 %>">
+							<div class="form-group row mb-0">
+								<%= hyogo_prices.label "#{i}[prices][large]", "大", class: 'col-3 col-form-label' %>
+								<%= hyogo_prices.text_field "#{i}[prices][large]", class: 'col-9 form-control form-control-sm floatTextBox' %>
+							</div>
+							<div class="form-group row mb-0">
+								<%= hyogo_prices.label "#{i}[prices][small]", "小", class: 'col-3 col-form-label' %>
+								<%= hyogo_prices.text_field "#{i}[prices][small]", class: 'col-9 form-control form-control-sm floatTextBox' %>
+							</div>
+							<div class="form-group row mb-0">
+								<%= hyogo_prices.label "#{i}[prices][eggy]", "らん", class: 'col-3 col-form-label' %>
+								<%= hyogo_prices.text_field "#{i}[prices][eggy]", class: 'col-9 form-control form-control-sm floatTextBox' %>
+							</div>
+							<div class="form-group row mb-0">
+								<%= hyogo_prices.label "#{i}[prices][large_shells]", "殻付き", class: 'col-3 col-form-label' %>
+								<%= hyogo_prices.text_field "#{i}[prices][large_shells]", class: 'col-9 form-control form-control-sm floatTextBox' %>
+							</div>
+							<div class="form-group row mb-0">
+								<%= hyogo_prices.label "#{i}[prices][small_shells]", "小殻", class: 'col-3 col-form-label' %>
+								<%= hyogo_prices.text_field "#{i}[[prices]small_shells]", class: 'col-9 form-control form-control-sm floatTextBox' %>
+								</div>
+							<div class="form-group row mb-0">
+								<%= hyogo_prices.label "#{i}[prices]thin_shells]", "バラ殻", class: 'col-3 col-form-label' %>
+								<%= hyogo_prices.text_field "#{i}[prices][thin_shells]", class: 'col-9 form-control form-control-sm floatTextBox' %>
+							</div>
+						</div>
+					<% end %>
+				</div>
+			<% end %>
+			<%= price.fields_for :okayama do |okayama_prices| %>
+				<div class="row justify-content-center">
+					<div class="h4 pb-1 px-3 border-bottom">岡山県</div>
+				</div>
+				<div class="row">
+					<%= okayama_prices.label "hinase", "日生", class: 'col-2 text-center col-form-label' %>
+					<%= okayama_prices.text_field "hinase", class: 'col-10 form-control form-control-sm floatTextBox' %>
+				</div>
+				<div class="row">
+					<%= okayama_prices.label "iri", "伊里", class: 'col-2 text-center col-form-label' %>
+					<%= okayama_prices.text_field "iri", class: 'col-10 form-control form-control-sm floatTextBox' %>
+				</div>
+				<div class="row mb-3 border-bottom pb-2">
+					<%= okayama_prices.label "tamatsu", "玉津", class: 'col-2 text-center col-form-label' %>
+					<div class="col-5">
+						<%= okayama_prices.label "tamatsu[large]", "大", class: 'col-2 text-center col-form-label' %>
+						<%= okayama_prices.text_field "tamatsu[large]", class: 'w-75 float-right form-control form-control-sm floatTextBox' %>
+					</div>
+					<div class="col-5">
+						<%= okayama_prices.label "tamatsu[small]", "小", class: 'col-2 text-center col-form-label' %>
+						<%= okayama_prices.text_field "tamatsu[small]", class: 'w-75 float-right form-control form-control-sm floatTextBox' %>
+					</div>
+				</div>
+			<% end %>
+		<% end %>
+		<%= f.submit '更新', data: { confirm: "#{DateTime.parse(start_date).strftime('%Y年%m月%d日')}~#{DateTime.parse(end_date).strftime('%Y年%m月%d日')}の単価データを反映する？" }, class: 'btn btn-sm btn-primary load', 'data-target' => '#supply_action_partial', 'data-overlay-class' => 'ml-n3 p-0' %>
+	<% end %>
+</div>

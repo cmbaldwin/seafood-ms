@@ -14,6 +14,7 @@ class InvoiceMailer < ApplicationMailer
 		mail(to: @invoice[:aioi_emails], subject: '船曳商店ー支払い明細書 ' + @locale + '（' + @invoice.display_date + '）')
 	end
 	
+	# InvoiceMailer.test_mail.deliver_now
 	def test_mail
 		mail(to: ENV['MAIL_SENDER'], subject: 'Test')
 	end

@@ -1,8 +1,7 @@
 var msgEl = $('#m_' + "<%= escape_javascript(@id) %>")
 if (msgEl.length) {
-	msgEl.removeClass('animate__animated animate__backInUp');
+	msgEl.removeClass('animate__animated');
 	msgEl.fadeOut('slow', function() {
     	msgEl.remove();
 	});	
 };
-Turbolinks.clearCache()

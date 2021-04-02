@@ -1,3 +1,6 @@
+<%= javascript_pack_tag 'datetimepicker', 'data-turbolinks-track': 'reload' %>
+<%= stylesheet_pack_tag "application", media: 'all', 'data-turbolinks-track': 'reload' %>
+
 <div class="card">
 	<% if oyster_invoice.id %>
 		<div class="card-header">
@@ -7,7 +10,7 @@
 		<% end %>
 	<div class="card-body">
 		<% if oyster_invoice.id %>
-			<table class="table">
+			<table class="table small">
 				<thead>
 					<tr>
 						<th scope="col">場所</th>
@@ -38,7 +41,7 @@
 					<tr>
 						<th scope="row">相生</th>
 						<td>各生産者</td>
-						<td><%= link_to (oyster_invoice.data[:processing] ? '<div class="spinner-border spinner-border-sm"></div>' : icon('file-arrow-down')).html_safe, oyster_invoice.aioi_all_pdf.url, class: 'btn btn-sm btn-info' %></td>
+						<td><%= link_to (oyster_invoice.data[:processing] ? '<div class="spinner-border spinner-border-sm"></div>' : icon('file-arrow-down')).html_safe, oyster_invoice.aioi_seperated_pdf.url, class: 'btn btn-sm btn-info' %></td>
 						<td><samp><%= oyster_invoice[:data][:passwords]["aioi_seperated_password"] %></samp></td>
 					</tr>
 				</tbody>
@@ -56,7 +59,7 @@
 					<%= f.text_field :send_at, 'data-target' => "##{oyster_invoice.id ? oyster_invoice.id : 'new'}", class: 'form-control datetimepicker', value: (oyster_invoice.send_at.nil? ? '' : (oyster_invoice.send_at.strftime("%Y/%m/%d %H:%M"))) %>
 					<hr>
 					<div class="input-group-append" data-target="#<%= oyster_invoice.id %>" data-toggle="datetimepicker">
-					<div class="input-group-text"><i class="fa fa-calendar"></i></div>
+					<div class="input-group-text"><%= icon('calendar') %></div>
 					</div>
 				</div>
 				<hr>

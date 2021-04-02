@@ -39,8 +39,8 @@ require("fullcalendar/fullcalendar.js")
 
 //Setup Bootstrap
 import 'bootstrap'
-var datepicker = require('bootstrap-datepicker')
 
+//Shufflejs for responsive "masonry" style column/box positioning
 import Shuffle from 'shufflejs';
 
 //Tippy.js for tooltips
@@ -49,7 +49,7 @@ import 'tippy.js/dist/tippy.css'; // optional for styling
 window.tippy = tippy;
 import 'tippy.js/animations/scale.css';
 
-// Bootstrap Popovers, Datepickers, and Tippy.js intialization
+// Shuffle.js, Bootstrap Popovers and Tippy.js intialization
 $(document).on('turbolinks:load', function () {
 	// Shuffle for frontpage
 	if ($('#grid').length) {
@@ -70,31 +70,10 @@ $(document).on('turbolinks:load', function () {
 		touch: true,
 		touch: 'hold'
 	});
-	tippy('.exp_card', {
-		allowHTML: true,
-		animation: 'scale',
-		interactive: true,
-		duration: [300,0],
-		theme: 'exp_card',
-		touch: true,
-		touch: 'hold'
-	});
 	//Toasts
 	$('.toast').toast()
 	// Popovers
 	$('[data-toggle="popover"]').popover()
-	//Basic Bootstrap Datepicker
-	var datepicker = require('bootstrap-datepicker')
-	$('.datepicker').datepicker({
-		maxViewMode: 2,
-		format: "yyyy年mm月dd日",
-		todayBtn: "linked",
-		language: "ja",
-		daysOfWeekHighlighted: "0,3",
-		todayHighlight: true,
-		orientation: "bottom auto",
-		toggleActive: true
-		});
 });
 
 //Chartkick init

@@ -3,10 +3,10 @@
 		allowHTML: true, 
 		animation: 'scale', 
 		duration: [300,0],
-		interactive: true,
 		theme: 'exp_card',
 		touch: true,
-		touch: 'hold'
+		touch: 'hold',
+		placement: 'bottom'
 	});
 </script>
 
@@ -22,6 +22,7 @@
 	<div class="btn-group mb-1 mt-1" role="group" aria-label="Basic">
 		<%= card_link(@sakoshi_expiration_today_five_expo, '坂越海域 今日D+5（製造日なし）', 'btn-sm btn-info') %>
 		<%= card_link(@sakoshi_expiration_muji, '坂越海域 無印', 'btn-sm btn-info') %>
+		<%= card_link(@sakoshi_expiration_frozen, '坂越冷凍', 'btn-sm btn-primary') %>
 	</div>
 	<h5>―　相生海域海域　―</h5>
 		<%= card_link(@aioi_expiration_today, '相生海域 今日 D+4', 'mb-1 btn-success') %>

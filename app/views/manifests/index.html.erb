@@ -3,13 +3,11 @@
 	<div class="container manifest_index">
 		<div class="row align-middle">
 			<div class="col">
-	<% if current_user.admin? %>
 				<div class="btn-group float-right" role="group" aria-label="Basic">
 					<%= link_to icon("file-ruled", class: 'text-white'), empty_manifest_path('生食用'), :class => "btn btn-info tippy", target: "_blank", "data-tippy-content" => '無印チェック表（生食用）' %>
 					<%= link_to icon("file-ruled-fill", class: 'text-white'), empty_manifest_path('プロトン凍結冷凍用'), :class => "btn btn-info tippy", target: "_blank", "data-tippy-content" => '無印チェック表（冷凍用）' %>
 					<%= link_to icon('plus-circle-fill', class: 'text-success'), new_manifest_path, :class => "btn btn-info tippy", "data-tippy-content" => "新しいデータを<br>取込む" %>
 				</div>
-	<% end %> 
 			<hr/>
 
 				<h1>出荷表</h1>
@@ -40,9 +38,9 @@
 		<% tsuhan_count(manifest) %>
 		<div class="row small <%= cycle_table_rows %> <%= if today_warn(manifest) then 'bg-warning' end %>">
 				<div class="col-md-3 col-sm-12 clearfix right-border text-center">
-					<<%= if today_warn(manifest) then 'h4' else 'h5' end %>> 
-						<%= manifest.sales_date %>
-					</<%= if today_warn(manifest) then 'h4' else 'h5' end %>>
+					<h5> 
+						<%=  to_nengapiyoubi(manifest.date) %>
+					</h5>
 				</div>
 				<div class="col-md-1 col-sm-12">
 					<%= non_zero_print(@infomart[:raw]) %>

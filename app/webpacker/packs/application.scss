@@ -10,16 +10,15 @@
 
 /* Bootstrap Customization before Bootstrap */
 @import "stylesheets/funabiki_strap";
-
-/* Primary Imports*/
 @import "bootstrap/scss/bootstrap";
+
+/* Flatpickr */
+@import "flatpickr/dist/themes/material_blue.css";
+
+/* Fullcalendar.io s*/
 @import '@fullcalendar/daygrid/main';
-/* Current out of use, uncomment to use */
-/* @import '@fullcalendar/bootstrap/main'; */
-/* @import '@fullcalendar/timegrid/main'; */
-/* @import '@fullcalendar/list/main'; */
-@import 'bootstrap-datepicker/dist/css/bootstrap-datepicker.standalone.min';
-/* https://animate.style/ */
+
+/* https://animate.style */
 @import 'animate.css/animate.min.css';
 
 /* Individual page imports */
@@ -195,20 +194,27 @@ input[type=number]::-webkit-outer-spin-button {
 /* Calendar */
 
 /* https://www.gradient-animator.com/ */
-.calendar_load {
+.loading_overlay {
 	position: absolute;
-	height: 100%;
 	z-index: 9;
-	margin-left: -15px;
-	margin-top: -15px;
 	opacity: 0.25;
 	background: linear-gradient(90deg, #ffffff, #000000);
 	background-size: 1000% 1000%;
-
 	-webkit-animation: gradientAnime 1s ease infinite;
 	-moz-animation: gradientAnime 1s ease infinite;
 	animation: gradientAnime 1s ease infinite;
 }
+
+.partial_overlay {
+	height: 95%;
+}
+
+.calendar_overlay {	
+	height: 100%;
+	margin-left: -15px;
+	margin-top: -15px;
+}
+
 @-webkit-keyframes gradientAnime {
 0%{background-position:0% 96%}
 50%{background-position:100% 5%}

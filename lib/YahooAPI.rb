@@ -116,9 +116,9 @@ class YahooAPI
 			begin
 				puts 'Refreshing authorization access token'
 				body = { 
-							"grant_type" => "refresh_token",
-							"refresh_token" => @user.data[:yahoo][:authorization]["refresh_token"]
-							}
+						"grant_type" => "refresh_token",
+						"refresh_token" => @user.data[:yahoo][:authorization]["refresh_token"]
+						}
 				request = self.class.post("https://auth.login.yahoo.co.jp/yconnect/v1/token", :headers => @auth_header, body: body)
 				save_auth_token(request.parsed_response)
 			rescue TypeError
@@ -379,7 +379,9 @@ class YahooAPI
 		if authorized?
 			begin
 				all_order_details = Hash.new
-				YahooOrder.where(created_at: [(Date.today - period)..(Date.today)]).pluck(:order_id).each do |order_id|
+				incomplete_orders = YahooOrder.where(ship_date: nil).order(:order_id).map{ |order| order[:order_id] unless order.order_status(false) == 4}.compact
+				period_orders = YahooOrder.where(created_at: [(Date.today - period)..(Date.today)]).pluck(:order_id)
+				(incomplete_orders + period_orders).uniq.each do |order_id|
 					order_details = self.class.post("https://circus.shopping.yahooapis.jp/ShoppingWebService/V1/orderInfo",
 						:headers => {"Content-Type" => 'text/xml;charset=UTF-8',
 							"Authorization" => 'Bearer ' + @user.data[:yahoo][:authorization]["access_token"]},

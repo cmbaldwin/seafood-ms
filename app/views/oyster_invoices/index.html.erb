@@ -1,27 +1,3 @@
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/eonasdan-bootstrap-datetimepicker/4.17.49/js/bootstrap-datetimepicker.min.js" integrity="sha512-jPwanAeILSRxZLeyP1XYBOo67+how4C1Ij54LQSa8xIOP3hKyeWRe24C0scI4QrTeQywKd1meF4Pak/Glv34vA==" crossorigin="anonymous"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/eonasdan-bootstrap-datetimepicker/4.17.49/css/bootstrap-datetimepicker-standalone.css" integrity="sha512-UrJeFwwm3LtRacRyPhKve/pV0pgMznDum4Hrfl48H5Myzx9qPZWtYXV6aosv7tTzhRy94K29Kl5lsiP2pc1EHw==" crossorigin="anonymous" />
-<script type="text/javascript">
-	$.extend(true, $.fn.datetimepicker.defaults, {
-		icons: {
-			time: 'fa fa-clock-o',
-			date: 'fa fa-calendar',
-			up: 'fa fa-chevron-up',
-			down: 'fa fa-chevron-down',
-			previous: 'fa fa-chevron-left',
-			next: 'fa fa-chevron-right',
-			today: 'fa fa-calendar',
-			clear: 'fa fa-trash',
-			close: 'fa fa-calendar-times-o'
-		},
-		format: 'YYYY年MM月DD日 HH:mm'
-	});
-	$(function () {
-		$('.datetimepicker').datetimepicker();
-	});
-</script>
-
 <% title "Funabiki Online - 牡蠣原料仕切り " + (!@oyster_invoices.first.nil? ? (@oyster_invoices.first.start_date + " ~ " + @oyster_invoices.first.end_date) : '') %>
 
 <div class="container">
@@ -38,7 +14,7 @@
 
 	<hr>
 
-	<div class="row row-cols-1 row-cols-md-2">
+	<div class="row row-cols-1 row-cols-lg-2">
 		<% @oyster_invoices.each do |oyster_invoice| %>
 			<div class="col mb-4">
 				<%= render 'form', oyster_invoice: oyster_invoice %>

@@ -2,7 +2,6 @@
   "name": "funabiki-online",
   "private": true,
   "dependencies": {
-    "@fortawesome/fontawesome-free": "^5.14.0",
     "@fullcalendar/bootstrap": "^5.3.1",
     "@fullcalendar/core": "^5.3.1",
     "@fullcalendar/daygrid": "^5.3.2",
@@ -15,11 +14,12 @@
     "@rails/activestorage": "^6.0.3-2",
     "@rails/ujs": "^6.0.3-2",
     "@rails/webpacker": "^5.1.1",
+    "animate.css": "^4.1.1",
     "bootstrap": "^4.5.2",
-    "bootstrap-datepicker": "^1.9.0",
     "bootstrap-icons": "^1.0.0",
     "chart.js": "^2.9.3",
     "chartkick": "^3.2.1",
+    "flatpickr": "^4.6.9",
     "fullcalendar": "^5.3.2",
     "jquery": "^3.5.1",
     "jquery-ui": "^1.12.1",
@@ -27,7 +27,8 @@
     "moment": "^2.28.0",
     "popper.js": "^1.16.1",
     "scrollspy": "^1.6.0",
-    "tempusdominus-bootstrap-4": "^5.1.2",
+    "shufflejs": "^5.2.3",
+    "tippy.js": "^6.2.7",
     "turbolinks": "^5.2.0"
   },
   "devDependencies": {

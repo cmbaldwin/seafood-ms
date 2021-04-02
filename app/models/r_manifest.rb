@@ -1,13 +1,5 @@
 class RManifest < ApplicationRecord
 
-	attr_accessor :order_id
-	attr_accessor :expense_name
-	attr_accessor :purchaser
-	attr_accessor :oysis
-	attr_accessor :title
-	attr_accessor :amount
-	attr_accessor :options
-
 	serialize :orders_hash
 	serialize :new_orders_hash
 
@@ -17,6 +9,10 @@ class RManifest < ApplicationRecord
 	include OrderQuery
 	order_query :r_manifest_query,
 		[:sales_date] # Sort :sales_date in :desc order
+
+	def date
+		DateTime.strptime(self.sales_date, "%Y年%m月%d日")
+	end
 
 	def order_addresses(order)
 		order[:raw_data]["PackageModelList"].map do |pkg|
@@ -195,6 +191,14 @@ class RManifest < ApplicationRecord
 		get_sales(order) - get_total_costs(order) - get_raw_costs(order)
 	end
 
+	def get_subtotal_without_raw(order)
+		get_sales(order) - get_total_costs(order)
+	end
+
+	def without_raw_subtotal
+		self.new_orders_hash.inject(0){|memo, order| memo += get_subtotal_without_raw(order) }
+	end
+
 	def total_profits
 		self.new_orders_hash.inject(0){|memo, order| memo += get_profits(order) }
 	end
@@ -215,6 +219,10 @@ class RManifest < ApplicationRecord
 
 	def get_total_costs(order)
 		get_shipping(order) + get_expenses(order)
+	end
+
+	def get_all_costs
+		self.new_orders_hash.inject(0){|memo, order| memo += get_total_costs(order)}
 	end
 
 	def get_order_details_by_api
@@ -369,299 +377,6 @@ class RManifest < ApplicationRecord
 		self.save
 	end
 
-	def do_seperated_pdf
-		intital_data = self.new_orders_hash.reverse
-		unless intital_data.empty?
-			data = Hash.new
-			knife_data = Hash.new
-			order_types = [:mizukiri, :shells, :sets]
-			other_types = [:dekapuri, :karaebi80g, :mukiebi80g, :anago, :reitou_shell, :tako, :kakita, :barakara]
-			all_types = order_types.push(*other_types)
-			intital_data.each_with_index do |order, i|
-				(i == 0) ? data[:knife] = Hash.new : ()
-				order_types.each do |t|
-					(i == 0) ? (data[t] = Set.new) : ()
-					if order[:knife][:count].empty?
-						!order[t][:count].empty? ? data[t] << i : ()
-					end
-				end
-				order_types.each do |t|
-					(i == 0) ? (knife_data[t] = Set.new) : ()
-					if !order[:knife][:count].empty?
-						!order[t][:count].empty? ? knife_data[t] << i : ()
-					end
-				end
-				other_types.each do |t|
-					(i == 0) ? (data[t] = Set.new) : ()
-					!order[t][:count].empty? ? data[t] << i : ()
-				end
-			end
-			new_set = Hash.new
-			new_knife = Hash.new
-			value_set = Hash.new
-			knife_value_set = Hash.new
-			final = Hash.new
-			final_knife = Hash.new
-			order_types.each do |t|
-				new_set[t] = Hash.new
-				new_knife[t] = Hash.new
-				value_set[t] = Set.new
-				knife_value_set[t] = Set.new
-				if !data[t].nil? || !data[t].empty?
-					data[t].each do |n|
-						if !intital_data[n][t][:count].empty?
-							value_set[t] << intital_data[n][t][:amount]
-							amount = intital_data[n][t][:amount]
-							new_set[t][amount].nil? ? new_set[t][amount] = Array.new : ()
-							new_set[t][amount] << n
-						end
-					end
-				end
-				if !knife_data[t].empty?
-					knife_data[t].each do |n|
-						if !intital_data[n][t][:count].empty?
-							knife_value_set[t] << intital_data[n][t][:amount]
-							amount = intital_data[n][t][:amount]
-							new_knife[t][amount].nil? ? new_knife[t][amount] = Array.new : ()
-							new_knife[t][amount] << n
-						end
-					end
-				end
-			end
-			order_types.each do |t|
-				final[t] = Array.new
-				value_set[t].sort.reverse.each do |v|
-					final[t].push(*new_set[t][v])
-				end
-				final_knife[t] = Array.new
-				knife_value_set[t].sort.reverse.each do |v|
-					final_knife[t].push(*new_knife[t][v])
-				end
-			end
-			# 210mm x 297mm
-			Prawn::Document.generate("PDF.pdf", :margin => [15]) do |pdf|
-				pdf.font_families.update(PrawnPDF.fonts)
-				#set utf-8 japanese font
-				pdf.font "MPLUS1p", :style => :normal
-				header_data_row = ['#', '注文者', '送付先', '500g', 'セル', 'セット', 'その他', 'お届け日', '時間', 'ナイフ', 'のし', '領収書', '備考']
-				translation_hash = {:mizukiri => "水切り", :shells => "セル", :sets => "セット", :dekapuri => "デカプリオイスター", :karaebi80g => "干しエビ（殻付き）80g", :mukiebi80g => "干しエビ（むき身）80g", :anago => "穴子", :reitou_shell => "冷凍せ", :tako => "ボイルたこ (~1㎏)", :kakita => "カキータ", barakara: "小殻付き"}
-				[final, final_knife].each_with_index do |data_set, mi|
-					all_types.each_with_index do |type, i|
-						if !data_set[type].empty? && !data_set[type].nil?
-							(i != 0 || mi != 0) ? (pdf.start_new_page) : ()
-							data_table = Array.new
-							knife_text = (data_set == final_knife) ? ('+ ナイフ') : ('')
-							data_table << [ {:content =>  "発送日:　<b>#{self.sales_date}</b>", :colspan => 5}, {:content => "商品区別:　<b>#{translation_hash[type] + knife_text}</b>", :colspan => 5}, {:content => "印刷日:　<b>#{DateTime.now.strftime("%Y年%m月%d日")}</b>", :colspan => 3}]
-							data_table << header_data_row
-							data_set[type].each do |local_order_number|
-								order = intital_data[local_order_number]
-								if order.is_a?(Hash)
-									# make a new array for this order row
-									order_data_row = Array.new
-									# order numner
-									order_data_row << (local_order_number + 1).to_s
-									# sender and reciever
-									sender_name = order[:sender]['familyName'].to_s + ' ' + order[:sender]['firstName'].to_s
-									order_data_row << sender_name
-									recipient_names = String.new
-									order[:recipient].each do |recipient_name|
-										if sender_name == recipient_name
-											recipient_names << '""
-											'
-										else
-											recipient_names << recipient_name + '
-											'
-										end
-									end
-									order_data_row << recipient_names
-									#mizukiri
-									if !order[:mizukiri][:amount].nil?
-										text = ''
-										order[:mizukiri][:amount].each_with_index do |amount, i|
-											if i > 0 then text += '
-												' end
-											text += amount.to_s
-											if order[:mizukiri][:count][i] > 1 then text += '× ' + order[:mizukiri][:count][i].to_s + '!' end
-										end
-										order_data_row << text
-									end
-									#shells
-									if !order[:shells][:amount].nil?
-										text = ''
-										order[:shells][:amount].each_with_index do |amount, i|
-											if i > 0 then text += '
-												' end
-											text += amount.to_s
-											if order[:shells][:count][i] > 1 then text += '× ' + order[:shells][:count][i].to_s + '!' end
-										end
-										order_data_row << text
-									end
-									#sets
-									if !order[:sets][:amount].nil?
-										text = ''
-										order[:sets][:amount].each_with_index do |amount, i|
-											if i > 0 then text += '
-												' end
-											text += '500g×' + amount.to_s.scan(/\d(?!.*\d)/).first + ' + ' + amount.to_s.scan(/\d{2}/).first + '個'
-											if order[:sets][:count][i] > 1 then text += '× ' + order[:shells][:count][i].to_s + '!' end
-										end
-										order_data_row << text
-									end
-									#others
-									others_text = ''
-										if !order[:tako][:amount].nil?
-											order[:tako][:amount].each_with_index do |amount, i|
-												if i > 0 then others_text += '
-													' end
-												others_text += 'ボイルたこ (~1㎏)×' + amount.to_s
-												if order[:tako][:count][i] > 1 then others_text += '× ' + order[:tako][:count][i].to_s + '!' end
-											end
-										end
-										if !order[:karaebi80g][:amount].nil?
-											order[:karaebi80g][:amount].each_with_index do |amount, i|
-												if i > 0 then others_text += '
-													' end
-												others_text += '干しエビ（殻付き）80g×' + amount.to_s
-												if order[:karaebi80g][:count][i] > 1 then others_text += '× ' + order[:karaebi80g][:count][i].to_s + '!' end
-											end
-										end
-										if !order[:mukiebi80g][:amount].nil?
-											order[:mukiebi80g][:amount].each_with_index do |amount, i|
-												if i > 0 then others_text += '
-													' end
-												others_text += '干しエビ（むき身）80g×' + amount.to_s
-												if order[:mukiebi80g][:count][i] > 1 then others_text += '× ' + order[:mukiebi80g][:count][i].to_s + '!' end
-											end
-										end
-										if !order[:anago][:amount].nil?
-											order[:anago][:amount].each_with_index do |amount, i|
-												if i > 0 then others_text += '
-													' end
-												others_text += '穴子' + amount.to_s + 'g'
-												if order[:anago][:count][i] > 1 then others_text += '× ' + order[:anago][:count][i].to_s + '!' end
-											end
-										end
-										if !order[:dekapuri][:amount].nil?
-											order[:dekapuri][:amount].each_with_index do |amount, i|
-												if i > 0 then others_text += '
-													' end
-												others_text += '冷凍500g×' + amount.to_s
-												if order[:dekapuri][:count][i] > 1 then others_text += '× ' + order[:dekapuri][:count][i].to_s + '!' end
-											end
-										end
-										if !order[:reitou_shell][:amount].nil?
-											order[:reitou_shell][:amount].each_with_index do |amount, i|
-												if i > 0 then others_text += '
-													' end
-												others_text += '冷凍セル' + amount.to_s + '個'
-												if order[:reitou_shell][:count][i] > 1 then others_text += '× ' + order[:reitou_shell][:count][i].to_s + '!' end
-											end
-										end
-										if !order[:kakita][:amount].nil?
-											order[:kakita][:amount].each_with_index do |amount, i|
-												if i > 0 then others_text += '  -
-													' end
-												others_text += 'カキータ×' + amount.to_s
-												if order[:kakita][:count][i] > 1 then others_text += '× ' + order[:kakita][:count][i].to_s + '!' end
-											end
-										end
-									order_data_row << others_text
-									#arrival date
-									def date_check(order)
-										if (DateTime.strptime(self.sales_date, "%Y年%m月%d日") + 1) == (DateTime.strptime(order[:arrival_date], "%Y-%m-%d"))
-											'明日着'
-										else
-											(DateTime.strptime(order[:arrival_date], "%Y-%m-%d")).strftime('%m月%d日')
-										end
-									end
-									order_data_row << date_check(order)
-									#arrival time
-									order_data_row << if order[:arrival_time] == 'なし' then '' else order[:arrival_time] end
-									#knife
-									knife_count = 0
-									if !order[:knife][:amount].nil?
-										order[:knife][:amount].each_with_index do |amount, i|
-											knife_count += order[:knife][:count][i]
-										end
-									end
-									if knife_count > 1 then order_data_row << knife_count.to_s elsif knife_count > 0 then order_data_row << '✓' else order_data_row << '' end
-									#noshi
-									if order[:noshi] == true then order_data_row << '✓' else order_data_row << '' end
-									#receipt
-									remarks = order[:remarks].scan(/(?<=\[メッセージ添付希望・他ご意見、ご要望がありましたらこちらまで:\]).*/m).first.gsub(/\n/, '')
-									if order[:notes].nil? then notes = '' else notes = order[:notes] end
-									if !order[:receipt].nil? then order_data_row << order[:receipt] elsif remarks.include?('領収') || notes.include?('領収') then order_data_row << '✓' else order_data_row << '' end
-									#notes
-									collect = (order[:payment_method] == "代金引換") ? '代引：￥' + order[:charged_cost].to_s : ''
-									order_data_row << remarks + collect
-									#add the array to the list of arrays that will become table rows
-									data_table << order_data_row
-								end
-							end
-							data_table << ['　'] * 13
-							data_table << ['　'] * 13
-							data_table << ['　'] * 13
-							data_table << ['　'] * 13
-							data_table << ['　'] * 13
-							pdf.font_size 8
-							pdf.table( data_table, :header => true, :cell_style => {:border_width => 0.25, :valign => :center, :inline_format => true}, :column_widths => {0 => 18, 1 => 55, 2 => 55, 3 => 25, 4 => 22, 5=> 50, 10 => 30, 11 => 30, 12=> 100}, :width => pdf.bounds.width ) do
-
-								cells.row(0).padding = 7
-								cells.column(0).rows(1..-1).padding = 2
-								cells.columns(1..-1).rows(1..-1).padding = 4
-
-								header_cells = cells.columns(0..12).rows(1)
-								header_cells.background_color = "acacac"
-								header_cells.size = 7
-								header_cells.font_style = :bold
-
-								cells.columns(7).rows(1..-1).font_style = :light
-
-								set_other_time_cells = cells.columns([5, 6, 7, 8, 12]).rows(1..-1)
-								set_other_time_cells.size = 7
-
-								item_cells = cells.columns(3..6).rows(1..-1)
-								multi_cells = item_cells.filter do |cell|
-									cell.content.to_s[/!/]
-								end
-								multi_cells.background_color ="ffc48f"
-
-								item_cells = cells.columns(9..11).rows(2..-6)
-								check_cells = item_cells.filter do |cell|
-									!cell.content.to_s.empty?
-								end
-								check_cells.background_color ="ffc48f"
-
-
-								note_cells = cells.columns(12).rows(1..-1)
-								cash_cells = note_cells.filter do |cell|
-									cell.content.to_s[/代引/]
-								end
-								cash_cells.background_color ="ffc48f"
-
-								date_cells = cells.columns(7).rows(1..-1)
-								not_tomorrow_cells = date_cells.filter do |cell|
-									cell.content.to_s[/月/]
-								end
-								not_tomorrow_cells.background_color ="ffc48f"
-							end
-						end
-					end
-				end
-				#output the pdf
-				return pdf
-			end
-		else
-			Prawn::Document.generate("PDF.pdf", :margin => [15]) do |pdf|
-				pdf.font_families.update(PrawnPDF.fonts)
-				#set utf-8 japanese font
-				pdf.font "MPLUS1p", :style => :normal
-				pdf.text 'データ無し'
-				return pdf
-			end
-		end
-	end
-
 	def new_order_counts
 		counts = Hash.new
 		mizukiri_count = 0
@@ -746,7 +461,8 @@ class RManifest < ApplicationRecord
 	end
 
 	def prep_work_totals
-		products = { mizukiri: { '10000003' => 4, '10000002' => 3, '10000001' => 2, '10000018' => 1, '10000035' => 2 },
+		products = { 
+			mizukiri: { '10000003' => 4, '10000002' => 3, '10000001' => 2, '10000018' => 1, '10000035' => 2 },
 			sets: { '10000007' => 101, '10000008' => 201, '10000022' => 301, '10000009' => 202, '10000023' => 302 },
 			shells: { '10000040' => 100, '10000006' => 50, '10000025' => 40, '10000005' => 30, '10000004' => 20, '10000015' => 10 },
 			karaebi80g: { '10000011' => 10, '10000010' => 5 },
@@ -785,246 +501,6 @@ class RManifest < ApplicationRecord
 		work_totals[:shell_cards] += work_totals[:shells] ? work_totals[:shells].length : 0
 		work_totals[:shell_cards] += work_totals[:barakara] ? work_totals[:barakara].length : 0
 		work_totals
-	end
-
-	def do_new_pdf(include_yahoo)
-		data = self.new_orders_hash.reverse
-		# 210mm x 297mm
-		Prawn::Document.generate("PDF.pdf", :margin => [15]) do |pdf|
-			pdf.font_families.update(PrawnPDF.fonts)
-			#set utf-8 japanese font
-			pdf.font "MPLUS1p"
-
-			#print the date
-			pdf.font_size 16
-			pdf.font "MPLUS1p", :style => :bold
-			pdf.text self.sales_date + "  楽天市場 発送表"
-			pdf.move_down 15
-			pdf.font "MPLUS1p", :style => :normal
-
-			counts = self.new_order_counts
-			work_totals = self.prep_work_totals
-			counts_table = Array.new
-			counts_table << ['むき身', 'セル', 'デカプリ', '冷凍セル', '穴子', 'タコ', '干しエビ', 'ナイフ']
-			counts_table << [counts[:mizukiri].to_s + '　<font size="6">パック</font>',
-							"#{counts[:shells].to_s}　<font size='6'>個</font>　・　#{counts[:barakara].to_s}　<font size='6'>㎏</font>",
-							counts[:dekapuri].to_s + '　<font size="6">パック</font>',
-							counts[:reitou_shells].to_s + '　<font size="6">個</font>',
-							counts[:anago].to_s + '　<font size="6">件</font>',
-							counts[:tako].to_s + '　<font size="6">件</font>',
-							counts[:ebi].to_s + '　<font size="6">件</font>',
-							work_totals[:knife_count].to_s + '　<font size="6">個</font>']
-			pdf.table( counts_table, :cell_style => {:inline_format => true, :border_width => 0.25, :valign => :center, :align => :center, :size => 10}, :width => pdf.bounds.width ) do |t|
-				t.row(0).background_color = "acacac"
-			end
-			pdf.move_down 10
-
-			#set up the data, make the header
-			data_table = Array.new
-			header_data_row = ['#', '注文者', '送付先', '500g', 'セル', 'セット', 'その他', 'お届け日', '時間', 'ナイフ', 'のし', '領収書', '備考']
-			data_table << header_data_row
-
-			data.each_with_index do |order, i|
-				if order.is_a?(Hash)
-					# make a new array for this order row
-					order_data_row = Array.new
-					# order numner
-					order_data_row << i + 1
-					# sender and reciever
-					sender_name = order[:sender]['familyName'].to_s + ' ' + order[:sender]['firstName'].to_s
-					order_data_row << sender_name
-					recipient_names = String.new
-					order[:recipient].each do |recipient_name|
-						if sender_name == recipient_name
-							recipient_names << '""
-							'
-						else
-							recipient_names << recipient_name + '
-							'
-						end
-					end
-					order_data_row << recipient_names
-					#mizukiri
-					if !order[:mizukiri][:amount].nil?
-						text = ''
-						order[:mizukiri][:amount].each_with_index do |amount, i|
-							if i > 0 then text += '
-							 ' end
-							text += amount.to_s
-							if order[:mizukiri][:count][i] > 1 then text += '× ' + order[:mizukiri][:count][i].to_s + '!' end
-						end
-						order_data_row << text
-					end
-					#shells
-					if !order[:shells][:amount].nil? && !order[:barakara][:amount].nil?
-						text = ''
-						order[:shells][:amount].each_with_index do |amount, i|
-							if i > 0 then text += '
-								' end
-							text += "#{amount.to_s}#{'個' if !order[:barakara][:amount].nil?} "
-							if order[:shells][:count][i] > 1 then text += '× ' + order[:shells][:count][i].to_s + '!' end
-						end
-						order[:barakara][:amount].each_with_index do |amount, i|
-							if i > 0 then text += '
-								' end
-							text += "#{amount.to_s}㎏ "
-							if order[:barakara][:count][i] > 1 then text += '× ' + order[:barakara][:count][i].to_s + '!' end
-						end
-						order_data_row << text
-					end
-					#sets
-					if !order[:sets][:amount].nil?
-						text = ''
-						order[:sets][:amount].each_with_index do |amount, i|
-							if i > 0 then text += '
-								' end
-							text += '500g×' + amount.to_s.scan(/\d(?!.*\d)/).first + ' + ' + amount.to_s.scan(/\d{2}/).first + '個'
-							if order[:sets][:count][i] > 1 then text += '× ' + order[:shells][:count][i].to_s + '!' end
-						end
-						order_data_row << text
-					end
-					#others
-					others_text = ''
-						if !order[:tako][:amount].nil?
-							order[:tako][:amount].each_with_index do |amount, i|
-								if i > 0 then others_text += '
-									' end
-								others_text += 'ボイルたこ (~1㎏)' + amount.to_s
-								if order[:tako][:count][i] > 1 then others_text += '× ' + order[:tako][:count][i].to_s + '!' end
-							end
-						end
-						if !order[:karaebi80g][:amount].nil?
-							order[:karaebi80g][:amount].each_with_index do |amount, i|
-								if i > 0 then others_text += '
-									' end
-								others_text += '干しエビ（殻付き）80g×' + amount.to_s
-								if order[:karaebi80g][:count][i] > 1 then others_text += '× ' + order[:karaebi80g][:count][i].to_s + '!' end
-							end
-						end
-						if !order[:mukiebi80g][:amount].nil?
-							order[:mukiebi80g][:amount].each_with_index do |amount, i|
-								if i > 0 then others_text += '
-									' end
-								others_text += '干しエビ（むき身）80g×' + amount.to_s
-								if order[:mukiebi80g][:count][i] > 1 then others_text += '× ' + order[:mukiebi80g][:count][i].to_s + '!' end
-							end
-						end
-						if !order[:anago][:amount].nil?
-							order[:anago][:amount].each_with_index do |amount, i|
-								if i > 0 then others_text += '
-									' end
-								others_text += '穴子' + amount.to_s + 'g'
-								if order[:anago][:count][i] > 1 then others_text += '× ' + order[:anago][:count][i].to_s + '!' end
-							end
-						end
-						if !order[:dekapuri][:amount].nil?
-							order[:dekapuri][:amount].each_with_index do |amount, i|
-								if i > 0 then others_text += '
-									' end
-								others_text += '冷凍500g×' + amount.to_s
-								if order[:dekapuri][:count][i] > 1 then others_text += '× ' + order[:dekapuri][:count][i].to_s + '!' end
-							end
-						end
-						if !order[:reitou_shell][:amount].nil?
-							order[:reitou_shell][:amount].each_with_index do |amount, i|
-								if i > 0 then others_text += '
-									' end
-								others_text += '冷凍セル' + amount.to_s + '個'
-								if order[:reitou_shell][:count][i] > 1 then others_text += '× ' + order[:reitou_shell][:count][i].to_s + '!' end
-							end
-						end
-						if !order[:kakita][:amount].nil?
-							order[:kakita][:amount].each_with_index do |amount, i|
-								if i > 0 then others_text += '
-									' end
-								others_text += 'カキータ×' + amount.to_s
-								if order[:kakita][:count][i] > 1 then others_text += '× ' + order[:kakita][:count][i].to_s + '!' end
-							end
-						end
-					order_data_row << others_text
-					#arrival date
-					def date_check(order)
-						if (DateTime.strptime(self.sales_date, "%Y年%m月%d日") + 1) == (DateTime.strptime(order[:arrival_date], "%Y-%m-%d"))
-							'明日着'
-						else
-							(DateTime.strptime(order[:arrival_date], "%Y-%m-%d")).strftime('%m月%d日')
-						end
-					end
-					order_data_row << date_check(order)
-					#arrival time
-					order_data_row << if order[:arrival_time] == 'なし' then '' else order[:arrival_time] end
-					#knife
-					knife_count = 0
-					if !order[:knife][:amount].nil?
-						order[:knife][:amount].each_with_index do |amount, i|
-							knife_count += order[:knife][:count][i]
-						end
-					end
-					if knife_count > 1 then order_data_row << knife_count.to_s elsif knife_count > 0 then order_data_row << '✓' else order_data_row << '' end
-					#noshi
-					if order[:noshi] == true then order_data_row << '✓' else order_data_row << '' end
-					#receipt
-					remarks = order[:remarks].scan(/(?<=\[メッセージ添付希望・他ご意見、ご要望がありましたらこちらまで:\]).*/m).first.gsub(/\n/, '')
-					if order[:notes].nil? then notes = '' else notes = order[:notes] end
-					if !order[:receipt].nil? then order_data_row << order[:receipt] elsif remarks.include?('領収') || notes.include?('領収') then order_data_row << '✓' else order_data_row << '' end
-					#notes
-					collect = (order[:payment_method] == "代金引換") ? '代引：￥' + order[:charged_cost].to_s : ''
-					order_data_row << remarks + collect
-					#add the array to the list of arrays that will become table rows
-					data_table << order_data_row
-				end
-			end
-
-			data_table << ['　'] * 13
-			data_table << ['　'] * 13
-			data_table << ['　'] * 13
-			data_table << ['　'] * 13
-			data_table << ['　'] * 13
-			pdf.font_size 8
-			pdf.table( data_table, :header => true, :cell_style => {:border_width => 0.25, :valign => :center}, :column_widths => {0 => 18, 1 => 55, 2 => 55, 3 => 30, 4 => 27, 5=> 50, 12=> 100}, :width => pdf.bounds.width ) do
-
-				cells.column(0).rows(1..-1).padding = 2
-				cells.columns(1..-1).rows(1..-1).padding = 4
-
-				header_cells = cells.columns(0..12).rows(0)
-				header_cells.background_color = "acacac"
-				header_cells.size = 7
-				header_cells.font_style = :bold
-
-				cells.columns(7).rows(1..-1).font_style = :light
-
-				set_other_time_cells = cells.columns([5, 6, 7, 8, 12]).rows(1..-1)
-				set_other_time_cells.size = 7
-
-				item_cells = cells.columns(3..6).rows(1..-1)
-				multi_cells = item_cells.filter do |cell|
-					cell.content.to_s[/!/]
-				end
-				multi_cells.background_color ="ffc48f"
-
-				item_cells = cells.columns(9..11).rows(1..-6)
-				check_cells = item_cells.filter do |cell|
-					!cell.content.to_s.empty?
-				end
-				check_cells.background_color ="ffc48f"
-
-
-				note_cells = cells.columns(12).rows(1..-1)
-				cash_cells = note_cells.filter do |cell|
-					cell.content.to_s[/代引/]
-				end
-				cash_cells.background_color ="ffc48f"
-
-				date_cells = cells.columns(7).rows(1..-1)
-				not_tomorrow_cells = date_cells.filter do |cell|
-					cell.content.to_s[/月/]
-				end
-				not_tomorrow_cells.background_color ="ffc48f"
-			end
-
-			#output pdf
-			return pdf
-		end
 	end
 
 end

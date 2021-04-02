@@ -4,7 +4,7 @@ class ManifestPdfWorker
 	def perform(manifest_id, message_id)
 		message = Message.find(message_id)
 		@manifest = Manifest.find(manifest_id)
-		pdf_data = @manifest.do_pdf
+		pdf_data = PrawnPDF.manifest(@manifest)
 		pdf = CarrierStringInvoiceIO.new(pdf_data.render)
 		message.update(document: pdf)
 		pdf_data = nil

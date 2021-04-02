@@ -1,0 +1,53 @@
+<%= javascript_pack_tag 'partials', 'data-turbolinks-track': 'reload' %>
+
+<div class="card m-0 p-0 border-white">
+	<div class="card-header p-1 mb-1">
+		<div class="row">
+			<div class="col-lg-6 col-md-12 text-center d-table-cell align-middle mb-1">
+				<h4 class="mb-0 mt-1 card-title"><%= to_nengapiyoubi(@date) %></h4>
+			</div>
+			<div class="col-lg-6 col-md-12 text-center d-table-cell align-middle mb-1">
+				<div class="btn-group">
+					<% unless @infomart_shinki.empty? %>
+						<button type="button" class="btn btn-sm btn-info tippy" data-toggle="modal" data-target="#infomart_shinki_modal" data-tippy-content="<center>Infomart新規注文</center>">
+							<%= icon("asterisk") %><span class="badge badge-warning ml-1"><%= @infomart_shinki.length %></span>
+						</button>
+					<% end %>
+					<%= link_to icon("card-list"), infomart_orders_path(date: @date), :alt => "個別ページ", class: 'btn btn-info tippy', "data-tippy-content" => "<center>#{to_nengapi(@date)}の<br>個別ページ</center>", 'data-turbolinks' => "false" %>
+					<%= link_to icon("arrow-counterclockwise", class: "text-success"), refresh_infomart_path, :alt => "Infomartから<br>データを取込み", class: 'btn btn-info tippy', "data-tippy-content" => "<center>Infomartからデータを<br>取込み</center>" %>
+					<%= link_to icon("file-earmark-diff"), infomart_shipping_list_path(ship_date: @date, include_online: 1), class: 'btn btn-info tippy', remote: true, "data-tippy-content" => "<center>Funabiki.infoとInfomartの<br>#{to_nengapi(@date)}の<br>出荷表PDFを開く</center>", 'data-turbolinks' => "false" %>
+					<%= link_to icon("file-earmark-arrow-down"), infomart_shipping_list_path(ship_date: @date, include_online: 0), class: 'btn btn-info tippy', remote: true, "data-tippy-content" => "<center>#{to_nengapi(@date)}の<br>出荷表PDFを開く</center>", 'data-turbolinks' => "false" %>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="card-text text-center">
+		<% if @infomart_orders.length > 0 %>
+			<div class="row d-flex justify-content-center align-items-center mb-2">
+				<% counts(@infomart_orders).each_with_index do |c, i| %>
+					<% unless c.zero? %>
+						<div class="col text-center">
+							<h6 class="font-weight-bolder p-2"><%= count_title(i) %></h6>
+							<span class="btn btn-sm btn-primary small"><b><%= c %></b> <small><%= count_counter(i) %></small></span>
+						</div>
+					<% end %>
+				<% end %>
+			</div>
+		<% else %>
+			<div class="m-3">
+				Infomartの発送なし
+			</div>
+		<% end %>
+	</div>
+
+	<div class="card-footer bg-white d-table-cell align-middle">
+		<small class="text-muted">
+			<%= "#{to_nengapijibun(@infomart_orders.last.updated_at)}時点" unless @infomart_orders.empty? %>
+		</small>
+		<div class="btn-group float-right" role="group" aria-label="Basic">
+			<%= link_to icon("arrow-left-circle"), load_infomart_orders_path(@date - 1.day), :alt => "前", class: 'btn btn-sm btn-secondary tippy load', 'data-target' => '#infomart_partial', remote: true, "data-tippy-content" => "<center>#{to_nengapi(@date - 1.day)}の<br>データを見る</center>"  %>
+			<%= link_to icon("arrow-right-circle"), load_infomart_orders_path(@date + 1.day), :alt => "次", class: 'btn btn-sm btn-secondary tippy load', 'data-target' => '#infomart_partial', remote: true, "data-tippy-content" => "<center>#{to_nengapi(@date + 1.day)}の<br>データを見る</center>" %>
+		</div>
+	</div>
+</div>

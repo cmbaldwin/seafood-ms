@@ -313,6 +313,14 @@ namespace :daily_shell_cards do
 		puts 'Created:'
 		puts @sakoshi_expiration_muji.to_s
 		puts '------------------------'
+		#Sakoshi Frozen Shells (Make this Seasonal?)
+		puts 'Create Sakoshi Frozen'
+		@sakoshi_expiration_frozen = ExpirationCard.new(product_name: "冷凍殻付き牡蠣（プロトン凍結）", manufacturer_address: "兵庫県赤穂市中広1576-11", manufacturer: "株式会社 船曳商店", ingredient_source: "兵庫県坂越海域", consumption_restrictions: "加熱調理用", manufactuered_date: nengapi_maker(today, 0), expiration_date: nengapi_maker(today, 730), storage_recommendation: "ー１８℃", made_on: true, shomiorhi: false)
+		@sakoshi_expiration_frozen.create_pdf
+		@sakoshi_expiration_frozen.save
+		puts 'Created:'
+		puts @sakoshi_expiration_frozen.to_s
+		puts '------------------------'
 
 		#Aioi Today + 4
 		puts 'Create Aioi Today + 4'
@@ -369,6 +377,7 @@ end
 
 namespace :pull_order_data do
 
+	# Old "Manifest" System, Should be removed or commented out here eventually
 	desc "Pull and replace data today and tomorrow's Infomart and Woocommerce order data"
 	task :pull_tsuhan => :environment do
 
@@ -422,6 +431,7 @@ namespace :pull_order_data do
 			end
 			wc_orders
 		end
+
 		def get_infomart(sales_date)
 			require 'mechanize'
 
@@ -432,8 +442,13 @@ namespace :pull_order_data do
 			end_date = (scrape_date + 2).strftime("%Y/%m/%d")
 			#go to the page to scrape
 			page = agent.get('https://www2.infomart.co.jp/employment/shipping_list_window.page?6&st=0&parent=1&selbuy=0&op=00&f_date=' + start_date + '&t_date=' + end_date + '&stmnm&stmtel&HTradeState&resend&membersel=0&mcd_child&membernm&pdate=2&Infl=TC&TCalTradeState=0&TCalTradeState_2=0&TCalTradeState_3=0&TCalTradeState_4=0&TCalTradeState_5=0&TCalTradeState_6=0&TCalTradeState_7=1&TransitionPage_Cal=1&LeaveCond=1&perusal=0&cwflg=1')
+			login_form = page.form
+			#error login?
+			login_form.UID = ENV['INFOMART_LOGIN']
+			login_form.PWD = ENV['INFOMART_PASS']
+			page = agent.submit(login_form)
+			#login again
 			login_form = page.form('form01')
-			#login
 			login_form.UID = ENV['INFOMART_LOGIN']
 			login_form.PWD = ENV['INFOMART_PASS']
 			page = agent.submit(login_form)
@@ -524,9 +539,19 @@ namespace :pull_order_data do
 		puts "Updated Woocommerce orders for two days from now"
 		manifest_two_days_from_now.save
 
-		puts "Finished Tsuhan."
+		puts "Finished Tsuhan (old 'manifest' model/method)."
 
 	end
+
+	desc "Pull data from Funabiki.info to OnlineOrders"
+	task :pull_funabiki_info => :environment do
+		InfomartAPI.new.acquire_new_data
+	end	
+
+	desc "Pull data from Infomart to InfomartOrders"
+	task :pull_online_orders => :environment do
+		WCAPI.new.update
+	end	
 
 	desc "Pull and replace data today and tomorrow's Rakuten order data"
 	task :pull_rakuten => :environment do
@@ -552,12 +577,12 @@ namespace :pull_order_data do
 
 	desc "Pull and replace existing Rakuten order data"
 	task :get_one_month_rakuten => :environment do
-		range = Date.today..Date.today.end_of_month
-		puts "Pulling " + Date.today.strftime('%B') + "'s Rakuten data records from API..."
+		range = Date.today..(Date.today + 1.month)
+		puts "Pulling " + Date.today.strftime('%B') + "'s Rakuten data/records from API..."
 
 		range.each_with_index do |date, i|
-			rmanifest = RManifest.where(:sales_date => date.strftime('%Y年%m月%d日')).first
-			rmanifest.nil? ? (rmanifest = RManifest.new(:sales_date => date.strftime('%Y年%m月%d日'))) : ()
+			rmanifest = RManifest.find_by(:sales_date => date.strftime('%Y年%m月%d日'))
+			(rmanifest = RManifest.new(:sales_date => date.strftime('%Y年%m月%d日'))) if rmanifest.nil?
 			puts i.to_s
 			rmanifest.get_order_details_by_api
 		end
@@ -566,14 +591,15 @@ namespace :pull_order_data do
 
 	end
 
-	desc "Pull and replace existing Rakuten order data"
-	task :refresh_existing_rakuten => :environment do
-		total_length = RManifest.all.length.to_s
-		puts "Pulling " + total_length + " Rakuten Data records from API..."
+	desc "Pull and replace (recent) pre-existing Rakuten order data"
+	task :refresh_recent_existing_rakuten => :environment do
+		range = (Date.today - 1.month - 2.weeks)..Date.today
+		puts "Pulling Rakuten data/records from API..."
 
-		RManifest.all.each_with_index do |rmanifest, i|
-			puts "Pulling ID#" + rmanifest.id.to_s
-			puts i.to_s + ' of ' + total_length
+		range.each_with_index do |date, i|
+			rmanifest = RManifest.find_by(:sales_date => date.strftime('%Y年%m月%d日'))
+			(rmanifest = RManifest.new(:sales_date => date.strftime('%Y年%m月%d日'))) if rmanifest.nil?
+			puts i.to_s
 			rmanifest.get_order_details_by_api
 		end
 
@@ -592,6 +618,8 @@ desc "Pull all recent order data for today and tomorrow"
 task pull_recent_order_data: :environment do
   Rake::Task['pull_order_data:pull_tsuhan'].execute
   Rake::Task['pull_order_data:pull_rakuten'].execute
+  Rake::Task['pull_order_data:pull_funabiki_info'].execute
+  Rake::Task['pull_order_data:pull_online_orders'].execute
 end
 
 desc "Scrape all Woocommerce Order Data for existing orders"

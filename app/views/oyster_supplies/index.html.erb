@@ -1,4 +1,10 @@
-<% title "Funabiki Online - 牡蠣原料マスター" %>
+<script type="text/javascript">
+$(document).one("turbolinks:load", () =>  {
+  Turbolinks.clearCache();
+})
+</script>
+
+<% title "Funabiki Online - 牡蠣供給等" %>
 
 <div class="modal fade" id="invoiceModal" tabindex="-1" role="dialog" aria-labelledby="invoiceModalLabel" aria-hidden="true">
 	<div class="modal-dialog">
@@ -28,10 +34,10 @@
 			<nav id="supply_action_nav_partial" class="mt-2">
 
 			</nav>
-			<div class="tab-content modal-body" id="nav-tabContent">
-				<div class="tab-pane fade show active" id="nav-partial" role="tabpanel">
-					<div id="supply_action_partial">
-
+			<div class="tab-content modal-body overflow-hidden" id="nav-tabContent">
+				<div class="tab-pane fade show active overflow-hidden" id="nav-partial" role="tabpanel">
+					<div id="supply_action_partial" class="overflow-hidden">
+					
 					</div>
 				</div>
 			</div>

@@ -1,6 +1,6 @@
 class Message < ApplicationRecord
 	before_save :set_dismissed
-	after_save :notify
+	after_commit :notify
 
 	mount_uploader :document, MessageDocumentUploader
 

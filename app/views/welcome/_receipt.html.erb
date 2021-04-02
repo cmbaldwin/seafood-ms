@@ -1,4 +1,6 @@
 <%= javascript_pack_tag 'partials', 'data-turbolinks-track': 'reload' %>
+<%= javascript_pack_tag 'datetimepicker', 'data-turbolinks-track': 'reload' %>
+<%= stylesheet_pack_tag "application", media: 'all', 'data-turbolinks-track': 'reload' %>
 
 <%= simple_form_for @rakuten, url: reciept_path, remote: true, method: :get, html: { class: "row", id: 'receipt_form'} do |form| %>
 	<% simple_fields_for :reciept_options do |f| %>
@@ -7,7 +9,7 @@
 				<div class="input-group-prepend">
 					<span class="input-group-text form-control form-control-sm">日付</span>
 				</div>
-			<%= f.text_field :sales_date, 'data-behaviour' => 'datepicker', value: @sales_date, class: "form-control form-control-sm datepicker mb-2 p-2", label: false, wrapper: false %>
+			<%= f.text_field :sales_date, value: @sales_date, class: "form-control form-control-sm datepicker mb-2 p-2", label: false, wrapper: false %>
 			</div>
 		</div>
 		<%= f.input :order_id, label: false, :input_html => {:readonly => 'readonly', class: 'readonly form-control-sm', value: @order_id || '注文番後'}, wrapper_html: { class: 'col-4 mb-1' } %>

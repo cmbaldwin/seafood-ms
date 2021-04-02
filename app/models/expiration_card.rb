@@ -20,11 +20,11 @@ class ExpirationCard < ApplicationRecord
 			pdf.font_size 9
 
 			shell_card = Array.new
-			shell_card << [' 名                     称', '<b>' + self.product_name + '</b>']
+			shell_card << [' 名                 称', '<b>' + self.product_name + '</b>']
 			shell_card << [' 加工 所 所 在地', self.manufacturer_address]
-			shell_card << [' 加        工        者', self.manufacturer]
+			shell_card << [' 加      工      者', self.manufacturer]
 			shell_card << [' 採    取    海    域', self.ingredient_source]
-			shell_card << [' 用                     途', self.consumption_restrictions]
+			shell_card << [' 用                 途', self.consumption_restrictions]
 			shell_card << [' 保    存    温    度', self.storage_recommendation]
 			if self.made_on
 				shell_card << [' 製  造  年  月  日', {:content => pack_date, :align => :center}]

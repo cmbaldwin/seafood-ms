@@ -1,5 +1,6 @@
 Rails.application.routes.draw do
-  # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
+
+	# For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
 
 	# WELCOME/INDEX
 	get 'welcome/index'
@@ -8,8 +9,9 @@ Rails.application.routes.draw do
 	post '/shipping_data_csv' => 'welcome#shipping_data_csv', as: 'shipping_data_csv'
 	get '/insert_receipt_data' => 'welcome#insert_receipt_data', as: 'insert_receipt_data'
 	get '/load_rakuten_order/:id' => 'welcome#load_rakuten_order', as: 'load_rakuten_order'
-	get '/load_online_order/:id' => 'welcome#load_online_order', as: 'load_online_order'
+	get '/load_online_order/:date' => 'welcome#load_online_orders', as: 'load_online_orders'
 	get '/load_yahoo_orders/:date' => 'welcome#load_yahoo_orders', as: 'load_yahoo_orders'
+	get '/load_infomart_orders/:date' => 'welcome#load_infomart_orders', as: 'load_infomart_orders'
 	get '/update_rakuten_order/:id' => 'welcome#update_rakuten_order', as: 'update_rakuten_order'
 	get '/insert_noshi_data/:namae/:ntype' => 'noshis#insert_noshi_data', as: 'insert_noshi_data'
 		# charts
@@ -21,11 +23,21 @@ Rails.application.routes.draw do
 		# render_async
 	get :noshi_modal, controller: :welcome
 	get :daily_expiration_cards, controller: :welcome
-	get :online_orders, controller: :welcome
+	get :rakuten_orders, controller: :welcome
+	get :receipt_partial, controller: :welcome
+	get :front_infomart_orders, controller: :welcome
+	get :infomart_shinki_modal, controller: :welcome
+	get :front_online_orders, controller: :welcome
 	get :online_orders_modal, controller: :welcome
 	get :yahoo_orders_partial, controller: :welcome
 	get :new_yahoo_orders_modal, controller: :welcome
 	get :rakuten_shinki_modal, controller: :welcome
+	get :frozen_data_modal, controller: :welcome
+	get :charts_partial, controller: :welcome
+	get :printables, controller: :welcome
+	get :weather_partial, controller: :welcome
+	get :user_control, controller: :welcome
+	get :frozen_data, controller: :welcome
 
 	# ANALYSIS
 	get 'analysis' => 'analysis#index', as: 'analysis'
@@ -61,6 +73,7 @@ Rails.application.routes.draw do
 	get '/oyster_supplies/supply_invoice_actions/:start_date/:end_date', as: 'supply_invoice_actions', to: 'oyster_supplies#supply_invoice_actions'
 	get '/oyster_supplies/supply_price_actions/:start_date/:end_date', as: 'supply_price_actions', to: 'oyster_supplies#supply_price_actions'
 	get '/oyster_supplies/supply_stats_partial/:start_date/:end_date', as: 'supply_stats_partial', to: 'oyster_supplies#supply_stats'
+	post '/oyster_supplies/set_prices/:start_date/:end_date/', as: 'set_prices', to: 'oyster_supplies#set_prices'
 
 	# OYSTER INVOICES
 	resources :oyster_invoices
@@ -136,13 +149,36 @@ Rails.application.routes.draw do
 	post 'materials/:id(.:format)' => 'materials#update'
 	get '/insert_material_data' => 'materials#insert_material_data', as: 'insert_material_data'
 
-	# RAKUTEN DATA
+	# RAKUTEN "MANIFEST"
 	resources :r_manifests
 	get '/r_manifests/:id/pdf', as: :r_manifest_pdf, to: 'r_manifests#pdf'
 	get '/r_manifests/generate_pdf/:id/:seperated/:include_yahoo', as: :generate_rakuten_pdf, to: 'r_manifests#generate_pdf'
 	get '/reciept/(.:format)', as: 'reciept', to: 'r_manifests#reciept'
 
-	# ONLINE SHOP AND INFOMART
+	# INFOMART
+	resources :infomart_orders, only: [:index]
+	get '/fetch_infomart_list/:date', as: :fetch_infomart_list, to: 'infomart_orders#fetch_infomart_list'
+	get 'refresh_infomart', as: :refresh_infomart, to: 'infomart_orders#refresh'
+	get 'infomart_csv/:ship_date', as: :infomart_csv, to: 'infomart_orders#infomart_csv', defaults: { format: :csv }
+	get 'infomart_shipping_list/:ship_date/:include_online', as: :infomart_shipping_list, to: 'infomart_orders#infomart_shipping_list'
+
+	# YAHOO ORDERS
+	resources :yahoo_orders, only: [:index]
+	get 'yahoo', as: :yahoo_response_auth_code, to: 'yahoo_orders#yahoo_response_auth_code'
+	get '/fetch_yahoo_list/:date', as: :fetch_yahoo_list, to: 'yahoo_orders#fetch_yahoo_list'
+	get 'refresh_yahoo', as: :refresh_yahoo, to: 'yahoo_orders#refresh'
+	get 'yahoo_spreadsheet/:ship_date', as: :yahoo_spreadsheet, to: 'yahoo_orders#yahoo_spreadsheet', defaults: { format: :xls }
+	get 'yahoo_csv/:ship_date', as: :yahoo_csv, to: 'yahoo_orders#yahoo_csv', defaults: { format: :csv }
+	get 'yahoo_shipping_list/:ship_date', as: :yahoo_shipping_list, to: 'yahoo_orders#yahoo_shipping_list'
+
+	# FUNABIKI.INFO ORDERS
+	resources :online_orders, only: [:index]
+	get '/fetch_online_orders_list/:date', as: :fetch_online_orders_list, to: 'online_orders#fetch_online_orders_list'
+	get 'refresh_online_orders', as: :refresh_online_orders, to: 'online_orders#refresh'
+	get 'online_orders_csv/:ship_date', as: :online_orders_csv, to: 'online_orders#online_orders_csv', defaults: { format: :csv }
+	get 'online_orders_shipping_list/:ship_date', as: :online_orders_shipping_list, to: 'online_orders#online_orders_shipping_list'
+
+	# (OLD) MANIFEST FORMAT FOR INFOMART AND WOOCOMMERCE
 	get '/manifests/csv' => 'manifests#csv', as: :csv
 	get '/manifests/csv_result/(.:format)' => 'manifests#csv_result', as: :csv_result
 	post '/manifests/csv_upload/(.:format)', as: :csv_upload, to: 'manifests#csv_upload'
@@ -153,16 +189,7 @@ Rails.application.routes.draw do
 	resources :restaurants
 	get '/insert_restaurant_data' => 'restaurants#insert_restaurant_data', as: 'insert_restaurant_data'
 
-	# YAHOO ORDERS
-  	resources :yahoo_orders, only: [:index, :show]
-  	get 'yahoo', as: :yahoo_response_auth_code, to: 'yahoo_orders#yahoo_response_auth_code'
-  	get '/fetch_yahoo_list/:date', as: :fetch_yahoo_list, to: 'yahoo_orders#fetch_yahoo_list'
-  	get 'refresh_yahoo', as: :refresh_yahoo, to: 'yahoo_orders#refresh'
-  	get 'yahoo_spreadsheet/:ship_date', as: :yahoo_spreadsheet, to: 'yahoo_orders#yahoo_spreadsheet', defaults: { format: :xls }
-  	get 'yahoo_csv/:ship_date', as: :yahoo_csv, to: 'yahoo_orders#yahoo_csv', defaults: { format: :csv }
-  	get 'yahoo_shipping_list/:ship_date', as: :yahoo_shipping_list, to: 'yahoo_orders#yahoo_shipping_list'
-
-	# ARTICLES
+	# (OLD) ARTICLES (CREATED WHEN FIRST LEARNING RAILS, MAY STILL BE USEFUL)
 	resources :articles do
 		resources :comments
 		resources :categories

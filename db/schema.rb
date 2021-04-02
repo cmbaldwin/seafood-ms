@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_10_17_232549) do
+ActiveRecord::Schema.define(version: 2021_02_28_014911) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -92,6 +92,20 @@ ActiveRecord::Schema.define(version: 2020_10_17_232549) do
     t.text "losses"
   end
 
+  create_table "infomart_orders", force: :cascade do |t|
+    t.bigint "order_id"
+    t.string "status"
+    t.string "destination"
+    t.datetime "order_time"
+    t.date "ship_date"
+    t.date "arrival_date"
+    t.text "items"
+    t.string "address"
+    t.text "csv_data"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
+
   create_table "manifests", force: :cascade do |t|
     t.string "sales_date"
     t.text "infomart_orders"
@@ -159,6 +173,18 @@ ActiveRecord::Schema.define(version: 2020_10_17_232549) do
     t.string "namae5"
   end
 
+  create_table "online_orders", force: :cascade do |t|
+    t.bigint "order_id"
+    t.datetime "order_time"
+    t.datetime "date_modified"
+    t.string "status"
+    t.date "ship_date"
+    t.date "arrival_date"
+    t.text "data"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
+
   create_table "oyster_invoices", force: :cascade do |t|
     t.string "start_date"
     t.string "end_date"
@@ -187,6 +213,7 @@ ActiveRecord::Schema.define(version: 2020_10_17_232549) do
     t.datetime "updated_at", null: false
     t.string "supply_date"
     t.datetime "oysters_last_update"
+    t.text "totals"
   end
 
   create_table "product_and_market_joins", force: :cascade do |t|
@@ -237,6 +264,7 @@ ActiveRecord::Schema.define(version: 2020_10_17_232549) do
     t.boolean "split"
     t.boolean "ampm"
     t.text "subtotals"
+    t.text "volumes"
   end
 
   create_table "r_manifests", force: :cascade do |t|
