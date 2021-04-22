@@ -25,14 +25,54 @@
 		<% if @yahoo_orders.length > 0 %>
 			<div class="card p-2">
 				<% counts = yahoo_order_counts(@yahoo_orders) %>
-				<div class="row d-flex justify-content-center align-items-center">
-					<% counts[:headers].each_with_index do |header, i| %>
-						<% if counts[:values][i] > 0 %>
-							<div class="col text-center">
-								<h6 class="font-weight-bolder p-2"><%= header %></h6>
-								<span class="btn btn-sm btn-primary"><%= counts[:values][i] %><small><%= counts_counter(i) %></small></span>
-							</div>
-						<% end %>
+				<div class="row align-items-center text-center m-1 mb-2">
+					<% unless counts[:values][0].zero? %>
+						<div class="col-lg-3 col-6 mb-2">
+							<h6 class="font-weight-bolder p-2"><%= counts[:headers][0] %></h6>
+							<span class="btn btn-sm btn-primary"><%= "#{counts[:values][0]}p" %></span>
+						</div>
+					<% end %>
+					<% unless counts[:values][1].zero? %>
+						<div class="col-lg-3 col-6 mb-2"></h6>
+							<h6 class="font-weight-bolder p-2"><%= counts[:headers][1] %><br><small>(カード/ナイフ)</small></h6>
+							<span class="btn btn-sm btn-primary"><%= "#{counts[:values][1]}個" %><%= " (#{counts[:cards]}枚/#{yahoo_knife_counts(@yahoo_orders)}個)" unless counts[:cards].zero? %></span>
+						</div>
+					<% end %>
+					<% unless counts[:values][2].zero? %>
+						<div class="col-lg-3 col-6 mb-2">
+							<h6 class="font-weight-bolder p-2"><%= counts[:headers][2] %></h6>
+							<span class="btn btn-sm btn-primary"><%= "#{counts[:values][2]}kg" %></span>
+						</div>
+					<% end %>
+					<% unless counts[:values][3].zero? %>
+						<div class="col-lg-3 col-6 mb-2">
+							<h6 class="font-weight-bolder p-2"><%= counts[:headers][3] %></h6>
+							<span class="btn btn-sm btn-primary"><%= "#{counts[:values][3]}p"%></span>
+						</div>
+					<% end %>
+					<% unless counts[:values][4].zero? %>
+						<div class="col-lg-3 col-6 mb-2">
+							<h6 class="font-weight-bolder p-2"><%= counts[:headers][4] %></h6>
+							<span class="btn btn-sm btn-primary"><%= "#{counts[:values][4]}個"%></span>
+						</div>
+					<% end %>
+					<% unless counts[:values][5].zero? %>
+						<div class="col-lg-3 col-6 mb-2">
+							<h6 class="font-weight-bolder p-2"><%= counts[:headers][5] %></h6>
+							<span class="btn btn-sm btn-primary"><%= "#{counts[:values][5]}件"%><%= " (#{counts[:anago]}g)"%></span>
+						</div>
+					<% end %>
+					<% unless (counts[:values][6].zero? || counts[:values][7].zero?) %>
+						<div class="col-lg-3 col-6 mb-2">
+							<h6 class="font-weight-bolder p-2">干し海老80g<br><small>（むき身/殻付き）</small></h6>
+							<span class="btn btn-sm btn-primary"><%= "#{counts[:values][6]}p "%> <%= "#{counts[:values][7]}p" %></span>
+						</div>
+					<% end %>
+					<% unless counts[:values][8].zero? %>
+						<div class="col-lg-3 col-6 mb-2">
+							<h6 class="font-weight-bolder p-2"><%= counts[:headers][8] %></h6>
+							<span class="btn btn-sm btn-primary"><%= "#{counts[:values][8]}件" %></span>
+						</div>
 					<% end %>
 				</div>
 			</div>

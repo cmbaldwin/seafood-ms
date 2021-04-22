@@ -20,17 +20,14 @@ class YahooOrdersController < ApplicationController
 	def refresh
 		uri = 'https://www.funabiki.online/yahoo/'
 		@url = "https://auth.login.yahoo.co.jp/yconnect/v1/authorization?response_type=code&client_id=#{ENV['YAHOO_CLIENT_ID']}&redirect_uri=#{uri}&state=#{current_user.id}&scope=openid+profile+email"
+
 		client = YahooAPI.new(current_user)
 		User.find(current_user.id).reload
 		if client.login_code?
-			client.acquire_auth_token unless client.authorized?
-			if client.get_status(true) && client.update_processing
-				flash[:notice] = 'ヤフーからデータを更新完了。'
-				redirect_to yahoo_orders_path
-			else
-				flash[:notice] = 'ヤフーからデータを更新出来ません。アドミニストレータに連絡。'
-				redirect_to yahoo_orders_path
-			end
+			message = Message.new(user: current_user.id, model: 'update_yahoo', state: false, message: "ヤフー注文データを更新中…", data: {user: current_user.id, expiration: (DateTime.now + 5.minute)})
+			message.save
+			YahooUpdateWorker.perform_async(current_user.id, message.id)
+			redirect_to root_path
 		else
 			redirect_to @url
 		end

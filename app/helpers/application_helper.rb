@@ -14,8 +14,10 @@ module ApplicationHelper
 			'infomart_shipping_list' => 'Infomart出荷表',
 			'online_orders_shipping_list' => 'Funabiki.info出荷表',
 			'oyster_invoice' => '牡蠣原料仕切り',
+			'update_yahoo' => 'ヤフーショッピングデータ更新',
 			'reciept' => '領収証',
-			'noshi' => '熨斗'}[model]
+			'noshi' => '熨斗'
+		}[model]
 	end
 
 	def print_message_data(message)
@@ -111,7 +113,16 @@ module ApplicationHelper
 					render html: ("<p class='small text-warning'>エラー:　熨斗保存出来なかった").html_safe
 				end
 			end
+		elsif message.model == 'update_yahoo'
+			if message.state
+				begin
+					render html: ("").html_safe #placeholder in case we want to put something here, like data about the updated yahoo orders
+				rescue
+					render html: ("<p class='small text-warning'>エラー:　管理者へ連絡してください。</p>").html_safe
+				end
+			end
 		else
+			p 'error:'
 			ap data.to_s
 		end
 	end
@@ -248,6 +259,10 @@ module ApplicationHelper
 		results
 	end
 
+	def yahoo_knife_counts(orders)
+		orders.map{|o| o.knife_count unless (o.order_status(false) == 4 || o.item_ids.nil?)}.sum
+	end
+
 	def yahoo_order_counts(orders)
 		counts = Hash.new
 		types_arr = %w{生むき身 生セル 小殻付 セルカード 冷凍むき身 冷凍セル 穴子(件) 穴子(g) 干しムキエビ(80g) 干し殻付エビ(80g) タコ}
@@ -291,9 +306,11 @@ module ApplicationHelper
 			"syoukara3kg" => [0, 0, 3, 1, 0, 0, 0, 0, 0, 0, 0],
 			"syoukara5kg" => [0, 0, 5, 1, 0, 0, 0, 0, 0, 0, 0]}
 		orders.each do |order|
-			unless order.order_status(false) == 4 || order.item_id.nil?
-				count_hash[order.item_id].each_with_index do |count, i|
-					counts[types_arr[i]] += count
+			unless order.order_status(false) == 4 || order.item_ids.nil? #unless cancelled or no item ids
+				order.item_ids.each do |item_id|
+					count_hash[item_id].each_with_index do |count, i|
+						counts[types_arr[i]] += count
+					end
 				end
 			end
 		end
@@ -307,12 +324,16 @@ module ApplicationHelper
 		results
 	end
 
-	def counts_counter(i)
+	def online_order_counts_counter(i)
 		["パック","個","kg","枚","パック","個","件","g","パック","パック","件",][i]
 	end
 
-	def infomart_counts(orders)
-		
+	def online_order_knives(orders)
+		orders.map{|o| o.knife }.sum
+	end
+
+	def online_order_noshis(orders)
+		orders.map{|o| o.noshi }.sum
 	end
 
 end

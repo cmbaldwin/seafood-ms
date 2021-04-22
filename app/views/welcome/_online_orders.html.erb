@@ -40,9 +40,21 @@
 						<% unless value.zero? %>
 							<div class="col text-center">
 								<h6 class="font-weight-bolder p-2"><%= header %></h6>
-								<span class="btn btn-sm btn-primary"><%= value %><%= counts_counter(i) %></span>
+								<span class="btn btn-sm btn-primary"><%= value %><%= online_order_counts_counter(i) %></span>
 							</div>
 						<% end %>
+					<% end %>
+					<% unless online_order_knives(@daily_orders).zero? %>
+						<div class="col text-center">
+							<h6 class="font-weight-bolder p-2">ナイフ</h6>
+							<span class="btn btn-sm btn-primary"><%= online_order_knives(@daily_orders) %>個</span>
+						</div>
+					<% end %>
+					<% unless online_order_noshis(@daily_orders).zero? %>
+						<div class="col text-center">
+							<h6 class="font-weight-bolder p-2">熨斗</h6>
+							<span class="btn btn-sm btn-primary"><%= online_order_noshis(@daily_orders) %>枚</span>
+						</div>
 					<% end %>
 				</div>
 			</div>

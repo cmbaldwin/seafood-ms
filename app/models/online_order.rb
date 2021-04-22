@@ -80,8 +80,8 @@ class OnlineOrder < ApplicationRecord
 			575 => [0, 0, 0, 0, 0, 0, 1, 550, 0, 0, 0],
 			576 => [0, 0, 0, 0, 0, 0, 1, 700, 0, 0, 0],
 			13641 => [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-			500 => [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-			6319 => [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1] }
+			500 => [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+			6319 => [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] }
 		hashes = [shells, small_shells, mukimi, sets, dekapuri, rshells, other]
 		all_items = hashes.inject(&:merge)
 		all_items.key?(product_id) ? all_items[product_id] : [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -149,6 +149,7 @@ class OnlineOrder < ApplicationRecord
 			599 => "干えび(殻付)100g×3袋",
 			600 => "干えび(殻付)100g×5袋",
 			597 => "干えび(ムキ) 100g×2袋 + (殻付) 100g×2袋",
+			13641 => "ボイルたこ (800g~1k)",
 			572 => "焼穴子 400g入",
 			575 => "焼穴子 550g入",
 			576 => "焼穴子 700g入",

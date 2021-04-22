@@ -77,7 +77,7 @@ class InfomartOrder < ApplicationRecord
 						count[3].zero? ? '' : "#{count[3]}p", 
 						count[4].zero? ? '' : "#{count[4]}p", 
 						count[5].zero? ? '' : "#{count[5]}p", 
-						count[6].zero? ? '' : "#{count[6]}個", 
+						count[6].zero? ? '' : "#{count[6]}箱", 
 						count[7].zero? ? '' : "#{count[7]}個", 
 						arrival_gapi, 
 						"午前　14-16", 
@@ -113,7 +113,11 @@ class InfomartOrder < ApplicationRecord
 				elsif codified_item[1] == "dp"
 					if codified_item[2] == "s"
 						if codified_item[3] == "lg"
-							count[3] += quantity
+							if self.destination.include?('ＷＤＩ')
+								count[5] += quantity
+							else
+								count[3] += quantity
+							end
 						else #LL
 							count[4] += quantity
 						end

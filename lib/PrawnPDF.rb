@@ -170,102 +170,104 @@ class PrawnPDF
 		end
 	end
 
-	def self.yahoo(ship_date, filename)
-		orders = YahooOrder.where(ship_date: ship_date)
+	def self.print_yahoo_items(order)
+		print_array = {
+			"kakiset302" => ["", "", "500g×2 + 30個", ""],
+			"kakiset202" => ["", "", "500g×2 + 20個", ""],
+			"kakiset301" => ["", "", "500g×1 + 30個", ""],
+			"kakiset201" => ["", "", "500g×1 + 20個", ""],
+			"kakiset101" => ["", "", "500g×1 + 10個", ""],
+			"karatsuki100" => ["", "100個", "", ""],
+			"karatsuki50" => ["", "50個", "", ""],
+			"karatsuki40" => ["", "40個", "", ""],
+			"karatsuki30" => ["", "30個", "", ""],
+			"karatsuki20" => ["", "20個", "", ""],
+			"karatsuki10" => ["", "10個", "", ""],
+			"syoukara1kg" => ["", "小1㎏", "", ""],
+			"syoukara2kg" => ["", "小2㎏", "", ""],
+			"syoukara3kg" => ["", "小3㎏", "", ""],
+			"syoukara5kg" => ["", "小5㎏", "", ""],
+			"mukimi04" => ["4", "", "", ""],
+			"mukimi03" => ["3", "", "", ""],
+			"mukimi02" => ["2", "", "", ""],
+			"mukimi01" => ["1", "", "", ""],
+			"pkara100" => ["", "", "", "冷凍セル 100個"],
+			"pkara50" => ["", "", "", "冷凍セル 50個"],
+			"pkara40" => ["", "", "", "冷凍セル 40個"],
+			"pkara30" => ["", "", "", "冷凍セル 30個"],
+			"pkara20" => ["", "", "", "冷凍セル 20個"],
+			"pkara10" => ["", "", "", "冷凍セル 10個"],
+			"pmuki04" => ["", "", "", "冷凍500g×4"],
+			"pmuki03" => ["", "", "", "冷凍500g×3"],
+			"pmuki02" => ["", "", "", "冷凍500g×2"],
+			"pmuki01" => ["", "", "", "冷凍500g×1"],
+			"tako1k" => ["", "", "", "ボイルたこ"],
+			"mebi80x5" => ["", "", "", "干しむきエビ 80gx5"],
+			"mebi80x3" => ["", "", "", "干しむきエビ 80gx3"],
+			"hebi80x10" => ["", "", "", "干し殻付エビ 80gx10"],
+			"hebi80x5" => ["", "", "", "干し殻付エビ 80gx5"],
+			"anago600" => ["", "", "", "焼き穴子600g"],
+			"anago480" => ["", "", "", "焼き穴子480g"],
+			"anago350" => ["", "", "", "焼き穴子350g"] }
+		order.item_ids.map{|item_id| print_array[item_id]  }
+	end
 
-		def self.order_counts(orders)
-			counts = Hash.new
-			types_arr = %w{生むき身 生セル 小殻付 セルカード 冷凍むき身 冷凍セル 穴子(件) 穴子(g) 干しムキエビ(80g) 干し殻付エビ(80g) タコ}
-			types_arr.each {|w| counts[w] = 0}
-			count_hash = {
-				"kakiset302" => [2, 30, 0, 1, 0, 0, 0, 0, 0],
-				"kakiset202" => [2, 20, 0, 1, 0, 0, 0, 0, 0],
-				"kakiset301" => [1, 30, 0, 1, 0, 0, 0, 0, 0],
-				"kakiset201" => [1, 20, 0, 1, 0, 0, 0, 0, 0],
-				"kakiset101" => [1, 10, 0, 1, 0, 0, 0, 0, 0],
-				"karatsuki100" => [0, 100, 0, 1, 0, 0, 0, 0, 0],
-				"karatsuki50" => [0, 50, 0, 1, 0, 0, 0, 0, 0],
-				"karatsuki40" => [0, 40, 0, 1, 0, 0, 0, 0, 0],
-				"karatsuki30" => [0, 30, 0, 1, 0, 0, 0, 0, 0],
-				"karatsuki20" => [0, 20, 0, 1, 0, 0, 0, 0, 0],
-				"karatsuki10" => [0, 10, 0, 1, 0, 0, 0, 0, 0],
-				"mukimi04" => [4, 0, 0, 0, 0, 0, 0, 0, 0],
-				"mukimi03" => [3, 0, 0, 0, 0, 0, 0, 0, 0],
-				"mukimi02" => [2, 0, 0, 0, 0, 0, 0, 0, 0],
-				"mukimi01" => [1, 0, 0, 0, 0, 0, 0, 0, 0],
-				"pkara100" => [0, 0, 0, 100, 0, 0, 0, 0, 0],
-				"pkara50" => [0, 0, 0, 50, 0, 0, 0, 0, 0],
-				"pkara40" => [0, 0, 0, 40, 0, 0, 0, 0],
-				"pkara30" => [0, 0, 0, 30, 0, 0, 0, 0, 0],
-				"pkara20" => [0, 0, 0, 20, 0, 0, 0, 0, 0],
-				"pkara10" => [0, 0, 0, 10, 0, 0, 0, 0, 0],
-				"pmuki04" => [0, 0, 1, 0, 0, 0, 0, 0, 0],
-				"pmuki03" => [0, 0, 3, 0, 0, 0, 0, 0, 0],
-				"pmuki02" => [0, 0, 2, 0, 0, 0, 0, 0, 0],
-				"pmuki01" => [0, 0, 1, 0, 0, 0, 0, 0, 0],
-				"tako1k" => [0, 0, 0, 0, 0, 0, 0, 0, 1],
-				"mebi80x5" => [0, 0, 0, 0, 0, 0, 5, 0, 0],
-				"mebi80x3" => [0, 0, 0, 0, 0, 0, 3, 0, 0],
-				"hebi80x10" => [0, 0, 0, 0, 0, 0, 0, 10, 0],
-				"hebi80x5" => [0, 0, 0, 0, 0, 0, 0, 5, 0],
-				"anago600" => [0, 0, 0, 0, 1, 600, 0, 0, 0],
-				"anago480" => [0, 0, 0, 0, 1, 480, 0, 0, 0],
-				"anago350" => [0, 0, 0, 0, 1, 350, 0, 0, 0],
-				"syoukara1kg" => [0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
-				"syoukara2kg" => [0, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0],
-				"syoukara3kg" => [0, 0, 3, 1, 0, 0, 0, 0, 0, 0, 0],
-				"syoukara5kg" => [0, 0, 5, 1, 0, 0, 0, 0, 0, 0, 0]}
-				orders.each do |order|
-				unless order.order_status(false) == 4
-					count_hash[order.item_id].each_with_index do |count, i|
+	def self.yahoo_order_counts(orders)
+		counts = Hash.new
+		types_arr = %w{生むき身 生セル 小殻付 セルカード 冷凍むき身 冷凍セル 穴子(件) 穴子(g) 干しムキエビ(80g) 干し殻付エビ(80g) タコ}
+		types_arr.each {|w| counts[w] = 0}
+		count_hash = {
+			"kakiset302" => [2, 30, 0, 1, 0, 0, 0, 0, 0],
+			"kakiset202" => [2, 20, 0, 1, 0, 0, 0, 0, 0],
+			"kakiset301" => [1, 30, 0, 1, 0, 0, 0, 0, 0],
+			"kakiset201" => [1, 20, 0, 1, 0, 0, 0, 0, 0],
+			"kakiset101" => [1, 10, 0, 1, 0, 0, 0, 0, 0],
+			"karatsuki100" => [0, 100, 0, 1, 0, 0, 0, 0, 0],
+			"karatsuki50" => [0, 50, 0, 1, 0, 0, 0, 0, 0],
+			"karatsuki40" => [0, 40, 0, 1, 0, 0, 0, 0, 0],
+			"karatsuki30" => [0, 30, 0, 1, 0, 0, 0, 0, 0],
+			"karatsuki20" => [0, 20, 0, 1, 0, 0, 0, 0, 0],
+			"karatsuki10" => [0, 10, 0, 1, 0, 0, 0, 0, 0],
+			"mukimi04" => [4, 0, 0, 0, 0, 0, 0, 0, 0],
+			"mukimi03" => [3, 0, 0, 0, 0, 0, 0, 0, 0],
+			"mukimi02" => [2, 0, 0, 0, 0, 0, 0, 0, 0],
+			"mukimi01" => [1, 0, 0, 0, 0, 0, 0, 0, 0],
+			"pkara100" => [0, 0, 0, 100, 0, 0, 0, 0, 0],
+			"pkara50" => [0, 0, 0, 50, 0, 0, 0, 0, 0],
+			"pkara40" => [0, 0, 0, 40, 0, 0, 0, 0],
+			"pkara30" => [0, 0, 0, 30, 0, 0, 0, 0, 0],
+			"pkara20" => [0, 0, 0, 20, 0, 0, 0, 0, 0],
+			"pkara10" => [0, 0, 0, 10, 0, 0, 0, 0, 0],
+			"pmuki04" => [0, 0, 1, 0, 0, 0, 0, 0, 0],
+			"pmuki03" => [0, 0, 3, 0, 0, 0, 0, 0, 0],
+			"pmuki02" => [0, 0, 2, 0, 0, 0, 0, 0, 0],
+			"pmuki01" => [0, 0, 1, 0, 0, 0, 0, 0, 0],
+			"tako1k" => [0, 0, 0, 0, 0, 0, 0, 0, 1],
+			"mebi80x5" => [0, 0, 0, 0, 0, 0, 5, 0, 0],
+			"mebi80x3" => [0, 0, 0, 0, 0, 0, 3, 0, 0],
+			"hebi80x10" => [0, 0, 0, 0, 0, 0, 0, 10, 0],
+			"hebi80x5" => [0, 0, 0, 0, 0, 0, 0, 5, 0],
+			"anago600" => [0, 0, 0, 0, 1, 600, 0, 0, 0],
+			"anago480" => [0, 0, 0, 0, 1, 480, 0, 0, 0],
+			"anago350" => [0, 0, 0, 0, 1, 350, 0, 0, 0],
+			"syoukara1kg" => [0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+			"syoukara2kg" => [0, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0],
+			"syoukara3kg" => [0, 0, 3, 1, 0, 0, 0, 0, 0, 0, 0],
+			"syoukara5kg" => [0, 0, 5, 1, 0, 0, 0, 0, 0, 0, 0]}
+			orders.each do |order|
+			unless order.order_status(false) == 4
+				order.item_ids.each do |item_id|
+					count_hash[item_id].each_with_index do |count, i|
 						counts[types_arr[i]] += count
 					end
 				end
 			end
-			[counts.keys, counts.values]
 		end
+		[counts.keys, counts.values]
+	end
 
-		def self.print_items(order)
-			print_array = {
-				"kakiset302" => ["", "", "500g×2 + 30個", ""],
-				"kakiset202" => ["", "", "500g×2 + 20個", ""],
-				"kakiset301" => ["", "", "500g×1 + 30個", ""],
-				"kakiset201" => ["", "", "500g×1 + 20個", ""],
-				"kakiset101" => ["", "", "500g×1 + 10個", ""],
-				"karatsuki100" => ["", "100個", "", ""],
-				"karatsuki50" => ["", "50個", "", ""],
-				"karatsuki40" => ["", "40個", "", ""],
-				"karatsuki30" => ["", "30個", "", ""],
-				"karatsuki20" => ["", "20個", "", ""],
-				"karatsuki10" => ["", "10個", "", ""],
-				"syoukara1kg" => ["", "小1㎏", "", ""],
-				"syoukara2kg" => ["", "小2㎏", "", ""],
-				"syoukara3kg" => ["", "小3㎏", "", ""],
-				"syoukara5kg" => ["", "小5㎏", "", ""],
-				"mukimi04" => ["4", "", "", ""],
-				"mukimi03" => ["3", "", "", ""],
-				"mukimi02" => ["2", "", "", ""],
-				"mukimi01" => ["1", "", "", ""],
-				"pkara100" => ["", "", "", "冷凍セル 100個"],
-				"pkara50" => ["", "", "", "冷凍セル 50個"],
-				"pkara40" => ["", "", "", "冷凍セル 40個"],
-				"pkara30" => ["", "", "", "冷凍セル 30個"],
-				"pkara20" => ["", "", "", "冷凍セル 20個"],
-				"pkara10" => ["", "", "", "冷凍セル 10個"],
-				"pmuki04" => ["", "", "", "冷凍500g×4"],
-				"pmuki03" => ["", "", "", "冷凍500g×3"],
-				"pmuki02" => ["", "", "", "冷凍500g×2"],
-				"pmuki01" => ["", "", "", "冷凍500g×1"],
-				"tako1k" => ["", "", "", "ボイルたこ"],
-				"mebi80x5" => ["", "", "", "干しむきエビ 80gx5"],
-				"mebi80x3" => ["", "", "", "干しむきエビ 80gx3"],
-				"hebi80x10" => ["", "", "", "干し殻付エビ 80gx10"],
-				"hebi80x5" => ["", "", "", "干し殻付エビ 80gx5"],
-				"anago600" => ["", "", "", "焼き穴子600g"],
-				"anago480" => ["", "", "", "焼き穴子480g"],
-				"anago350" => ["", "", "", "焼き穴子350g"] }
-			print_array[order.item_id] 
-		end
+	def self.yahoo(ship_date, filename)
+		orders = YahooOrder.where(ship_date: ship_date)
 
 		Prawn::Document.generate(filename, margin: [15]) do |pdf|
 			pdf.font_families.update(fonts)
@@ -275,7 +277,7 @@ class PrawnPDF
 			pdf.text "#{ship_date} ヤフーショッピング 発送表"
 			pdf.font "MPLUS1p", style: :normal
 			pdf.move_down 15
-			pdf.table(order_counts(orders),
+			pdf.table(yahoo_order_counts(orders),
 					:cell_style => {
 						:inline_format => true,
 						:border_width => 0.25,
@@ -288,21 +290,23 @@ class PrawnPDF
 			pdf.move_down 15
 			data_table = [['#', '注文者', '送付先', '500g', 'セル', 'セット', 'その他', 'お届け日', '時間', 'ナイフ', 'のし', '領収書', '備考']]
 			orders.each_with_index do |order, i|
-				item = print_items(order)
-				order_arr = [(i + 1).to_s]
-				order_arr << order.billing_name
-				order_arr << (order.billing_name == order.shipping_name ? '""' : order.shipping_name)
-				item.each do |item|
-					order_arr << (item.empty? ? item : (item + order.print_quantity))
-				end
-				order_arr << order.shipping_arrival_date.strftime("%Y/%m/%d")
-				order_arr << order.arrival_time
-				order_arr << ""
-				order_arr << ""
-				order_arr << ""
-				order_arr << ""
+				items = print_yahoo_items(order)
+				items.each_with_index do |item, ii|
+					order_arr = (ii == 0 ? [(i + 1).to_s] : ['""'])
+					order_arr << (ii == 0 ? order.billing_name : '""')
+					order_arr << (ii == 0 ? (order.billing_name == order.shipping_name ? '""' : order.shipping_name) : '""')
+					item.each_with_index do |item, iii|
+						order_arr << (item.empty? ? item : (item + order.print_quantity(iii)))
+					end
+					order_arr << (ii == 0 ? order.shipping_arrival_date.strftime("%Y/%m/%d") : '""')
+					order_arr << (ii == 0 ? order.arrival_time : '""')
+					order_arr << (ii == 0 ? (order.knife_count.zero? ? "" : order.knife_count.to_s ) : '')
+					order_arr << ""
+					order_arr << ""
+					order_arr << ""
 
-				data_table << order_arr
+					data_table << order_arr
+				end
 			end
 			5.times do
 				data_table << ['　'] * 13
@@ -558,7 +562,7 @@ class PrawnPDF
 				pdf.font "MPLUS1p", style: :normal
 				pdf.move_down 15
 				pdf.font_size 8
-				data_table = [['#', '注文者', '届先', '冷凍 500g', '冷凍 セル', 'お届け日', '時間', '備考']]
+				data_table = [['#', '注文者', '届先', '冷凍 500g L', '冷凍 セル', 'お届け日', '時間', '備考']]
 				online_orders.each_with_index do |order, oi|
 					unless order.cancelled || order.print_item_array[:frozen].empty?
 						order.print_item_array[:frozen].each_with_index do |item_array, ii|
@@ -946,60 +950,8 @@ class PrawnPDF
 
 		if include_yahoo
 			yahoo_orders = YahooOrder.where(ship_date: rakuten.date)
-
-			def self.order_counts(orders)
-				counts = Hash.new
-				types_arr = %w{生むき身 生セル 小殻付 セルカード 冷凍むき身 冷凍セル 穴子(件) 穴子(g) 干しムキエビ(80g) 干し殻付エビ(80g) タコ}
-				types_arr.each {|w| counts[w] = 0}
-				count_hash = {
-					"kakiset302" => [2, 30, 0, 1, 0, 0, 0, 0, 0],
-					"kakiset202" => [2, 20, 0, 1, 0, 0, 0, 0, 0],
-					"kakiset301" => [1, 30, 0, 1, 0, 0, 0, 0, 0],
-					"kakiset201" => [1, 20, 0, 1, 0, 0, 0, 0, 0],
-					"kakiset101" => [1, 10, 0, 1, 0, 0, 0, 0, 0],
-					"karatsuki100" => [0, 100, 0, 1, 0, 0, 0, 0, 0],
-					"karatsuki50" => [0, 50, 0, 1, 0, 0, 0, 0, 0],
-					"karatsuki40" => [0, 40, 0, 1, 0, 0, 0, 0, 0],
-					"karatsuki30" => [0, 30, 0, 1, 0, 0, 0, 0, 0],
-					"karatsuki20" => [0, 20, 0, 1, 0, 0, 0, 0, 0],
-					"karatsuki10" => [0, 10, 0, 0, 0, 0, 0, 0, 0],
-					"mukimi04" => [4, 0, 0, 0, 0, 0, 0, 0, 0],
-					"mukimi03" => [3, 0, 0, 0, 0, 0, 0, 0, 0],
-					"mukimi02" => [2, 0, 0, 0, 0, 0, 0, 0, 0],
-					"mukimi01" => [1, 0, 0, 0, 0, 0, 0, 0, 0],
-					"pkara100" => [0, 0, 0, 100, 0, 0, 0, 0, 0],
-					"pkara50" => [0, 0, 0, 50, 0, 0, 0, 0, 0],
-					"pkara40" => [0, 0, 0, 40, 0, 0, 0, 0],
-					"pkara30" => [0, 0, 0, 30, 0, 0, 0, 0, 0],
-					"pkara20" => [0, 0, 0, 20, 0, 0, 0, 0, 0],
-					"pkara10" => [0, 0, 0, 10, 0, 0, 0, 0, 0],
-					"pmuki04" => [0, 0, 1, 0, 0, 0, 0, 0, 0],
-					"pmuki03" => [0, 0, 3, 0, 0, 0, 0, 0, 0],
-					"pmuki02" => [0, 0, 2, 0, 0, 0, 0, 0, 0],
-					"pmuki01" => [0, 0, 1, 0, 0, 0, 0, 0, 0],
-					"tako1k" => [0, 0, 0, 0, 0, 0, 0, 0, 1],
-					"mebi80x5" => [0, 0, 0, 0, 0, 0, 1, 0, 0],
-					"mebi80x3" => [0, 0, 0, 0, 0, 0, 1, 0, 0],
-					"hebi80x10" => [0, 0, 0, 0, 0, 0, 0, 1, 0],
-					"hebi80x5" => [0, 0, 0, 0, 0, 0, 0, 1, 0],
-					"anago600" => [0, 0, 0, 0, 1, 600, 0, 0, 0],
-					"anago480" => [0, 0, 0, 0, 1, 480, 0, 0, 0],
-					"anago350" => [0, 0, 0, 0, 1, 350, 0, 0, 0],
-					"syoukara1kg" => [0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
-					"syoukara2kg" => [0, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0],
-					"syoukara3kg" => [0, 0, 3, 1, 0, 0, 0, 0, 0, 0, 0],
-					"syoukara5kg" => [0, 0, 5, 1, 0, 0, 0, 0, 0, 0, 0]}
-					orders.each do |order|
-					unless order.order_status(false) == 4
-						count_hash[order.item_id].each_with_index do |count, i|
-							counts[types_arr[i]] += count
-						end
-					end
-				end
-				[counts.keys, counts.values]
-			end
 			continued_i = 0
-			yahoo_counts = order_counts(yahoo_orders)
+			yahoo_counts = yahoo_order_counts(yahoo_orders)
 		end
 
 		# 210mm x 297mm
@@ -1205,64 +1157,24 @@ class PrawnPDF
 
 				data_table << [' ', 'ヤフー↓'] + ([''] * 11)
 
-				def self.print_items(order)
-					print_array = {
-						"kakiset302" => ["", "", "500g×2 + 30個", ""],
-						"kakiset202" => ["", "", "500g×2 + 20個", ""],
-						"kakiset301" => ["", "", "500g×1 + 30個", ""],
-						"kakiset201" => ["", "", "500g×1 + 20個", ""],
-						"kakiset101" => ["", "", "500g×1 + 10個", ""],
-						"karatsuki100" => ["", "100個", "", ""],
-						"karatsuki50" => ["", "50個", "", ""],
-						"karatsuki40" => ["", "40個", "", ""],
-						"karatsuki30" => ["", "30個", "", ""],
-						"karatsuki20" => ["", "20個", "", ""],
-						"karatsuki10" => ["", "10個", "", ""],
-						"syoukara1kg" => ["", "小1㎏", "", ""],
-						"syoukara2kg" => ["", "小2㎏", "", ""],
-						"syoukara3kg" => ["", "小3㎏", "", ""],
-						"syoukara5kg" => ["", "小5㎏", "", ""],
-						"mukimi04" => ["4", "", "", ""],
-						"mukimi03" => ["3", "", "", ""],
-						"mukimi02" => ["2", "", "", ""],
-						"mukimi01" => ["1", "", "", ""],
-						"pkara100" => ["", "", "", "冷凍セル 100個"],
-						"pkara50" => ["", "", "", "冷凍セル 50個"],
-						"pkara40" => ["", "", "", "冷凍セル 40個"],
-						"pkara30" => ["", "", "", "冷凍セル 30個"],
-						"pkara20" => ["", "", "", "冷凍セル 20個"],
-						"pkara10" => ["", "", "", "冷凍セル 10個"],
-						"pmuki04" => ["", "", "", "冷凍500g×4"],
-						"pmuki03" => ["", "", "", "冷凍500g×3"],
-						"pmuki02" => ["", "", "", "冷凍500g×2"],
-						"pmuki01" => ["", "", "", "冷凍500g×1"],
-						"tako1k" => ["", "", "", "ボイルたこ"],
-						"mebi80x5" => ["", "", "", "干しむきエビ 80gx5"],
-						"mebi80x3" => ["", "", "", "干しむきエビ 80gx3"],
-						"hebi80x10" => ["", "", "", "干し殻付エビ 80gx10"],
-						"hebi80x5" => ["", "", "", "干し殻付エビ 80gx5"],
-						"anago600" => ["", "", "", "焼き穴子600g"],
-						"anago480" => ["", "", "", "焼き穴子480g"],
-						"anago350" => ["", "", "", "焼き穴子350g"] }
-					print_array[order.item_id]
-				end
+				yahoo_orders.each_with_index do |order, i|
+					items = print_yahoo_items(order)
+					items.each_with_index do |item, ii|
+						order_arr = (ii == 0 ? [(i + 1).to_s] : ['""'])
+						order_arr << (ii == 0 ? order.billing_name : '""')
+						order_arr << (ii == 0 ? (order.billing_name == order.shipping_name ? '""' : order.shipping_name) : '""')
+						item.each_with_index do |item, iii|
+							order_arr << (item.empty? ? item : (item + order.print_quantity(iii)))
+						end
+						order_arr << (ii == 0 ? order.shipping_arrival_date.strftime("%Y/%m/%d") : '""')
+						order_arr << (ii == 0 ? order.arrival_time : '""')
+						order_arr << (ii == 0 ? (order.knife_count.zero? ? "" : order.knife_count.to_s ) : '')
+						order_arr << ""
+						order_arr << ""
+						order_arr << ""
 
-				yahoo_orders.each_with_index do |yahoo_order, i|
-					item = print_items(yahoo_order)
-					order_arr = ["#{continued_i + i}
-						(#{i + 1})"]
-					order_arr << yahoo_order.billing_name
-					order_arr << (yahoo_order.billing_name == yahoo_order.shipping_name ? '""' : yahoo_order.shipping_name)
-					item.each do |item|
-						order_arr << (item.empty? ? item : (item + yahoo_order.print_quantity))
+						data_table << order_arr
 					end
-					order_arr << yahoo_order.shipping_arrival_date.strftime("%Y/%m/%d")
-					order_arr << yahoo_order.arrival_time
-					order_arr << ""
-					order_arr << ""
-					order_arr << ""
-					order_arr << ""
-					data_table << order_arr
 				end
 			end
 

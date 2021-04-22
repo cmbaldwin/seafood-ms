@@ -1,7 +1,23 @@
 <ul class="nav nav-pills p-2 bg-light border mx-auto small" id="pills-tab" role="tablist">
 	<li class="nav-item mx-auto" role="presentation">
 		<%= link_to "売り上げ（年度）", 
-		fetch_chart_path(chart_params: {chart_type: 'line_chart', chart_path: 'profit_figures_chart', init_params: {thousands: ",", prefix: "万￥", points: false, max: @yearly_max, min: 0, colors: ["#26b3f0", "#666"]}}), 
+		fetch_chart_path(chart_params: {
+			chart_type: 'line_chart', 
+			chart_path: 'profit_figures_chart', 
+			init_params: {
+				id: "profit_figures_chart", 
+				loading: "読み込み中", 
+				dataset: {
+					borderWidth: 0, 
+					radius: 0 }, 
+				thousands: ",", 
+				prefix: "万￥", 
+				curve: true,
+				max: @yearly_max, 
+				min: 0, 
+				colors: ["#26b3f0", "#666"]
+			}
+		}), 
 		:remote => 'true', 
 		:id => 'chart-tab', 
 		:class => 'nav-link p-2 active', 
@@ -10,7 +26,18 @@
 	</li>
 	<li class="nav-item mx-auto" role="presentation">
 		<%= link_to "牡蠣キロ単価売り上げ単価", 
-		fetch_chart_path(chart_params: { chart_type: 'column_chart', chart_path: "kilo_sales_estimate_chart", init_params: {prefix: "¥", max: 3000, min: 0, stacked: false, colors: ["#26b3f0", "#666"]}}), 
+		fetch_chart_path( chart_params: { 
+			chart_type: 'column_chart', 
+			chart_path: "kilo_sales_estimate_chart", 
+			init_params: {
+				id: "kilo_sales_estimate_chart",  
+				loading: "読み込み中",
+				prefix: "¥", 
+				max: 3000, 
+				min: 0, 
+				stacked: false, 
+				colors: ["#26b3f0", "#666"] }
+			}), 
 		:remote => 'true', 
 		:id => 'chart-tab', 
 		:class => 'nav-link p-2', 
@@ -19,7 +46,18 @@
 	</li>
 	<li class="nav-item mx-auto" role="presentation">
 		<%= link_to "生産者牡蠣キロ単価", 
-		fetch_chart_path(chart_params: { chart_type: 'column_chart', chart_path: "farmer_kilo_costs_chart", init_params: {prefix: "¥", max: 3000, min: 0, stacked: false, colors: ["#26b3f0", "#666"]}}), 
+		fetch_chart_path(chart_params: { 
+			chart_type: 'column_chart', 
+			chart_path: "farmer_kilo_costs_chart", 
+			init_params: {
+				id: "farmer_kilo_costs_chart",  
+				loading: "読み込み中",
+				prefix: "¥", 
+				max: 3000, 
+				min: 0, 
+				stacked: false, 
+				colors: ["#26b3f0", "#666"] }
+			}), 
 		:remote => 'true', 
 		:id => 'chart-tab', 
 		:class => 'nav-link p-2', 
@@ -28,7 +66,18 @@
 	</li>
 	<li class="nav-item mx-auto" role="presentation">
 		<%= link_to "牡蠣量", 
-		fetch_chart_path(chart_params: { chart_type: 'column_chart', chart_path: "daily_volumes_chart", init_params: {prefix: "㎏", max: 5000, min: 0, stacked: false, colors: ["#26b3f0", "#666"]}}), 
+		fetch_chart_path(chart_params: { 
+			chart_type: 'column_chart', 
+			chart_path: "daily_volumes_chart", 
+			init_params: {
+				id: "daily_volumes_chart",  
+				loading: "読み込み中",
+				prefix: "㎏", 
+				max: 5000, 
+				min: 0, 
+				stacked: false, 
+				colors: ["#26b3f0", "#666"] }
+			}), 
 		:remote => 'true', 
 		:id => 'chart-tab', 
 		:class => 'nav-link p-2', 
@@ -41,7 +90,24 @@
 	<div class="tab-pane fade show active" id="daily-sales" role="tabpanel" aria-labelledby="chart-tab">
 		<div class="chart w-100 float-left">
 			<div id="chart_partial">
-				<%= render :partial => 'chart_partial', locals: { chart_params: {chart_type: 'line_chart', chart_path: 'profit_figures_chart', init_params: {thousands: ",", prefix: "万￥", points: false, max: @yearly_max, min: 0, colors: ["#26b3f0", "#666"]}}, :remote => 'true'} %>
+				<%= render :partial => 'chart_partial', locals: { 
+					chart_params: {
+						chart_type: 'line_chart', 
+						chart_path: 'profit_figures_chart', 
+						init_params: {
+							id: "profit_figures_chart",   
+							loading: "読み込み中",
+							dataset: {
+								borderWidth: 0, 
+								radius: 0 }, 
+							thousands: ",", 
+							prefix: "万￥", 
+							points: false, 
+							max: @yearly_max, 
+							min: 0, 
+							colors: ["#26b3f0", "#666"] }
+						}, 
+					:remote => 'true'} %>
 			</div>
 		</div>
 	</div>

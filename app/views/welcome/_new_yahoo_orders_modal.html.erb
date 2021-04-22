@@ -11,38 +11,56 @@
 				<div class="modal-body p-1">
 					<% if @new_yahoo_orders %>
 					<% counts = yahoo_order_counts(@new_yahoo_orders) %>
-					<div class="row border rounded align-items-center text-center m-1 mb-2">
-						<div class="col-lg-3 col-6 mb-2">
-							<h6 class="font-weight-bolder p-2"><%= counts[:headers][0] %></h6>
-							<span class="btn btn-sm btn-light"><%= "#{counts[:values][0]}p" unless counts[:values][0].zero? %></span>
-						</div>
-						<div class="col-lg-3 col-6 mb-2"></h6>
-							<h6 class="font-weight-bolder p-2"><%= counts[:headers][1] %>(カード)</h6>
-							<span class="btn btn-sm btn-light"><%= "#{counts[:values][1]}個" unless counts[:values][1].zero? %><%= " (#{counts[:cards]}枚)" unless counts[:cards].zero? %></span>
-						</div>
-						<div class="col-lg-3 col-6 mb-2">
-							<h6 class="font-weight-bolder p-2"><%= counts[:headers][2] %></h6>
-							<span class="btn btn-sm btn-light"><%= "#{counts[:values][2]}kg" unless counts[:values][2].zero? %></span>
-						</div>
-						<div class="col-lg-3 col-6 mb-2">
-							<h6 class="font-weight-bolder p-2"><%= counts[:headers][3] %></h6>
-							<span class="btn btn-sm btn-light"><%= "#{counts[:values][3]}p" unless counts[:values][3].zero? %></span>
-						</div>
-						<div class="col-lg-3 col-6 mb-2">
-							<h6 class="font-weight-bolder p-2"><%= counts[:headers][4] %></h6>
-							<span class="btn btn-sm btn-light"><%= "#{counts[:values][4]}個" unless counts[:values][4].zero? %></span>
-						</div>
-						<div class="col-lg-3 col-6 mb-2">
-							<h6 class="font-weight-bolder p-2"><%= counts[:headers][5] %></h6>
-							<span class="btn btn-sm btn-light"><%= "#{counts[:values][5]}件" unless counts[:values][5].zero? %><%= " (#{counts[:anago]}g)" unless counts[:values][5].zero? %></span>
-						</div>
-						<div class="col-lg-3 col-6 mb-2">
-							<h6 class="font-weight-bolder p-2">干し海老80g<br><small>（むき身/殻付き）</small></h6>
-							<span class="btn btn-sm btn-light"><%= "#{counts[:values][6]}p " unless counts[:values][6].zero? %> <%= "#{counts[:values][7]}p" unless counts[:values][7].zero? %></span>
-						</div>
-						<div class="col-lg-3 col-6 mb-2">
-							<h6 class="font-weight-bolder p-2"><%= counts[:headers][8] %></h6>
-							<span class="btn btn-sm btn-light"><%= "#{counts[:values][8]}件" unless counts[:values][8].zero? %></span>
+					<div class="card p-2">
+						<div class="row align-items-center text-center m-1 mb-2">
+							<% unless counts[:values][0].zero? %>
+								<div class="col-lg-3 col-6 mb-2">
+									<h6 class="font-weight-bolder p-2"><%= counts[:headers][0] %></h6>
+									<span class="btn btn-sm btn-primary"><%= "#{counts[:values][0]}p" %></span>
+								</div>
+							<% end %>
+							<% unless counts[:values][1].zero? %>
+								<div class="col-lg-3 col-6 mb-2"></h6>
+									<h6 class="font-weight-bolder p-2"><%= counts[:headers][1] %><br><small>(カード/ナイフ)</small></h6>
+									<span class="btn btn-sm btn-primary"><%= "#{counts[:values][1]}個" %><%= " (#{counts[:cards]}枚/#{yahoo_knife_counts(@new_yahoo_orders)}個)" unless counts[:cards].zero? %></span>
+								</div>
+							<% end %>
+							<% unless counts[:values][2].zero? %>
+								<div class="col-lg-3 col-6 mb-2">
+									<h6 class="font-weight-bolder p-2"><%= counts[:headers][2] %></h6>
+									<span class="btn btn-sm btn-primary"><%= "#{counts[:values][2]}kg" %></span>
+								</div>
+							<% end %>
+							<% unless counts[:values][3].zero? %>
+								<div class="col-lg-3 col-6 mb-2">
+									<h6 class="font-weight-bolder p-2"><%= counts[:headers][3] %></h6>
+									<span class="btn btn-sm btn-primary"><%= "#{counts[:values][3]}p"%></span>
+								</div>
+							<% end %>
+							<% unless counts[:values][4].zero? %>
+								<div class="col-lg-3 col-6 mb-2">
+									<h6 class="font-weight-bolder p-2"><%= counts[:headers][4] %></h6>
+									<span class="btn btn-sm btn-primary"><%= "#{counts[:values][4]}個"%></span>
+								</div>
+							<% end %>
+							<% unless counts[:values][5].zero? %>
+								<div class="col-lg-3 col-6 mb-2">
+									<h6 class="font-weight-bolder p-2"><%= counts[:headers][5] %></h6>
+									<span class="btn btn-sm btn-primary"><%= "#{counts[:values][5]}件"%><%= " (#{counts[:anago]}g)"%></span>
+								</div>
+							<% end %>
+							<% unless (counts[:values][6].zero? || counts[:values][7].zero?) %>
+								<div class="col-lg-3 col-6 mb-2">
+									<h6 class="font-weight-bolder p-2">干し海老80g<br><small>（むき身/殻付き）</small></h6>
+									<span class="btn btn-sm btn-primary"><%= "#{counts[:values][6]}p "%> <%= "#{counts[:values][7]}p" %></span>
+								</div>
+							<% end %>
+							<% unless counts[:values][8].zero? %>
+								<div class="col-lg-3 col-6 mb-2">
+									<h6 class="font-weight-bolder p-2"><%= counts[:headers][8] %></h6>
+									<span class="btn btn-sm btn-primary"><%= "#{counts[:values][8]}件" %></span>
+								</div>
+							<% end %>
 						</div>
 					</div>
 
@@ -99,7 +117,10 @@
 										<% end %>
 									</div>
 									<div class="col-lg-4 col-12">
-										<%= icon('basket', class: 'mr-1') %><%= order.item_name %><%= order.print_quantity %>
+										<% order.item_names.each_with_index do |item, i| %>
+											<%= ("#{icon('basket', class: 'mr-1')}#{item}#{order.print_quantity(i)}<br>").html_safe %>
+										<% end %>
+										<%= ("#{icon('basket', class: 'mr-1')}牡蠣ナイフセット" + (order.knife_count > 1 ? " (x#{order.knife_count})" : "")).html_safe unless order.knife_count.zero? %>
 									</div>
 									<div class="col-lg-3 col-7 text-info">
 										<%= to_nengapiyoubi(order.ship_date) unless order.ship_date.nil? %>

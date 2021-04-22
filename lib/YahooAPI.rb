@@ -130,7 +130,7 @@ class YahooAPI
 		end
 	end
 
-	def get_status(acquire_new_details)
+	def get_status(acquire_new_details, message_id = nil)
 		# https://developer.yahoo.co.jp/webapi/shopping/orderCount.html
 		if authorized?
 			begin
@@ -142,11 +142,19 @@ class YahooAPI
 				@user.data[:yahoo][:store_status][:status] = request.parsed_response
 				@user.data[:yahoo][:store_status][:acquired] = DateTime.now
 				@user.save
+				if message_id
+					message = Message.find(message_id)
+					message.update(message: "ヤフー注文データ取込み中。注文データ:
+						新規: #{request.parsed_response["ResultSet"]["Result"]["Count"]["NewOrder"].to_i if request.parsed_response.dig("ResultSet", "Result", "Count", "NewOrder")}
+						処理/出荷: #{request.parsed_response["ResultSet"]["Result"]["Count"]["Shipping"].to_i if request.parsed_response.dig("ResultSet", "Result", "Count", "Shipping")}
+						保留: #{request.parsed_response["ResultSet"]["Result"]["Count"]["Holding"].to_i if request.parsed_response.dig("ResultSet", "Result", "Count", "Holding")}
+						自動完了: #{request.parsed_response["ResultSet"]["Result"]["Count"]["AutoDone"].to_i if request.parsed_response.dig("ResultSet", "Result", "Count", "AutoDone")}")
+				end
 				if acquire_new_details
 					stop_after = 0
 					stop_after += request.parsed_response["ResultSet"]["Result"]["Count"]["NewOrder"].to_i if request.parsed_response.dig("ResultSet", "Result", "Count", "NewOrder")
 					stop_after += request.parsed_response["ResultSet"]["Result"]["Count"]["AutoDone"].to_i if request.parsed_response.dig("ResultSet", "Result", "Count", "AutoDone")
-					(stop_after > 0) ? get_order_details_in_sequence(stop_after) : (ap request.parsed_response)
+					(stop_after > 0) ? get_order_details_in_sequence(stop_after, message_id) : (ap request.parsed_response)
 				end
 				true
 			rescue TypeError
@@ -317,7 +325,7 @@ class YahooAPI
 		end
 	end
 
-	def get_order_details_in_sequence(stop_after)
+	def get_order_details_in_sequence(stop_after, message_id = nil)
 		last_order_number = YahooOrder.all.order(:order_id).last.order_id[/\d+/].to_i
 		sequence = stop_after.times.map {|t| "oystersisters-" + (last_order_number + t).to_s }
 		if authorized?
@@ -346,6 +354,11 @@ class YahooAPI
 				end
 				unless all_order_details.empty?
 					record_sequenced_details(all_order_details)
+					if message_id
+						message = Message.find(message_id)
+						orig_message = message.message
+						message.update(message: orig_message + "\n\n#{all_order_details.length}の新規注文を更新しました")
+					end
 				end
 				true
 			rescue TypeError
@@ -410,7 +423,7 @@ class YahooAPI
 		end
 	end
 
-	def update_processing
+	def update_processing(message_id = nil)
 		if authorized?
 			begin
 				all_order_details = Hash.new
@@ -430,6 +443,11 @@ class YahooAPI
 						all_order_details[order_id] = order_details["ResultSet"]["Result"]["OrderInfo"] if order_details["ResultSet"]["Result"]["Status"] == "OK"
 						unless all_order_details.empty?
 							record_sequenced_details(all_order_details)
+							if message_id
+								message = Message.find(message_id)
+								orig_message = message.message
+								message.update(message: orig_message + "\n\n#{all_order_details.length}の処理中注文を更新しました")
+							end
 						end
 					else
 						ap order_details

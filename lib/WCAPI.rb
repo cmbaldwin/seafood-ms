@@ -42,7 +42,13 @@ class WCAPI
 					(ship_date = nil if ship_date.empty?) unless ship_date.nil?
 					parsed_ship_date = Date.strptime(ship_date, "%Y-%m-%d") unless ship_date.nil?
 					arrival_date = self.get_metadata(order_data, "wc4jp-delivery-date")
-					arrival_date_parsed = Date.strptime(arrival_date, "%Y年%m月%d日") unless arrival_date.nil? || arrival_date.empty?
+					unless (arrival_date.nil? || arrival_date.empty?)
+						if arrival_date.include?('-') && (arrival_date.length == 10)
+							arrival_date_parsed = Date.strptime(arrival_date, "%Y-%m-%d")
+						else
+							arrival_date_parsed = Date.strptime(arrival_date, "%Y年%m月%d日")
+						end
+					end
 					order.assign_attributes({ 
 						order_time: DateTime.parse(order_data["date_created"]), 
 						date_modified: DateTime.parse(order_data["date_modified"]),

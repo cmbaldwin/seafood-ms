@@ -55,6 +55,19 @@ class YahooOrder < ApplicationRecord
 		end
 	end
 
+	def item_options
+		details = self.item_details
+		if details.is_a?(Hash)
+			[ details["ItemOption"] ]
+		else #it's an array of hashes
+			details.map{|i| i["ItemOption"] }
+		end
+	end
+
+	def knife_count
+		item_options.compact.flatten.map{|o| o["Name"].include?('ナイフ') ? (o["Value"].include?('あり') ? 1 : 0) : 0 }.sum
+	end
+
 	def shipping_name
 		self.shipping_details["ShipLastName"] + " " + self.shipping_details["ShipFirstName"]
 	end
@@ -79,11 +92,15 @@ class YahooOrder < ApplicationRecord
 		self.details["Item"]
 	end
 
-	def item_id
-		self.item_details["ItemId"] if self.item_details
+	def item_ids
+		if self.item_details.is_a?(Hash)
+			[self.item_details["ItemId"]]
+		elsif self.item_details.is_a?(Array)
+			self.item_details.map{|i| i["ItemId"]}
+		end
 	end
 
-	def item_name
+	def item_names
 		item_names = { 
 			"kakiset302" => "むき身500g×2 + 殻付30個",
 			"kakiset202" => "むき身500g×2 + 殻付20個",
@@ -122,7 +139,7 @@ class YahooOrder < ApplicationRecord
 			"syoukara2kg" => "小殻付き 2㎏",
 			"syoukara3kg" => "小殻付き 3㎏",
 			"syoukara5kg" => "小殻付き 5㎏" }
-		item_names[self.item_id]
+		item_ids.map{|i| item_names[i]}
 	end
 
 	def payment_type
@@ -141,12 +158,16 @@ class YahooOrder < ApplicationRecord
 		method_hash.include?(pay_method) ? method_hash[pay_method] : pay_method
 	end
 
-	def quantity
-		self.item_details["Quantity"] if self.item_details
+	def quantities
+		if self.item_details.is_a?(Hash)
+			self.item_details ? [self.item_details["Quantity"]] : ["0"]
+		else
+			self.item_details.map{|item| item["Quantity"] }
+		end
 	end
 
-	def print_quantity
-		(self.quantity.to_i > 1) ? (" × " + self.quantity) : ""
+	def print_quantity(i)
+		(self.quantities[i].to_i > 1) ? (" × " + self.quantities[i]) : ""
 	end
 
 	def shipping_address(for_print = false)
@@ -164,7 +185,7 @@ class YahooOrder < ApplicationRecord
 		self.billing_details["PayMethod"] == "payment_d1" ? "2" : "0"
 	end
 
-	def shipping_temperature
+	def shipping_temperatures
 		temperature_setting = { 
 			"kakiset302" => "2",
 			"kakiset202" => "2",
@@ -199,7 +220,7 @@ class YahooOrder < ApplicationRecord
 			"anago600" => "2",
 			"anago480" => "2",
 			"anago350" => "2" }
-		temperature_setting[self.item_id]
+		item_ids.map{|i| temperature_setting[i]}.uniq
 	end
 
 	def shipping_arrival_date
