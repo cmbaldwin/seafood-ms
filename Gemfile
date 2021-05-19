@@ -20,7 +20,7 @@ gem 'rails', '~> 6.1.3.1'
 # Use postgresql as the database for Active Record
 gem 'pg'
 # Use Puma as the app server
-gem 'puma', '~> 3.11'
+gem 'puma', '~> 4.3'
 
 # For Scaling with Redis and Sidekiq 
 # https://stackoverflow.com/questions/13770713/rails-starting-sidekiq-on-heroku
